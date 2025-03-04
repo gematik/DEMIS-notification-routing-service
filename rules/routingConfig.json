@@ -1,0 +1,184 @@
+{
+  "rules": {
+    "start": {
+      "description": "root rule. decision between laboratory and disease path",
+      "fhirPathExpression": "Bundle.meta.profile.contains('https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratory')",
+      "result": {},
+      "followingRules": {
+        "conditionFulfilled": "laboratory",
+        "conditionNotMet": "disease"
+      }
+    },
+    "laboratory": {
+      "description": "laboratory rule. decision between §7.3 or another laboratory result",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'hivp' or code = 'trpp').empty().not()",
+      "result": {
+        "conditionFulfilled": "laboratory_notification7_3"
+      },
+      "followingRules": {
+        "conditionNotMet": "notified_Person"
+      }
+    },
+    "notified_Person": {
+      "description": "this rule applies to §7.1 and §7.4 cases. we need to distinguish between these two cases.",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
+      "result": {
+        "conditionNotMet": "notification7_4"
+      },
+      "followingRules": {
+        "conditionFulfilled": "sormas_and_cvdp"
+      }
+    },
+    "sormas_and_cvdp": {
+      "description": "this rule applies to §7.1. we need to distinguish between cvdp and other notification categories.",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdp').empty().not()",
+      "result": {
+        "conditionFulfilled": "notification7_1_cvd",
+        "conditionNotMet": "notification7_1"
+      },
+      "followingRules": {}
+    },
+    "disease": {
+      "description": "disease rule. decision between §6.1 and §7.3 cases",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Condition).code.coding.where(code = 'hivd' or code = 'trpd')",
+      "result": {
+        "conditionFulfilled": "disease_notification7_3"
+      },
+      "followingRules": {
+        "conditionNotMet": "sormas_and_cvdd"
+      }
+    },
+    "sormas_and_cvdd": {
+      "description": "this rule applies to §6.1. we need to distinguish between cvdd and other notification categories.",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdd').empty().not()",
+      "result": {
+        "conditionFulfilled": "notification6_1_cvd",
+        "conditionNotMet": "notification6_1"
+      },
+      "followingRules": {}
+    }
+  },
+  "results": {
+    "laboratory_notification7_3": {
+      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.3",
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "disease_notification7_3": {
+      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+      "type": "disease",
+      "notificationCategory": "7.3",
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "notification6_1": {
+      "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
+      "type": "disease",
+      "notificationCategory": "6.1",
+      "routesTo": [
+        {
+          "type": "responsible_health_office",
+          "optional": "false",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "notification6_1_cvd": {
+      "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
+      "type": "disease",
+      "notificationCategory": "6.1",
+      "routesTo": [
+        {
+          "type": "responsible_health_office",
+          "optional": "false",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "responsible_health_office_sormas",
+          "optional": "true",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "notification7_1": {
+      "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
+      "type": "laboratory",
+      "notificationCategory": "7.1",
+      "routesTo": [
+        {
+          "type": "responsible_health_office",
+          "optional": "false",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "notification7_1_cvd": {
+      "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
+      "type": "laboratory",
+      "notificationCategory": "7.1",
+      "routesTo": [
+        {
+          "type": "responsible_health_office",
+          "optional": "false",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "responsible_health_office_sormas",
+          "optional": "true",
+          "actions": ["encryption"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "notification7_4": {
+      "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.4",
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["no_action"]
+        }
+      ]
+    }
+  }
+}
