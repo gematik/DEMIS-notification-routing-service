@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>de.gematik.demis</groupId>
+    <artifactId>spring-parent</artifactId>
+    <version>2.6.0</version>
+    <relativePath></relativePath><!-- lookup parent from repository -->
+  </parent>
+  <artifactId>notification-routing-service</artifactId>
+  <version>2.0.2-SNAPSHOT</version>
+  <name>notification-routing-service</name>
+  <packaging>jar</packaging>
+  <description>Notification Routing Service</description>
+  <licenses>
+    <license>
+      <name>Licensed under the EUPL 1.2</name>
+      <url>https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12</url>
+    </license>
+  </licenses>
+  <properties>
+    <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <demis.fhir-parser-library.version>2.2.7</demis.fhir-parser-library.version>
+    <demis.notification-builder-library.version>5.0.2</demis.notification-builder-library.version>
+    <ucum.version>1.0.9</ucum.version>
+    <guava.version>33.4.0-jre</guava.version>
+  </properties>
+  <dependencyManagement><!-- Version Pinning from HAPI FHIR Parent Pom - DO NOT UPGRADE Automatically -->
+    <dependencies>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <artifactId>org.hl7.fhir.utilities</artifactId>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <version>6.4.0</version>
+      </dependency>
+      <dependency>
+        <artifactId>org.hl7.fhir.r4</artifactId>
+        <groupId>ca.uhn.hapi.fhir</groupId>
+        <version>6.4.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>de.gematik.demis</groupId>
+      <artifactId>service-base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.gematik.demis</groupId>
+      <artifactId>fhir-parser-library</artifactId>
+      <version>${demis.fhir-parser-library.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.gematik.demis</groupId>
+      <artifactId>notification-builder-library</artifactId>
+      <version>${demis.notification-builder-library.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.fhir</groupId>
+      <artifactId>ucum</artifactId>
+      <version>${ucum.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-caching-caffeine</artifactId>
+      <version>${hapi.fhir.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.checkerframework</groupId>
+          <artifactId>checker-qual</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+</project>

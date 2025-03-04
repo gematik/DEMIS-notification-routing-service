@@ -1,0 +1,14 @@
+spring:
+    config:
+        import: classpath:/base-config-application.yaml
+
+info:
+    app:
+        name: @project.name@
+        version: @project.version@
+
+nrs:
+    lookup-data-directory: ${DATA_DIR_LOOKUP:notification-routing-data/data/lookup}
+    routing-rules: ${ROUTING_RULES_FILE:rules/routingConfig.json}
+    rules-start-id: ${RULES_START_ID:start}
+

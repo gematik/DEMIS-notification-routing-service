@@ -1,0 +1,23 @@
+<img align="right" width="200" height="37" src="media/Gematik_Logo_Flag.png"/> <br/> 
+ 
+# Release notes
+
+## Release 2.1.0
+### changed
+- First official GitHub-Release
+- Update Base-Image to OSADL
+- Dependency-Updates (CVEs et al.)
+- Implement rule-engine
+
+## Release 1.0.0
+### added
+- SpringBoot 3.0.1
+
+### changed
+- License updated to 2023
+
+### fixed
+- SonarQube Code Smells
+
+### security
+- Removed SnakeYAML (OWASP Scan)
