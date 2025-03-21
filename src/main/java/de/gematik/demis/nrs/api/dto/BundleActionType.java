@@ -22,16 +22,25 @@ package de.gematik.demis.nrs.api.dto;
  * #L%
  */
 
-import de.gematik.demis.nrs.rules.model.Route;
-import jakarta.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.SequencedSet;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-public record RuleBasedRouteDTO(
-    String type,
-    String notificationCategory,
-    SequencedSet<BundleAction> bundleActions,
-    List<Route> routes,
-    @Nullable Map<AddressOriginEnum, String> healthOffices,
-    @Nullable String responsible) {}
+public enum BundleActionType {
+  CREATE_PSEUDONYM_RECORD,
+  NO_ACTION,
+  UNKNOWN;
+
+  @JsonCreator
+  public static BundleActionType fromValue(String value) {
+    try {
+      return BundleActionType.valueOf(value.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException("Invalid bundle action: " + value);
+    }
+  }
+
+  @JsonValue
+  public String toValue() {
+    return this.name().toLowerCase();
+  }
+}

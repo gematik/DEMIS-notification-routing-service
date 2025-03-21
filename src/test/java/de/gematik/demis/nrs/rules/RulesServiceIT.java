@@ -31,12 +31,17 @@ import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -55,28 +60,74 @@ class RulesServiceIT {
 
   @Autowired private FhirContext fhirContext;
 
+  private static void assertResult(
+      final Result result, final String category, final Set<RulesResultTypeEnum> receiver) {
+    assertThat(result.notificationCategory()).isEqualTo(category);
+    List<Route> resultRoutes = result.routesTo();
+    assertThat(resultRoutes).hasSize(receiver.size());
+    assertThat(resultRoutes).extracting("type").containsExactlyInAnyOrderElementsOf(receiver);
+  }
+
+  private static Stream<Path> p73Bundles() {
+    return Stream.of(
+        Path.of("src/test/resources/fhir/7_3/anonymous.json"),
+        Path.of("src/test/resources/fhir/7_3/nonnominal-notifiedperson.json"),
+        Path.of("src/test/resources/fhir/7_3/nonnominal-notbyname.json"));
+  }
+
   @ParameterizedTest
   @CsvSource({
-    "src/test/resources/fhir/laboratory-notification-bundle.json,notification6_1_7_1",
-    "src/test/resources/fhir/disease-notification-bundle.json,notification6_1_7_1",
+    "src/test/resources/fhir/laboratory-notification-bundle.json,7.1",
+    "src/test/resources/fhir/disease-notification-bundle.json,6.1",
   })
-  void testEvaluateRules(String path) throws IOException {
+  void testEvaluateRules(final String path, final String category) throws IOException {
     // Load a sample FHIR bundle from a JSON file
     String bundleJson = Files.readString(Paths.get(path));
     Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
 
     // Evaluate the rules
-    Optional<Result> result = rulesService.evaluateRules(bundle);
+    Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
 
     // Assert the expected result
-    assertThat(result).isPresent();
-    List<Route> resultRoutes = result.get().routesTo();
-    assertThat(resultRoutes).hasSize(3);
-    assertThat(resultRoutes)
-        .extracting("type")
-        .containsExactly(
+    assertThat(optionalResult).isPresent();
+    final Result result = optionalResult.get();
+    assertResult(
+        result,
+        category,
+        Set.of(
             RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
             RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-            RulesResultTypeEnum.SPECIFIC_RECEIVER);
+            RulesResultTypeEnum.SPECIFIC_RECEIVER));
+  }
+
+  @Test
+  void that74IsProcessed() throws IOException {
+    final String bundleJson =
+        Files.readString(Path.of("src/test/resources/fhir/7_4/negative-covid19-bundle.json"));
+    final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+    // Evaluate the rules
+    final Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
+
+    // Assert the expected result
+    assertThat(optionalResult).isPresent();
+    final Result result = optionalResult.get();
+    assertResult(result, "7.4", Set.of(RulesResultTypeEnum.SPECIFIC_RECEIVER));
+  }
+
+  @ParameterizedTest
+  @MethodSource("p73Bundles")
+  void that73IsProcessed(final Path path) throws IOException {
+    // Load a sample FHIR bundle from a JSON file
+    final String bundleJson = Files.readString(path);
+    final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+    // Evaluate the rules
+    final Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
+
+    // Assert the expected optionalResult
+    assertThat(optionalResult).isPresent();
+    final Result result = optionalResult.get();
+    assertResult(result, "7.3", Set.of(RulesResultTypeEnum.SPECIFIC_RECEIVER));
   }
 }

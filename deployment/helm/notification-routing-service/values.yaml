@@ -33,7 +33,9 @@ customLabels: {}
 deploymentLabels: {}
 
 # Environment Variables to be defined
-customEnvVars: {}
+customEnvVars:
+  FEATURE_FLAG_NOTIFICATIONS_7_3: "false"
+  FEATURE_FLAG_NOTIFICATIONS_7_4: "false"
 
 # Define custom Container Entrypoint and Arguments (e.g. JVM Tuning)
 # If not given, the Entrypoint defined in Dockerfile will be used

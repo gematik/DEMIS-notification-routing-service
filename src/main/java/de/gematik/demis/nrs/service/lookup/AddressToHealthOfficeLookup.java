@@ -24,9 +24,11 @@ package de.gematik.demis.nrs.service.lookup;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import com.google.common.base.Stopwatch;
 import de.gematik.demis.nrs.service.Statistics;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -101,6 +103,7 @@ public class AddressToHealthOfficeLookup {
     final List<String> keyParts = new ArrayList<>();
 
     for (final LookupLevel currentLevel : detailLevels) {
+      final Stopwatch timer = Stopwatch.createStarted();
       final String detailValue = getAddressDetailValue(address, currentLevel.additionalDetail());
       keyParts.add(detailValue);
 
@@ -122,7 +125,8 @@ public class AddressToHealthOfficeLookup {
         }
       }
 
-      logCsvLookup(currentLevel.map, status);
+      final Duration elapsed = timer.elapsed();
+      logCsvLookup(elapsed, currentLevel.map, status);
 
       if (status != LookupStatus.MULTIPLE_MATCHES) {
         return new LookupResult(status, result, currentLevel, keyParts);
@@ -132,9 +136,11 @@ public class AddressToHealthOfficeLookup {
     throw new IllegalStateException("no next lookup level!");
   }
 
-  private void logCsvLookup(final LookupMap map, final LookupStatus status) {
+  private void logCsvLookup(
+      final Duration elapsed, final LookupMap map, final LookupStatus status) {
     log.debug("lookup map {} -> {}", map.name(), status.name());
     statistic.incCsvLookup(map.name(), status.name());
+    statistic.recordLookup(elapsed, map.name(), status.name());
   }
 
   private String getHealthOffice(final LookupMap map, final List<String> addressKey) {
@@ -175,9 +181,12 @@ public class AddressToHealthOfficeLookup {
   private interface Fallback {
     static Fallback withPreviousKey(final LookupMap otherLookupMap) {
       return (lookupEngine, notNeeded, key) -> {
+        final Stopwatch timer = Stopwatch.createStarted();
         final List<String> previousKey = key.subList(0, key.size() - 1);
         final String healthOffice = lookupEngine.getHealthOffice(otherLookupMap, previousKey);
+        final Duration elapsed = timer.elapsed();
         lookupEngine.logCsvLookup(
+            elapsed,
             otherLookupMap,
             healthOffice == null ? LookupStatus.NOT_FOUND : LookupStatus.UNIQUE_MATCH);
         return Optional.ofNullable(healthOffice);

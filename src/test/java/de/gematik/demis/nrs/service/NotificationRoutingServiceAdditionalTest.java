@@ -25,6 +25,7 @@ package de.gematik.demis.nrs.service;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_CURRENT;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_ORDINARY;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
+import static de.gematik.demis.nrs.api.dto.BundleActionType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
+import de.gematik.demis.nrs.api.dto.BundleAction;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.rules.RulesService;
 import de.gematik.demis.nrs.rules.model.Result;
@@ -43,6 +45,7 @@ import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
+import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -83,7 +86,13 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("no_action"), false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     RuleBasedRouteDTO ruleBasedRouteDTO =
@@ -110,7 +119,13 @@ class NotificationRoutingServiceAdditionalTest {
                 singletonList("encryption"),
                 false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -155,7 +170,13 @@ class NotificationRoutingServiceAdditionalTest {
                 singletonList("encryption"),
                 false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -214,7 +235,13 @@ class NotificationRoutingServiceAdditionalTest {
                 singletonList("encryption"),
                 false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -248,7 +275,13 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.SPECIFIC_RECEIVER, null, singletonList("no_action"), false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     assertThatThrownBy(
@@ -280,7 +313,13 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.SPECIFIC_RECEIVER, null, singletonList("pseudo_copy"), false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -319,7 +358,13 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -370,7 +415,13 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false));
     Optional<Result> optResult =
-        Optional.of(new Result("some description", routeListe, "laboratory", "7.1"));
+        Optional.of(
+            new Result(
+                "some description",
+                routeListe,
+                "laboratory",
+                "7.1",
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -383,6 +434,7 @@ class NotificationRoutingServiceAdditionalTest {
         new RuleBasedRouteDTO(
             "laboratory",
             "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             singletonList(
                 new Route(
                     RulesResultTypeEnum.SPECIFIC_RECEIVER,
