@@ -12,3 +12,6 @@ nrs:
     routing-rules: ${ROUTING_RULES_FILE:rules/routingConfig.json}
     rules-start-id: ${RULES_START_ID:start}
 
+feature.flag:
+    notifications.7_3: false
+    notifications.7_4: false

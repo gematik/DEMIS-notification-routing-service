@@ -11,15 +11,15 @@
     },
     "laboratory": {
       "description": "laboratory rule. decision between §7.3 or another laboratory result",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'hivp' or code = 'trpp').empty().not()",
+      "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNonNominal' or Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryAnonymous'",
       "result": {
         "conditionFulfilled": "laboratory_notification7_3"
       },
       "followingRules": {
-        "conditionNotMet": "notified_Person"
+        "conditionNotMet": "notified_person"
       }
     },
-    "notified_Person": {
+    "notified_person": {
       "description": "this rule applies to §7.1 and §7.4 cases. we need to distinguish between these two cases.",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
       "result": {
@@ -40,7 +40,7 @@
     },
     "disease": {
       "description": "disease rule. decision between §6.1 and §7.3 cases",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Condition).code.coding.where(code = 'hivd' or code = 'trpd')",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Condition).code.coding.where(code = 'chtd' or code = 'echd' or code = 'hivd' or code = 'negd' or code = 'toxd' or code = 'trpd').empty().not()",
       "result": {
         "conditionFulfilled": "disease_notification7_3"
       },
@@ -63,12 +63,13 @@
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
       "type": "laboratory",
       "notificationCategory": "7.3",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": ["pseudo_original", "encryption"]
         }
       ]
     },
@@ -76,12 +77,13 @@
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
       "type": "disease",
       "notificationCategory": "7.3",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": ["pseudo_original", "encryption"]
         }
       ]
     },
@@ -89,6 +91,7 @@
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
       "type": "disease",
       "notificationCategory": "6.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
       "routesTo": [
         {
           "type": "responsible_health_office",
@@ -107,6 +110,7 @@
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
       "type": "disease",
       "notificationCategory": "6.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
       "routesTo": [
         {
           "type": "responsible_health_office",
@@ -130,6 +134,7 @@
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
       "notificationCategory": "7.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
       "routesTo": [
         {
           "type": "responsible_health_office",
@@ -148,6 +153,7 @@
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
       "notificationCategory": "7.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
       "routesTo": [
         {
           "type": "responsible_health_office",
@@ -171,12 +177,13 @@
       "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
       "type": "laboratory",
       "notificationCategory": "7.4",
+      "bundleActions": [{"type": "no_action", "optional": false}],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["no_action"]
+          "actions": ["pseudo_original"]
         }
       ]
     }

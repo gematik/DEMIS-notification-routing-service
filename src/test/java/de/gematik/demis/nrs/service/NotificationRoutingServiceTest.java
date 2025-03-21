@@ -28,6 +28,7 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_OTH
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
+import static de.gematik.demis.nrs.api.dto.BundleActionType.*;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.TEST_DEPARTMENT;
 import static java.util.Arrays.asList;
@@ -39,6 +40,7 @@ import static org.mockito.AdditionalAnswers.answer;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
+import de.gematik.demis.nrs.api.dto.BundleAction;
 import de.gematik.demis.nrs.api.dto.RoutingOutput;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.rules.RulesService;
@@ -49,6 +51,7 @@ import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
+import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -277,7 +280,13 @@ class NotificationRoutingServiceTest {
                   List.of("encrypt"),
                   false)));
     }
-    Result result = new Result("test", resultList, "laboratory", "7.1");
+    Result result =
+        new Result(
+            "test",
+            resultList,
+            "laboratory",
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     final Map<AddressDTO, String> addressToHealthOfficeMap =
         addressesWithHealthOffice.stream()
             .collect(Collectors.toMap(addresses::get, type -> healthOfficeId));
@@ -304,6 +313,7 @@ class NotificationRoutingServiceTest {
         new RuleBasedRouteDTO(
             "laboratory",
             "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             outputList,
             withRoutingOutput ? expectedRoutingOutput.healthOffices() : emptyMap(),
             responsible);
@@ -332,7 +342,8 @@ class NotificationRoutingServiceTest {
                 new Route(
                     RulesResultTypeEnum.SPECIFIC_RECEIVER, null, List.of("pseudo_copy"), false)),
             "laboratory",
-            "7.1");
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(Mockito.any(Bundle.class))).thenReturn(Optional.of(result));
@@ -367,7 +378,8 @@ class NotificationRoutingServiceTest {
                     List.of("pseudo_copy"),
                     false)),
             "laboratory",
-            "7.1");
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
     when(fhirReader.getRoutingInput(Mockito.any(Bundle.class))).thenReturn(routingInput);
@@ -378,7 +390,13 @@ class NotificationRoutingServiceTest {
     RuleBasedRouteDTO ruleBasedRouteDTO = underTest.determineRuleBasedRouting("", false, "");
 
     RuleBasedRouteDTO expectedRuleBasedRouteDTO =
-        new RuleBasedRouteDTO("laboratory", "7.1", List.of(), null, null);
+        new RuleBasedRouteDTO(
+            "laboratory",
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            List.of(),
+            null,
+            null);
     assertThat(ruleBasedRouteDTO).isEqualTo(expectedRuleBasedRouteDTO);
   }
 }

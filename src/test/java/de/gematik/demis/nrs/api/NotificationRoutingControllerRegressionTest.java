@@ -29,7 +29,7 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRI
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
 import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
 import static java.util.Map.entry;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,13 +61,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(NotificationRoutingController.class)
 @Import(ErrorHandlerConfiguration.class)
-@TestPropertySource(properties = {"feature.flag.notifications.7_3 = true"})
-class NotificationRoutingControllerTest {
+class NotificationRoutingControllerRegressionTest {
 
   private static final String URL_DETERMINE_ROUTING = "/routing";
   private static final String URL_DETERMINE_RULE_BASED_ROUTING = "/routing/v2";
@@ -169,7 +167,6 @@ class NotificationRoutingControllerTest {
             {
               "type": "laboratory",
               "notificationCategory": "7.1",
-              "bundleActions": [{"type": "create_pseudonym_record", "optional": true}],
               "routes": [
                 {
                   "type": "responsible_health_office",

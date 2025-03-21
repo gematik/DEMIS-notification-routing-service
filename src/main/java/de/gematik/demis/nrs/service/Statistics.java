@@ -24,12 +24,15 @@ package de.gematik.demis.nrs.service;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class Statistics {
+  private static final String TIMER_CSV_LOOKUP = "address_csv_lookup.timer";
   private static final String COUNTER_CSV_LOOKUP = "address_csv_lookup";
   private static final String COUNTER_CSV_LOOKUP_TAG_MAP = "map";
   private static final String COUNTER_CSV_LOOKUP_TAG_STATUS = "status";
@@ -47,6 +50,17 @@ public class Statistics {
   private static final String COUNTER_NO_HEALTH_OFFICE_RESPONSIBLE = "no_health_office_responsible";
 
   private final MeterRegistry meterRegistry;
+
+  public void recordLookup(
+      final Duration duration, final String mapName, final String lookupStatus) {
+    Timer.builder(TIMER_CSV_LOOKUP)
+        .tags(COUNTER_CSV_LOOKUP_TAG_MAP, mapName, COUNTER_CSV_LOOKUP_TAG_STATUS, lookupStatus)
+        .publishPercentileHistogram()
+        .minimumExpectedValue(Duration.ofNanos(2_000))
+        .maximumExpectedValue(Duration.ofNanos(10_000))
+        .register(meterRegistry)
+        .record(duration);
+  }
 
   public void incCsvLookup(final String mapName, final String lookupStatus) {
     meterRegistry

@@ -22,7 +22,14 @@ package de.gematik.demis.nrs.rules.model;
  * #L%
  */
 
+import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
+import de.gematik.demis.nrs.api.dto.BundleAction;
+import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
+import jakarta.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
+import java.util.SequencedSet;
+import java.util.function.Predicate;
 
 /**
  * @param description
@@ -31,4 +38,33 @@ import java.util.List;
  * @param notificationCategory
  */
 public record Result(
-    String description, List<Route> routesTo, String type, String notificationCategory) {}
+    String description,
+    List<Route> routesTo,
+    String type,
+    String notificationCategory,
+    SequencedSet<BundleAction> bundleActions) {
+
+  /**
+   * Return true if any route matches the given predicate
+   *
+   * @param matcher See {@link Route#receiverIsNull()} or {@link Route#hasType(RulesResultTypeEnum)}
+   */
+  public boolean anyRouteMatches(final Predicate<Route> matcher) {
+    return routesTo.stream().anyMatch(matcher);
+  }
+
+  public RuleBasedRouteDTO toRoutingOutput(
+      final @Nullable Map<AddressOriginEnum, String> healthOffices,
+      final @Nullable String responsible) {
+    return new RuleBasedRouteDTO(
+        type(), notificationCategory(), bundleActions(), routesTo(), healthOffices, responsible);
+  }
+
+  public RuleBasedRouteDTO toRoutingOutput(
+      final List<Route> routes,
+      final @Nullable Map<AddressOriginEnum, String> healthOffices,
+      final @Nullable String responsible) {
+    return new RuleBasedRouteDTO(
+        type(), notificationCategory(), bundleActions(), routes, healthOffices, responsible);
+  }
+}

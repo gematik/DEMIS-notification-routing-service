@@ -26,12 +26,20 @@ import de.gematik.demis.nrs.rules.model.Route;
 import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.SequencedSet;
 
-public record RuleBasedRouteDTO(
+public record RuleBasedRouteDTOPreBundleAction(
     String type,
     String notificationCategory,
-    SequencedSet<BundleAction> bundleActions,
     List<Route> routes,
     @Nullable Map<AddressOriginEnum, String> healthOffices,
-    @Nullable String responsible) {}
+    @Nullable String responsible) {
+
+  public static RuleBasedRouteDTOPreBundleAction from(final RuleBasedRouteDTO original) {
+    return new RuleBasedRouteDTOPreBundleAction(
+        original.type(),
+        original.notificationCategory(),
+        original.routes(),
+        original.healthOffices(),
+        original.responsible());
+  }
+}

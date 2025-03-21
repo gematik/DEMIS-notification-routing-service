@@ -27,10 +27,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import de.gematik.demis.nrs.api.dto.RoutingOutput;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
+import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTOPreBundleAction;
 import de.gematik.demis.nrs.service.NotificationRoutingService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,13 +39,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/")
 public class NotificationRoutingController {
 
   private final NotificationRoutingService notificationRoutingService;
   private final AddressToHealthOfficeLookup healthOfficeLookupService;
+  private final boolean is73RoutingEnabled;
+  private final boolean is74RoutingEnabled;
+
+  public NotificationRoutingController(
+      final NotificationRoutingService notificationRoutingService,
+      final AddressToHealthOfficeLookup healthOfficeLookupService,
+      @Value("${feature.flag.notifications.7_3}") final boolean is73RoutingEnabled,
+      @Value("${feature.flag.notifications.7_4}") final boolean is74RoutingEnabled) {
+    this.notificationRoutingService = notificationRoutingService;
+    this.healthOfficeLookupService = healthOfficeLookupService;
+    this.is73RoutingEnabled = is73RoutingEnabled;
+    this.is74RoutingEnabled = is74RoutingEnabled;
+  }
 
   @PostMapping(
       path = "/routing",
@@ -58,12 +71,17 @@ public class NotificationRoutingController {
       path = "/routing/v2",
       consumes = APPLICATION_JSON_VALUE,
       produces = APPLICATION_JSON_VALUE)
-  public RuleBasedRouteDTO determineRuleBasedRouting(
+  public Object determineRuleBasedRouting(
       @RequestBody final String fhirNotification,
       @RequestParam("isTestUser") final boolean isTestUser,
       @RequestParam("testUserID") final String sender) {
-    return notificationRoutingService.determineRuleBasedRouting(
-        fhirNotification, isTestUser, sender);
+    final RuleBasedRouteDTO bundleActionBasedRouting =
+        notificationRoutingService.determineRuleBasedRouting(fhirNotification, isTestUser, sender);
+    // Once EITHER flag is removed, the other can be removed too
+    if (is73RoutingEnabled || is74RoutingEnabled) {
+      return bundleActionBasedRouting;
+    }
+    return RuleBasedRouteDTOPreBundleAction.from(bundleActionBasedRouting);
   }
 
   @GetMapping("/routing/health-office")
