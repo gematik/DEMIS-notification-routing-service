@@ -24,6 +24,7 @@ package de.gematik.demis.nrs.service.lookup;
 
 import de.gematik.demis.nrs.config.NrsConfigProps;
 import de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap;
+import de.gematik.demis.service.base.apidoc.EnableDefaultApiSpecConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.EnumMap;
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Slf4j
+@EnableDefaultApiSpecConfig
 class LookupMapsLoader {
 
   @Bean
