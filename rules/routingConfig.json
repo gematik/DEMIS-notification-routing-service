@@ -183,7 +183,7 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_original"]
+          "actions": ["no_action"]
         }
       ]
     }
