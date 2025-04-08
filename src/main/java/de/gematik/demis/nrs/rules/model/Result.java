@@ -19,6 +19,10 @@ package de.gematik.demis.nrs.rules.model;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
@@ -32,17 +36,30 @@ import java.util.SequencedSet;
 import java.util.function.Predicate;
 
 /**
+ * @param id can be used for testing
  * @param description
  * @param routesTo all routes of the notifications
  * @param type
  * @param notificationCategory
  */
 public record Result(
+    String id,
     String description,
     List<Route> routesTo,
     String type,
     String notificationCategory,
     SequencedSet<BundleAction> bundleActions) {
+
+  /** Copy the data from original but set the id to newId. */
+  public static Result replaceId(final Result original, final String newId) {
+    return new Result(
+        newId,
+        original.description(),
+        original.routesTo(),
+        original.type(),
+        original.notificationCategory(),
+        original.bundleActions());
+  }
 
   /**
    * Return true if any route matches the given predicate

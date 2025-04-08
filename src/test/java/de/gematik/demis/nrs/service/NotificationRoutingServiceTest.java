@@ -19,6 +19,10 @@ package de.gematik.demis.nrs.service;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
@@ -282,6 +286,7 @@ class NotificationRoutingServiceTest {
     }
     Result result =
         new Result(
+            "123",
             "test",
             resultList,
             "laboratory",
@@ -337,6 +342,7 @@ class NotificationRoutingServiceTest {
     // GIVEN result for rule evaluation
     Result result =
         new Result(
+            "123",
             "test",
             List.of(
                 new Route(
@@ -370,6 +376,7 @@ class NotificationRoutingServiceTest {
     // AND result for rule validation
     final Result result =
         new Result(
+            "123",
             "test",
             List.of(
                 new Route(
