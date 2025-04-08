@@ -19,10 +19,15 @@ package de.gematik.demis.nrs.rules;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import ca.uhn.fhir.context.FhirContext;
 import de.gematik.demis.nrs.NotificationRoutingApplication;
@@ -40,6 +45,7 @@ import java.util.stream.Stream;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,11 +74,17 @@ class RulesServiceIT {
     assertThat(resultRoutes).extracting("type").containsExactlyInAnyOrderElementsOf(receiver);
   }
 
-  private static Stream<Path> p73Bundles() {
+  private static Stream<Arguments> p73Bundles() {
     return Stream.of(
-        Path.of("src/test/resources/fhir/7_3/anonymous.json"),
-        Path.of("src/test/resources/fhir/7_3/nonnominal-notifiedperson.json"),
-        Path.of("src/test/resources/fhir/7_3/nonnominal-notbyname.json"));
+        arguments(
+            Path.of("src/test/resources/fhir/7_3/anonymous.json"),
+            "laboratory_notification7_3_anonymous"),
+        arguments(
+            Path.of("src/test/resources/fhir/7_3/nonnominal-notifiedperson.json"),
+            "laboratory_notification7_3"),
+        arguments(
+            Path.of("src/test/resources/fhir/7_3/nonnominal-notbyname.json"),
+            "laboratory_notification7_3"));
   }
 
   @ParameterizedTest
@@ -112,12 +124,13 @@ class RulesServiceIT {
     // Assert the expected result
     assertThat(optionalResult).isPresent();
     final Result result = optionalResult.get();
+    assertThat(result.id()).isEqualTo("notification7_4");
     assertResult(result, "7.4", Set.of(RulesResultTypeEnum.SPECIFIC_RECEIVER));
   }
 
   @ParameterizedTest
   @MethodSource("p73Bundles")
-  void that73IsProcessed(final Path path) throws IOException {
+  void that73IsProcessed(final Path path, final String expectedResultId) throws IOException {
     // Load a sample FHIR bundle from a JSON file
     final String bundleJson = Files.readString(path);
     final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
@@ -128,6 +141,7 @@ class RulesServiceIT {
     // Assert the expected optionalResult
     assertThat(optionalResult).isPresent();
     final Result result = optionalResult.get();
+    assertThat(result.id()).isEqualTo(expectedResultId);
     assertResult(result, "7.3", Set.of(RulesResultTypeEnum.SPECIFIC_RECEIVER));
   }
 }

@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs.service.lookup;
+package de.gematik.demis.nrs.rules;
 
 /*-
  * #%L
@@ -26,32 +26,36 @@ package de.gematik.demis.nrs.service.lookup;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import de.gematik.demis.nrs.rules.model.Rule;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-@Slf4j
-@Service
-class CsvReader {
+/** A deserializer that will set the key of the map as id on a {@link Rule} */
+public class RuleMapDeserializer extends JsonDeserializer<Map<String, Rule>> {
+  @Override
+  public Map<String, Rule> deserialize(JsonParser p, DeserializationContext ctxt)
+      throws IOException {
+    Map<String, Rule> ruleMap = new HashMap<>();
 
-  public static final String CSV_SEPARATOR = ",";
-  private static final Charset CSV_CHARSET =
-      StandardCharsets.ISO_8859_1; // TODO sollte eigentlich UTF_8 sein!!!!
-
-  public Map<String, String> readKeyValueFile(final Path path) throws IOException {
-    try (final Stream<String> lines = Files.lines(path, CSV_CHARSET)) {
-      return lines
-          .map(line -> line.split(CSV_SEPARATOR, 2))
-          .filter(cols -> cols.length == 2)
-          // TODO duplicate keys ignorieren???
-          .collect(Collectors.toUnmodifiableMap(cols -> cols[0], cols -> cols[1]));
+    if (p.currentToken() != JsonToken.START_OBJECT) {
+      p.nextToken();
     }
+
+    while (p.nextToken() != JsonToken.END_OBJECT) {
+      String ruleId = p.currentName();
+      p.nextToken(); // Move to the rule value
+
+      Rule rule = p.readValueAs(Rule.class);
+      rule = Rule.replaceRuleId(rule, ruleId); // Set the key as a property
+
+      ruleMap.put(ruleId, rule);
+    }
+
+    return ruleMap;
   }
 }

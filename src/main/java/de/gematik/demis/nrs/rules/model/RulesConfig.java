@@ -19,9 +19,18 @@ package de.gematik.demis.nrs.rules.model;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.gematik.demis.nrs.rules.ResultMapDeserializer;
+import de.gematik.demis.nrs.rules.RuleMapDeserializer;
 import java.util.Map;
 
-public record RulesConfig(Map<String, Rule> rules, Map<String, Result> results) {}
+public record RulesConfig(
+    @JsonDeserialize(using = RuleMapDeserializer.class) Map<String, Rule> rules,
+    @JsonDeserialize(using = ResultMapDeserializer.class) Map<String, Result> results) {}

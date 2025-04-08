@@ -19,6 +19,10 @@ package de.gematik.demis.nrs.rules.model;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
@@ -30,10 +34,21 @@ import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
 
 public record Rule(
+    String id,
     String description,
     String fhirPathExpression,
     Map<String, String> result,
     Map<String, String> followingRules) {
+
+  /** Copy the data from original but set the id to newId. */
+  public static Rule replaceRuleId(final Rule original, final String newId) {
+    return new Rule(
+        newId,
+        original.description(),
+        original.fhirPathExpression(),
+        original.result(),
+        original.followingRules());
+  }
 
   public boolean checkRule(IFhirPath fhirPath, Bundle bundle) {
     List<IBase> result = fhirPath.evaluate(bundle, fhirPathExpression, IBase.class);

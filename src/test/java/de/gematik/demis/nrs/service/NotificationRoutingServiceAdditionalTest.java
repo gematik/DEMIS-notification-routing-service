@@ -19,6 +19,10 @@ package de.gematik.demis.nrs.service;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
@@ -88,6 +92,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -121,6 +126,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -172,6 +178,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -237,6 +244,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -277,6 +285,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -315,6 +324,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -360,6 +370,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",
@@ -417,6 +428,7 @@ class NotificationRoutingServiceAdditionalTest {
     Optional<Result> optResult =
         Optional.of(
             new Result(
+                "123",
                 "some description",
                 routeListe,
                 "laboratory",

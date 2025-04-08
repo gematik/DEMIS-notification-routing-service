@@ -19,6 +19,10 @@ package de.gematik.demis.nrs.rules;
  * In case of changes by gematik find details in the "Readme" file.
  *
  * See the Licence for the specific language governing permissions and limitations under the Licence.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  * #L%
  */
 
@@ -39,13 +43,27 @@ public class CustomEvaluationContext implements IFhirPathEvaluationContext {
 
   @Override
   public IBase resolveReference(@Nonnull IIdType theReference, @Nullable IBase theContext) {
+    String referenceValue = theReference.getValue(); // Full reference value
+    String referenceIdPart = theReference.getIdPart(); // Just the ID part (e.g., "123456")
+
     for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
-      if (entry.getResource().getIdElement().getIdPart().equals(theReference.getIdPart())) {
+      // Check if the fullUrl matches
+      if (referenceValue.equals(entry.getFullUrl())) {
+        return entry.getResource();
+      }
+
+      // Check if the resource type and ID match
+      if (entry.getResource().getIdElement().getIdPart().equals(referenceIdPart)
+          && entry
+              .getResource()
+              .getResourceType()
+              .toString()
+              .equals(theReference.getResourceType())) {
         return entry.getResource();
       }
     }
 
     throw new UnsupportedOperationException(
-        "Reference resolution not supported for: " + theReference.getValue());
+        "Reference resolution not supported for: " + referenceValue);
   }
 }

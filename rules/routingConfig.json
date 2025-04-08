@@ -12,12 +12,20 @@
     "laboratory": {
       "description": "laboratory rule. decision between §7.3 or another laboratory result",
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNonNominal' or Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryAnonymous'",
-      "result": {
-        "conditionFulfilled": "laboratory_notification7_3"
-      },
+      "result": {},
       "followingRules": {
+        "conditionFulfilled": "detect_laboratory_7_3",
         "conditionNotMet": "notified_person"
       }
+    },
+    "detect_laboratory_7_3": {
+      "description": "narrow down the type of 7.3 notification",
+      "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryAnonymous'",
+      "result": {
+        "conditionFulfilled": "laboratory_notification7_3_anonymous",
+        "conditionNotMet": "laboratory_notification7_3"
+      },
+      "followingRules": {}
     },
     "notified_person": {
       "description": "this rule applies to §7.1 and §7.4 cases. we need to distinguish between these two cases.",
@@ -64,6 +72,20 @@
       "type": "laboratory",
       "notificationCategory": "7.3",
       "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_original", "encryption"]
+        }
+      ]
+    },
+    "laboratory_notification7_3_anonymous": {
+      "description": "if this case is active the notification is a §7.3 anonymous case. it should only be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.3",
+      "bundleActions": [{"type": "no_action", "optional":  false}],
       "routesTo": [
         {
           "type": "specific_receiver",
