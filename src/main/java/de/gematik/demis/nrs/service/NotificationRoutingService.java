@@ -34,13 +34,11 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.TEST_DEPARTMENT;
 import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_OPTIONAL_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_RESULT_FOR_RULE_EVALUATION;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE;
-import static java.util.Collections.singletonList;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
@@ -55,7 +53,6 @@ import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.service.base.error.ServiceException;
-import jakarta.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -63,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
@@ -93,8 +91,17 @@ public class NotificationRoutingService {
     return getRoutingResult(routingInput);
   }
 
+  /**
+   * Use rule-based routing to determine the routing result.
+   *
+   * @param fhirBundleAsString The bundle to route.
+   * @param isTestNotification true if this is a test notification
+   * @param recipientForTestRouting the recipient in case of a test notification
+   */
   public RuleBasedRouteDTO determineRuleBasedRouting(
-      final String fhirBundleAsString, boolean isTestUser, String sender) {
+      final String fhirBundleAsString,
+      final boolean isTestNotification,
+      final String recipientForTestRouting) {
     RuleBasedRouteDTO returnDTO;
     final Bundle bundle = fhirReader.toBundle(fhirBundleAsString);
     final Optional<Result> optResult = rulesService.evaluateRules(bundle);
@@ -114,20 +121,19 @@ public class NotificationRoutingService {
       returnDTO = handleSpecificReceiver(result);
     }
 
-    if (isTestUser) {
-      // alter the receiver id to the test user id
-      Route testDepartmentReceiver =
-          new Route(TEST_DEPARTMENT, sender, singletonList("encryption"), false);
-      Route rkiDepartmentReceiver =
-          new Route(SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false);
+    if (isTestNotification) {
+      final List<Route> rewrittenRoutes =
+          returnDTO.routes().stream()
+              .map(r -> r.copyWithReceiver(recipientForTestRouting))
+              .toList();
       returnDTO =
           new RuleBasedRouteDTO(
               returnDTO.type(),
               returnDTO.notificationCategory(),
               returnDTO.bundleActions(),
-              List.of(testDepartmentReceiver, rkiDepartmentReceiver),
+              rewrittenRoutes,
               returnDTO.healthOffices(),
-              sender);
+              returnDTO.responsible());
     }
     return returnDTO;
   }

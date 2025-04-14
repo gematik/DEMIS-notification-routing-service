@@ -29,6 +29,8 @@ package de.gematik.demis.nrs.rules.model;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @param type can be responsible_health_office or specific_receiver
@@ -38,14 +40,17 @@ import java.util.function.Predicate;
  *     to an exception
  */
 public record Route(
-    RulesResultTypeEnum type, String specificReceiverId, List<String> actions, boolean optional) {
+    @Nonnull RulesResultTypeEnum type,
+    @Nullable String specificReceiverId,
+    @Nonnull List<String> actions,
+    boolean optional) {
 
   /** Match any Route with the given type */
   public static Predicate<Route> hasType(final RulesResultTypeEnum type) {
     return (route -> route.type().equals(type));
   }
 
-  /** Match any reoute where the receiverId is null */
+  /** Match any route where the receiverId is null */
   public static Predicate<Route> receiverIsNull() {
     return (route -> Objects.isNull(route.specificReceiverId()));
   }
