@@ -2,6 +2,16 @@
  
 # Release notes
 
+## Release 2.2.2
+- Updated ospo-resources for adding additional notes and disclaimer
+
+## Release 2.2.1
+- Add service API documentation 
+- Splitting §7.3 notifications into anonymous and regular
+
+## Release 2.2.0
+- Add support for §7.3 notifications (optional bundle actions)
+
 ## Release 2.1.0
 ### changed
 - First official GitHub-Release

@@ -266,7 +266,7 @@ class NotificationRoutingServiceAdditionalTest {
     RuleBasedRouteDTO ruleBasedRouteDTO =
         notificationRoutingService.determineRuleBasedRouting(fhirNotification, true, "testerId");
 
-    assertThat(ruleBasedRouteDTO.responsible()).isEqualTo("testerId");
+    assertThat(ruleBasedRouteDTO.responsible()).isEqualTo("1.0.1");
   }
 
   @Test

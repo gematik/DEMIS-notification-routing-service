@@ -33,6 +33,8 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRI
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
 import static de.gematik.demis.nrs.api.dto.BundleActionType.*;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.TEST_DEPARTMENT;
 import static java.util.Arrays.asList;
@@ -41,6 +43,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.answer;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
@@ -145,7 +148,7 @@ class NotificationRoutingServiceTest {
     final RoutingOutput expectedRoutingOutput =
         new RoutingOutput(expectedHealthOffices, expectedHealthOffices.get(responsibleAddress));
 
-    when(addressToHealthOfficeLookup.lookup(Mockito.any()))
+    when(addressToHealthOfficeLookup.lookup(any()))
         .then(
             answer(
                 (AddressDTO address) ->
@@ -183,16 +186,16 @@ class NotificationRoutingServiceTest {
     final RoutingInput routingInput = new RoutingInput(addresses);
     // mock Services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
-    when(fhirReader.getRoutingInput(Mockito.any(Bundle.class))).thenReturn(routingInput);
+    when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
     // check with and without routing output
     for (int idx = 0; idx < 2; idx++) {
       final boolean withRoutingOutput = (idx != 0);
       Triple<Result, Map<AddressDTO, String>, RuleBasedRouteDTO> testData =
           generateTestData(
               withRoutingOutput, addresses, addressesWithHealthOffice, responsibleAddress, false);
-      when(ruleService.evaluateRules(Mockito.any(Bundle.class)))
+      when(ruleService.evaluateRules(any(Bundle.class)))
           .thenReturn(Optional.of(testData.getLeft()));
-      when(addressToHealthOfficeLookup.lookup(Mockito.any()))
+      when(addressToHealthOfficeLookup.lookup(any()))
           .then(
               answer(
                   (AddressDTO address) -> Optional.ofNullable(testData.getMiddle().get(address))));
@@ -205,41 +208,37 @@ class NotificationRoutingServiceTest {
     }
   }
 
-  @ParameterizedTest
-  @MethodSource("testArguments")
-  void determineRuleBasedRoutingDeliverCorrectDataForTestUser(
-      final Set<AddressOriginEnum> addressesWithHealthOffice,
-      final AddressOriginEnum responsibleAddress) {
-    // GIVEN routing input with addresses
-    final Map<AddressOriginEnum, AddressDTO> addresses =
-        Arrays.stream(AddressOriginEnum.values())
-            .collect(
-                Collectors.toMap(
-                    Function.identity(), type -> createAddress(String.valueOf(type.ordinal()))));
-    final RoutingInput routingInput = new RoutingInput(addresses);
-    // mock Services
-    when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
-    when(fhirReader.getRoutingInput(Mockito.any(Bundle.class))).thenReturn(routingInput);
-    // check with and without routing output
-    for (int idx = 0; idx < 2; idx++) {
-      final boolean withRoutingOutput = (idx != 0);
-      Triple<Result, Map<AddressDTO, String>, RuleBasedRouteDTO> testData =
-          generateTestData(
-              withRoutingOutput, addresses, addressesWithHealthOffice, responsibleAddress, true);
-      when(ruleService.evaluateRules(Mockito.any(Bundle.class)))
-          .thenReturn(Optional.of(testData.getLeft()));
-      when(addressToHealthOfficeLookup.lookup(Mockito.any()))
-          .then(
-              answer(
-                  (AddressDTO address) -> Optional.ofNullable(testData.getMiddle().get(address))));
+  @Test
+  void thatRuleBasedRoutingReplacesRecipientsWithTestUser() {
+    final RoutingInput routingInput =
+        new RoutingInput(
+            Map.of(NOTIFIED_PERSON_PRIMARY, new AddressDTO("Str", "1", "12071", "Berlin", "DE")));
 
-      // WHEN calling rule based routing with fhir message
-      final RuleBasedRouteDTO routingOutput =
-          underTest.determineRuleBasedRouting("", true, SOME_SENDER_ID);
+    final Result originalResult =
+        new Result(
+            "any",
+            "a placeholder result",
+            List.of(
+                new Route(RESPONSIBLE_HEALTH_OFFICE, "rewrite-1", List.of("no_action"), false),
+                new Route(
+                    RESPONSIBLE_HEALTH_OFFICE_SORMAS, "rewrite-2", List.of("no_action"), false),
+                new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of("no_action"), false)),
+            "any",
+            "any",
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
 
-      // THEN output is equals expected output
-      assertThat(routingOutput).isEqualTo(testData.getRight());
-    }
+    // this is just here to avoid an NPE
+    when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
+    // we care about rewriting these
+    when(ruleService.evaluateRules(any())).thenReturn(Optional.of(originalResult));
+
+    final RuleBasedRouteDTO ruleBasedRouteDTO = underTest.determineRuleBasedRouting("", true, "1.");
+    assertThat(ruleBasedRouteDTO.routes()).hasSize(3);
+    assertThat(ruleBasedRouteDTO.routes())
+        .extracting("type")
+        .containsExactlyInAnyOrder(
+            RESPONSIBLE_HEALTH_OFFICE, RESPONSIBLE_HEALTH_OFFICE_SORMAS, SPECIFIC_RECEIVER);
+    assertThat(ruleBasedRouteDTO.routes()).extracting("specificReceiverId").containsOnly("1.");
   }
 
   private Triple<Result, Map<AddressDTO, String>, RuleBasedRouteDTO> generateTestData(
@@ -329,7 +328,7 @@ class NotificationRoutingServiceTest {
   void determineRuleBasedRoutingFailOnEmptyRuleEvaluation() {
     // mock Services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
-    when(ruleService.evaluateRules(Mockito.any(Bundle.class))).thenReturn(Optional.empty());
+    when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.empty());
 
     // WHEN calling with serialized bundle, THEN fails for no results by rule
     assertThatThrownBy(() -> underTest.determineRuleBasedRouting("", false, ""))
@@ -352,7 +351,7 @@ class NotificationRoutingServiceTest {
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
-    when(ruleService.evaluateRules(Mockito.any(Bundle.class))).thenReturn(Optional.of(result));
+    when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
 
     // WHEN calling with serialized bundle, THEN fails by misconfiguration of specific receiver id
     // for type specific receiver
@@ -389,9 +388,9 @@ class NotificationRoutingServiceTest {
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
     when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
-    when(fhirReader.getRoutingInput(Mockito.any(Bundle.class))).thenReturn(routingInput);
-    when(ruleService.evaluateRules(Mockito.any(Bundle.class))).thenReturn(Optional.of(result));
-    when(addressToHealthOfficeLookup.lookup(Mockito.any())).thenReturn(Optional.empty());
+    when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
+    when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
+    when(addressToHealthOfficeLookup.lookup(any())).thenReturn(Optional.empty());
 
     // WHEN calling with serialized bundle, THEN fails for no health office found on lookup
     RuleBasedRouteDTO ruleBasedRouteDTO = underTest.determineRuleBasedRouting("", false, "");
