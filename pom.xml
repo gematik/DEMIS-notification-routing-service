@@ -4,11 +4,11 @@
   <parent>
     <groupId>de.gematik.demis</groupId>
     <artifactId>spring-parent</artifactId>
-    <version>2.8.0</version>
+    <version>2.9.0</version>
     <relativePath></relativePath><!-- lookup parent from repository -->
   </parent>
   <artifactId>notification-routing-service</artifactId>
-  <version>2.2.2-SNAPSHOT</version>
+  <version>2.2.3-SNAPSHOT</version>
   <name>notification-routing-service</name>
   <packaging>jar</packaging>
   <description>Notification Routing Service</description>
@@ -22,10 +22,10 @@
     <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <demis.fhir-parser-library.version>2.2.7</demis.fhir-parser-library.version>
-    <demis.notification-builder-library.version>5.2.0</demis.notification-builder-library.version>
-    <ucum.version>1.0.9</ucum.version>
-    <guava.version>33.4.0-jre</guava.version>
+    <demis.fhir-parser-library.version>2.4.1</demis.fhir-parser-library.version>
+    <demis.notification-builder-library.version>5.7.0</demis.notification-builder-library.version>
+    <ucum.version>1.0.10</ucum.version>
+    <guava.version>33.4.8-jre</guava.version>
   </properties>
   <dependencyManagement><!-- Version Pinning from HAPI FHIR Parent Pom - DO NOT UPGRADE Automatically -->
     <dependencies>
@@ -37,12 +37,12 @@
       <dependency>
         <artifactId>org.hl7.fhir.utilities</artifactId>
         <groupId>ca.uhn.hapi.fhir</groupId>
-        <version>6.5.15</version>
+        <version>${hl7.version}</version>
       </dependency>
       <dependency>
         <artifactId>org.hl7.fhir.r4</artifactId>
         <groupId>ca.uhn.hapi.fhir</groupId>
-        <version>6.4.0</version>
+        <version>${hl7.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

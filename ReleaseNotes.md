@@ -2,8 +2,15 @@
  
 # Release notes
 
+## Release 2.2.3
+- Fixed minor issues when faulty FHIR requests are received
+- Updated dependencies
+
 ## Release 2.2.2
-- Updated ospo-resources for adding additional notes and disclaimer
+- Updated OSPO-resources for adding additional notes and disclaimer
+- setting new resources in helm chart
+- setting new timeouts and retries in helm chart
+- updating dependencies
 
 ## Release 2.2.1
 - Add service API documentation 

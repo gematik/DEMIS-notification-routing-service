@@ -1,6 +1,20 @@
 spring:
     config:
         import: classpath:/base-config-application.yaml
+    # Enable Spring Virtual Threads
+    threads:
+        virtual:
+            enabled: true
+
+base:
+    errorhandler:
+        enabled: true
+    logging:
+        request:
+            enabled: true
+    meter:
+        aspect:
+            enabled: true
 
 info:
     app:

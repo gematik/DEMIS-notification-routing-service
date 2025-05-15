@@ -70,7 +70,7 @@ class NrsIntegrationTest {
         .andExpect(
             content()
                 .json(
-                    """
+"""
                 {"healthOffices": {
                      "NOTIFIED_PERSON_PRIMARY":"1.10",
                      "NOTIFIED_PERSON_ORDINARY":"3.14",
@@ -94,7 +94,7 @@ class NrsIntegrationTest {
         .andExpect(
             content()
                 .json(
-                    """
+"""
                 {"healthOffices": {
                      "NOTIFIED_PERSON_PRIMARY":"1.17",
                      "NOTIFIED_PERSON_CURRENT":"5.6.7",

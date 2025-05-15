@@ -37,5 +37,5 @@ public final class ExceptionMessages {
   public static final String LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED =
       "NRS-004: handling of rule result type '%s' is not supported.";
   public static final String NO_OPTIONAL_HEALTH_OFFICE_FOUND =
-      "NRS-005:No health office found for optional route with type '%s'";
+      "NRS-005: No health office found for optional route with type '%s'";
 }

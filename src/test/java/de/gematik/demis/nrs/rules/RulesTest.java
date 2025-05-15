@@ -59,7 +59,7 @@ import org.springframework.boot.test.context.SpringBootTest;
     useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     properties = "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup")
-public class RulesTest {
+class RulesTest {
   @Autowired private RulesConfig config;
 
   @Autowired private FhirContext fhirContext;
@@ -128,8 +128,10 @@ public class RulesTest {
                                 DemisConstants.CODE_SYSTEM_NOTIFICATION_CATEGORY,
                                 pathogenCode,
                                 ""))));
+    disease.setId("Condition/123");
     final Composition diagnosticReport =
         new NotificationDiseaseDataBuilder().setDefaults().setDisease(disease).build();
+    diagnosticReport.setId("DiagnosticReport/123");
     final Bundle build =
         new NonNominalBundleBuilder()
             .setDefaults()

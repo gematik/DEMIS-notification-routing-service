@@ -37,6 +37,10 @@ import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_H
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.TEST_DEPARTMENT;
+import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
+import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
+import static de.gematik.demis.nrs.service.ExceptionMessages.NO_RESULT_FOR_RULE_EVALUATION;
+import static de.gematik.demis.nrs.service.ExceptionMessages.NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -44,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.answer;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
@@ -60,6 +65,8 @@ import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -185,7 +192,7 @@ class NotificationRoutingServiceTest {
                     Function.identity(), type -> createAddress(String.valueOf(type.ordinal()))));
     final RoutingInput routingInput = new RoutingInput(addresses);
     // mock Services
-    when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
     // check with and without routing output
     for (int idx = 0; idx < 2; idx++) {
@@ -327,13 +334,13 @@ class NotificationRoutingServiceTest {
   @Test
   void determineRuleBasedRoutingFailOnEmptyRuleEvaluation() {
     // mock Services
-    when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.empty());
 
     // WHEN calling with serialized bundle, THEN fails for no results by rule
     assertThatThrownBy(() -> underTest.determineRuleBasedRouting("", false, ""))
         .isInstanceOf(ServiceException.class)
-        .hasMessageStartingWith(ExceptionMessages.NO_RESULT_FOR_RULE_EVALUATION, (Object) null);
+        .hasMessageStartingWith(NO_RESULT_FOR_RULE_EVALUATION, (Object) null);
   }
 
   @Test
@@ -350,7 +357,7 @@ class NotificationRoutingServiceTest {
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
-    when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
 
     // WHEN calling with serialized bundle, THEN fails by misconfiguration of specific receiver id
@@ -359,7 +366,7 @@ class NotificationRoutingServiceTest {
         .isInstanceOf(ServiceException.class)
         .hasMessageStartingWith(
             String.format(
-                ExceptionMessages.NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE,
+                NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE,
                 RulesResultTypeEnum.SPECIFIC_RECEIVER.getCode()));
   }
 
@@ -387,7 +394,7 @@ class NotificationRoutingServiceTest {
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
     // mock services
-    when(fhirReader.toBundle(Mockito.anyString())).thenReturn(new Bundle());
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
     when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
     when(addressToHealthOfficeLookup.lookup(any())).thenReturn(Optional.empty());
@@ -404,5 +411,153 @@ class NotificationRoutingServiceTest {
             null,
             null);
     assertThat(ruleBasedRouteDTO).isEqualTo(expectedRuleBasedRouteDTO);
+  }
+
+  @Test
+  void determineRuleBasedRoutingThrowsExceptionWhenNoResultFromRules() {
+    // Mock no result from rules service
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
+    when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.empty());
+
+    // Assert the exception
+    assertThatThrownBy(() -> underTest.determineRuleBasedRouting("", false, ""))
+        .isInstanceOf(ServiceException.class)
+        .hasMessageContaining(String.format(NO_RESULT_FOR_RULE_EVALUATION, "null"));
+  }
+
+  @Test
+  void lookupSpecificReceiverIdThrowsForUnsupportedRuleResultType() throws Exception {
+    // Get private method
+    Method lookupMethod =
+        NotificationRoutingService.class.getDeclaredMethod(
+            "lookupSpecificReceiverId", Route.class, RoutingInput.class);
+    lookupMethod.setAccessible(true);
+
+    // Create Route with unsupported type
+    Route route = new Route(TEST_DEPARTMENT, null, List.of(), false);
+    RoutingInput input = new RoutingInput(Map.of());
+
+    // Verify exception is thrown
+    assertThatThrownBy(() -> lookupMethod.invoke(underTest, route, input))
+        .hasCauseInstanceOf(ServiceException.class)
+        .cause()
+        .hasMessageContaining(
+            String.format(LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED, TEST_DEPARTMENT.getCode()));
+  }
+
+  @Test
+  void lookupSpecificReceiverIdThrowsForNonOptionalRouteWithMissingHealthOffice() throws Exception {
+    // Get private method
+    Method lookupMethod =
+        NotificationRoutingService.class.getDeclaredMethod(
+            "lookupSpecificReceiverId", Route.class, RoutingInput.class);
+    lookupMethod.setAccessible(true);
+
+    // Create non-optional Route
+    Route route = new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(), false);
+    RoutingInput input = new RoutingInput(Map.of());
+
+    // Verify exception is thrown
+    assertThatThrownBy(() -> lookupMethod.invoke(underTest, route, input))
+        .hasCauseInstanceOf(ServiceException.class)
+        .cause()
+        .hasMessageContaining(NO_HEALTH_OFFICE_FOUND);
+  }
+
+  @Test
+  void completeRoutingDataThrowsForSpecificReceiverWithoutId() throws Exception {
+    // Get private method
+    Method completeMethod =
+        NotificationRoutingService.class.getDeclaredMethod(
+            "completeRoutingData", List.class, RoutingInput.class);
+    completeMethod.setAccessible(true);
+
+    // Create Route with null ID
+    List<Route> routes = List.of(new Route(SPECIFIC_RECEIVER, null, List.of(), false));
+    RoutingInput input = new RoutingInput(Map.of());
+
+    // Verify exception is thrown
+    assertThatThrownBy(() -> completeMethod.invoke(underTest, routes, input))
+        .hasCauseInstanceOf(ServiceException.class)
+        .cause()
+        .hasMessageContaining(
+            String.format(
+                NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE, "specific_receiver"));
+  }
+
+  @Test
+  void handleSpecificReceiverThrowsExceptionWhenRoutesToIsEmpty() throws Exception {
+    // Get private method
+    Method handleSpecificReceiverMethod =
+        NotificationRoutingService.class.getDeclaredMethod("handleSpecificReceiver", Result.class);
+    handleSpecificReceiverMethod.setAccessible(true);
+
+    // Create Result with empty routes list
+    Result result =
+        new Result(
+            "123",
+            "test",
+            List.of() /* empty routes */,
+            "laboratory",
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+
+    // Verify exception is thrown with correct message
+    assertThatThrownBy(() -> handleSpecificReceiverMethod.invoke(underTest, result))
+        .hasCauseInstanceOf(ServiceException.class)
+        .extracting(throwable -> ((InvocationTargetException) throwable).getTargetException())
+        .isInstanceOf(ServiceException.class);
+  }
+
+  @Test
+  void handleHealthOfficeResponsibleReturnsWithNullsWhenNoResponsibleHealthOffice()
+      throws Exception {
+    // Get private method
+    Method handleHealthOfficeResponsibleMethod =
+        NotificationRoutingService.class.getDeclaredMethod(
+            "handleHealthOfficeResponsible", Bundle.class, Result.class);
+    handleHealthOfficeResponsibleMethod.setAccessible(true);
+
+    // Create Bundle and Result with routes that don't have RESPONSIBLE_HEALTH_OFFICE
+    Bundle bundle = new Bundle();
+    Result result =
+        new Result(
+            "123",
+            "test",
+            List.of(new Route(SPECIFIC_RECEIVER, "receiver-id", List.of("encrypt"), false)),
+            "laboratory",
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+
+    // Mock required behavior
+    when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(new RoutingInput(Map.of()));
+
+    // Invoke private method
+    RuleBasedRouteDTO output =
+        (RuleBasedRouteDTO) handleHealthOfficeResponsibleMethod.invoke(underTest, bundle, result);
+
+    // Verify null values in output
+    assertThat(output.healthOffices()).isNull();
+    assertThat(output.responsible()).isNull();
+  }
+
+  @Test
+  void lookupSpecificReceiverIdThrowsForUnsupportedType() throws Exception {
+    // Get private method
+    Method lookupMethod =
+        NotificationRoutingService.class.getDeclaredMethod(
+            "lookupSpecificReceiverId", Route.class, RoutingInput.class);
+    lookupMethod.setAccessible(true);
+
+    // Create Route with unsupported type (neither RESPONSIBLE_HEALTH_OFFICE nor
+    // RESPONSIBLE_HEALTH_OFFICE_SORMAS)
+    Route route = new Route(RulesResultTypeEnum.TEST_DEPARTMENT, "test-id", List.of(), false);
+    RoutingInput input = new RoutingInput(Map.of());
+
+    // Verify exception is thrown with correct message about unsupported type
+    assertThatThrownBy(() -> lookupMethod.invoke(underTest, route, input))
+        .hasCauseInstanceOf(ServiceException.class)
+        .extracting(throwable -> ((InvocationTargetException) throwable).getTargetException())
+        .isInstanceOf(ServiceException.class);
   }
 }
