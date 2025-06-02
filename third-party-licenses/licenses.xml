@@ -314,13 +314,13 @@
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>72.1</version>
+      <version>77.1</version>
       <licenses>
         <license>
-          <name>Unicode/ICU License</name>
-          <url>https://raw.githubusercontent.com/unicode-org/icu/main/icu4c/LICENSE</url>
+          <name>Unicode-3.0</name>
+          <url>https://raw.githubusercontent.com/unicode-org/icu/maint/maint-77/LICENSE</url>
           <distribution>repo</distribution>
-          <file>unicode_icu license - license.txt</file>
+          <file>unicode-3.0 - license.txt</file>
         </license>
       </licenses>
     </dependency>
@@ -930,6 +930,19 @@
           <distribution>repo</distribution>
           <file>the apache software license, version 2.0 - license-2.0.txt</file>
           <comments>All files under Apache 2</comments>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.14.0</version>
+      <licenses>
+        <license>
+          <name>Apache-2.0</name>
+          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+          <file>apache software license 2.0 - license-2.0.txt</file>
         </license>
       </licenses>
     </dependency>

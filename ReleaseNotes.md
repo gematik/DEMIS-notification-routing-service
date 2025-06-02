@@ -2,6 +2,9 @@
  
 # Release notes
 
+## Release 2.3.0
+- Preview for fuzzy search algorithm to lookup health offices
+
 ## Release 2.2.3
 - Fixed minor issues when faulty FHIR requests are received
 - Updated dependencies

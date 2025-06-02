@@ -31,6 +31,7 @@ import static de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup.Lo
 import static de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup.LookupStatus.NOT_FOUND;
 import static de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup.LookupStatus.UNIQUE_MATCH;
 import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.CITY;
+import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.CITY_STREET;
 import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.FALLBACK_POSTALCODE;
 import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.FALLBACK_POSTALCODE_CITY;
 import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.POSTALCODE;
@@ -60,11 +61,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(
     classes = NotificationRoutingApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    properties = {
-      "feature.flag.fuzzy.search=true",
-      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup"
-    })
-class AddressToHealthOfficeLookupIntegrationTest {
+    properties = "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup")
+class AddressToHealthOfficeLookupLegacyIntegrationTest {
 
   @Autowired AddressToHealthOfficeLookup underTest;
 
@@ -126,7 +124,44 @@ class AddressToHealthOfficeLookupIntegrationTest {
                 POSTALCODE_CITY_STREET,
                 NOT_FOUND,
                 FALLBACK_POSTALCODE_CITY,
-                UNIQUE_MATCH)));
+                UNIQUE_MATCH)),
+        Arguments.of(
+            createAddress("99999", "Bergisch Gladbach", "Egal"),
+            "1.13",
+            Map.of(POSTALCODE, NOT_FOUND, CITY, UNIQUE_MATCH)),
+        Arguments.of(
+            createAddress(null, "Bergisch Gladbach", null),
+            "1.13",
+            Map.of(POSTALCODE, DETAIL_NOT_PROVIDED, CITY, UNIQUE_MATCH)),
+        Arguments.of(
+            createAddress(null, "Unbekannt", "Egal"),
+            null,
+            Map.of(POSTALCODE, DETAIL_NOT_PROVIDED, CITY, NOT_FOUND)),
+        Arguments.of(
+            createAddress(null, "Köln", "Deutzerstr."),
+            "9.1.3",
+            Map.of(
+                POSTALCODE,
+                DETAIL_NOT_PROVIDED,
+                CITY,
+                MULTIPLE_MATCHES,
+                CITY_STREET,
+                UNIQUE_MATCH)),
+        Arguments.of(
+            createAddress(null, "Köln", "Heumarkt"),
+            "9.1.4",
+            Map.of(
+                POSTALCODE,
+                DETAIL_NOT_PROVIDED,
+                CITY,
+                MULTIPLE_MATCHES,
+                CITY_STREET,
+                UNIQUE_MATCH)),
+        Arguments.of(
+            createAddress(null, "Köln", "Ohne-Zustaendigkeit"),
+            null,
+            Map.of(
+                POSTALCODE, DETAIL_NOT_PROVIDED, CITY, MULTIPLE_MATCHES, CITY_STREET, NOT_FOUND)));
   }
 
   private static AddressDTO createAddress(
@@ -152,7 +187,7 @@ class AddressToHealthOfficeLookupIntegrationTest {
       final Map<LookupMap, LookupStatus> lookupCounters) {
     final Optional<String> result = underTest.lookup(address);
     assertThat(result).isEqualTo(Optional.ofNullable(expected));
-    //    assertStatistic(lookupCounters);
+    assertStatistic(lookupCounters);
   }
 
   private void assertStatistic(final Map<LookupMap, LookupStatus> expectedLookupCounters) {

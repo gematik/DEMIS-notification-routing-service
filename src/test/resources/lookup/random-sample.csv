@@ -1,0 +1,5 @@
+# We are not allowed to include real world data due to licensing issues. The file is part of the .gitignore so we don't
+# accidentally publish that data. If you have access to the real world data, populate this file using `shuf`:
+#   shuf -n 100000 path/to/original-data.csv > random_sample.csv
+# We expect the following structure:
+zip;city;district;street;number;extension;healthOffice

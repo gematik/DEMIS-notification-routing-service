@@ -27,12 +27,15 @@ package de.gematik.demis.nrs.service.lookup;
  */
 
 import de.gematik.demis.nrs.config.NrsConfigProps;
+import de.gematik.demis.nrs.service.dto.LookupAddress;
 import de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap;
 import de.gematik.demis.service.base.apidoc.EnableDefaultApiSpecConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,8 +45,16 @@ import org.springframework.context.annotation.Configuration;
 @EnableDefaultApiSpecConfig
 class LookupMapsLoader {
 
-  @Bean
-  LookupMaps lookupMaps(final CsvReader csvReader, final NrsConfigProps props) throws IOException {
+  public final CsvReader csvReader;
+  public final NrsConfigProps props;
+  private final LookupMaps lookupMaps;
+  private final LookupTree lookupTree;
+
+  LookupMapsLoader(final CsvReader csvReader, final NrsConfigProps props) throws IOException {
+    this.csvReader = csvReader;
+    this.props = props;
+
+    final LookupTree.Builder builder = LookupTree.builder();
     final Path dataDirectory = Path.of(props.lookupDataDirectory());
     final Map<LookupMap, Map<String, String>> maps = new EnumMap<>(LookupMap.class);
     for (final LookupMap lookupMapType : LookupMap.values()) {
@@ -57,7 +68,55 @@ class LookupMapsLoader {
       }
       log.info("Loading {} from {} -> {} entries", lookupMapType.name(), path, map.size());
       maps.put(lookupMapType, map);
+      updateTree(lookupMapType, map, builder);
     }
-    return new LookupMaps(maps);
+
+    this.lookupMaps = new LookupMaps(maps);
+    this.lookupTree = builder.build();
+  }
+
+  @Bean
+  LookupMaps lookupMaps() {
+    return lookupMaps;
+  }
+
+  @Bean
+  LookupTree lookupTree() {
+    return lookupTree;
+  }
+
+  private void updateTree(
+      @Nonnull final LookupMap lookupMapType,
+      @Nonnull final Map<String, String> map,
+      @Nonnull final LookupTree.Builder builder) {
+    switch (lookupMapType) {
+      case POSTALCODE -> {
+        final Set<Map.Entry<String, String>> entries = map.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
+          final String healthOfficeId = entry.getValue();
+          if (!healthOfficeId.equals("many")) {
+            final String postalCode = entry.getKey();
+            builder.add(new LookupAddress(healthOfficeId, postalCode));
+          }
+        }
+      }
+      case FALLBACK_POSTALCODE,
+          FALLBACK_POSTALCODE_CITY,
+          FALLBACK_POSTALCODE_CITY_STREET,
+          POSTALCODE_CITY,
+          POSTALCODE_CITY_STREET,
+          POSTALCODE_CITY_STREET_NO -> {
+        final Set<Map.Entry<String, String>> entries = map.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
+          final String healthOfficeId = entry.getValue();
+          if (!healthOfficeId.equals("many")) {
+            final String value = entry.getKey();
+            final String[] split = value.split("_");
+            builder.add(new LookupAddress(healthOfficeId, split));
+          }
+        }
+      }
+      default -> log.info("Unsupported lookup map type '{}'", lookupMapType);
+    }
   }
 }

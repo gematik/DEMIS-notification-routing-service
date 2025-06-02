@@ -44,17 +44,30 @@ package de.gematik.demis.nrs.service.lookup;
 
 import static de.gematik.demis.nrs.service.lookup.CsvReader.CSV_SEPARATOR;
 
+import com.google.common.base.Strings;
 import de.gematik.demis.nrs.util.sis2.SIS2TransformationService;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import javax.annotation.Nonnull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
-class AddressNormalization {
+public class AddressNormalization {
 
   private static final char CSV_SEPARATOR_ESCAPE_CHAR = '-';
 
   private final SIS2TransformationService sis2TransformationService;
+  private final TransliterationService transliterationService;
+  private final boolean isNewSearchEnabled;
+
+  public AddressNormalization(
+      final SIS2TransformationService sis2TransformationService,
+      final TransliterationService transliterationService,
+      @Value("${feature.flag.search.fuzzy}") final boolean isNewSearchEnabled) {
+    this.sis2TransformationService = sis2TransformationService;
+    this.transliterationService = transliterationService;
+    this.isNewSearchEnabled = isNewSearchEnabled;
+  }
 
   private static String escapeCSVSeparator(String name) {
     return name.replace(CSV_SEPARATOR.charAt(0), CSV_SEPARATOR_ESCAPE_CHAR);
@@ -77,6 +90,11 @@ class AddressNormalization {
   }
 
   private String normalizeName(String cityName) {
+    if (isNewSearchEnabled) {
+      // cityName might be null, but the new service expects non-null values
+      return escapeCSVSeparator(
+          transliterationService.transliterate(Strings.nullToEmpty(cityName)));
+    }
     return escapeCSVSeparator(sis2TransformationService.transformAsString(cityName));
   }
 
@@ -94,5 +112,19 @@ class AddressNormalization {
 
   public String normalizeStreetNoExt(String streetNo) {
     return removeNull(normalizeNameNoSpace(streetNo));
+  }
+
+  /** Normalize all parts of the address and return a new object */
+  @Nonnull
+  public LookupTree.LookupRequest normalize(@Nonnull final LookupTree.LookupRequest address) {
+    final String city = Optional.ofNullable(address.city()).map(this::normalizeCity).orElse(null);
+    final String street =
+        Optional.ofNullable(address.street()).map(this::normalizeStreet).orElse(null);
+    final String no =
+        Optional.ofNullable(address.no()).map(this::normalizeStreetNoExt).orElse(null);
+    final String ext =
+        Optional.ofNullable(address.ext()).map(this::normalizeStreetNoExt).orElse(null);
+    return new LookupTree.LookupRequest(
+        normalizePostalCode(address.postalCode()), city, street, no, ext);
   }
 }

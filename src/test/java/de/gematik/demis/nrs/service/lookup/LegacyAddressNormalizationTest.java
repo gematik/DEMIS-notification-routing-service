@@ -1,8 +1,8 @@
-package de.gematik.demis.nrs;
+package de.gematik.demis.nrs.service.lookup;
 
 /*-
  * #%L
- * FHIR UI Data Model Translation Service
+ * notification-routing-service
  * %%
  * Copyright (C) 2025 gematik GmbH
  * %%
@@ -26,12 +26,35 @@ package de.gematik.demis.nrs;
  * #L%
  */
 
-import de.gematik.demis.AbstractOpenApiSpecDownloaderTest;
-import de.gematik.demis.nrs.service.lookup.LookupMaps;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@TestPropertySource(properties = {"nrs.lookup-data-directory=src/test/resources/lookup/maps"})
-class OpenApiSpecDownloaderTest extends AbstractOpenApiSpecDownloaderTest {
-  @MockitoBean LookupMaps lookupMaps;
+import de.gematik.demis.nrs.util.sis2.SIS2TransformationService;
+import org.junit.jupiter.api.Test;
+
+class LegacyAddressNormalizationTest {
+
+  private final AddressNormalization underTest =
+      new AddressNormalization(
+          new SIS2TransformationService(), new TransliterationService(), false);
+
+  @Test
+  void normalizePostalCode() {
+    final String postalCode = "12345";
+    assertEquals(postalCode, underTest.normalizePostalCode(postalCode));
+  }
+
+  @Test
+  void normalizeCity() {
+    assertEquals("KOELN", underTest.normalizeCity("Köln"));
+  }
+
+  @Test
+  void normalizeStreet() {
+    assertEquals("MEINEERSTESTRASSE", underTest.normalizeStreet("Meine erste Str."));
+  }
+
+  @Test
+  void normalizeStreetNoExt() {
+    assertEquals("15A", underTest.normalizeStreetNoExt("    15a    "));
+  }
 }
