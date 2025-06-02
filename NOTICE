@@ -15,6 +15,7 @@ See the Licence for the specific language governing permissions and limitations 
 This project includes:
   AOP alliance under Public Domain
   Apache Commons Codec under Apache-2.0
+  Apache Commons CSV under Apache-2.0
   Apache Commons IO under Apache-2.0
   Apache Commons Lang under Apache-2.0
   Apache Commons Text under Apache License, Version 2.0
@@ -42,7 +43,7 @@ This project includes:
   HAPI FHIR Structures - FHIR R4 under Apache Software License 2.0
   HdrHistogram under Public Domain, per Creative Commons CC0 or BSD-2-Clause
   Hibernate Validator Engine under Apache License 2.0
-  ICU4J under Unicode/ICU License
+  ICU4J under Unicode-3.0
   J2ObjC Annotations under Apache License, Version 2.0
   Jackson datatype: jdk8 under The Apache Software License, Version 2.0
   Jackson datatype: JSR310 under The Apache Software License, Version 2.0

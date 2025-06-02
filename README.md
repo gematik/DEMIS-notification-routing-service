@@ -107,9 +107,11 @@ helm install notification-routing-service ./deployment/helm/notification-routing
 
 The Spring application properties of the service.
 
-| Flag                             | Description                                                           | Default |
-|----------------------------------|-----------------------------------------------------------------------|---------|
-| feature.flag.notifications.7_3   | Set to true to return routing information suitable for 7.3 processing | false   |
+| Flag                           | Description                                                                                 | Default |
+|--------------------------------|---------------------------------------------------------------------------------------------|---------|
+| feature.flag.notifications.7_3 | Set to true to return routing information suitable for 7.3 processing                       | false   |
+| feature.flag.search.fuzzy      | Set to true to return lookup data from new fuzzy search algorithm                           | false   |
+| feature.flag.search.comparison | Set to true to compare new fuzzy search algorithm to old algorithm (will run new algorithm) | false   |
 
 
 ## Security Policy

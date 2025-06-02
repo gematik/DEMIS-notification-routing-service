@@ -27,15 +27,24 @@ package de.gematik.demis.nrs.service;
  */
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
+import de.gematik.demis.nrs.service.lookup.LookupTree;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class Statistics {
+  private static final String TIMER_LOOKUP = "health_office_lookup.timer";
+  private static final String TIMER_LOOKUP_LEVEL_TAG = "level";
+  private static final String TIMER_LOOKUP_STATUS_TAG = "status";
+  private static final String TIMER_LOOKUP_STATUS_FOUND = "found";
+  private static final String TIMER_LOOKUP_STATUS_NOT_FOUND = "not_found";
+
   private static final String TIMER_CSV_LOOKUP = "address_csv_lookup.timer";
   private static final String COUNTER_CSV_LOOKUP = "address_csv_lookup";
   private static final String COUNTER_CSV_LOOKUP_TAG_MAP = "map";
@@ -52,6 +61,12 @@ public class Statistics {
   private static final String COUNTER_RESPONSIBLE_TAG_ADDRESS_ORIGIN = "address_origin";
 
   private static final String COUNTER_NO_HEALTH_OFFICE_RESPONSIBLE = "no_health_office_responsible";
+  public static final String LOOKUP_COMPARISON = "lookup.comparison";
+  private static final String LOOKUP_COMPARISON_RESULT_TAG = "result";
+  public static final String LOOKUP_COMPARISON_RESULT_FUZZY_WINS = "fuzzy_wins";
+  public static final String LOOKUP_COMPARISON_RESULT_EXACT_WINS = "exact_wins";
+  public static final String LOOKUP_COMPARISON_RESULT_BOTH_DIFFER = "both_differ";
+  public static final String LOOKUP_COMPARISON_RESULT_IDENTICAL = "both_identical";
 
   private final MeterRegistry meterRegistry;
 
@@ -64,6 +79,24 @@ public class Statistics {
         .maximumExpectedValue(Duration.ofNanos(10_000))
         .register(meterRegistry)
         .record(duration);
+  }
+
+  public void recordLookup(
+      final Duration elapsed, final Optional<LookupTree.LookupResult> lookupResult) {
+    final Timer.Builder builder = Timer.builder(TIMER_LOOKUP);
+
+    if (lookupResult.isPresent()) {
+      final LookupTree.LookupResult result = lookupResult.get();
+      builder.tags(
+          TIMER_LOOKUP_LEVEL_TAG,
+          result.level().name(),
+          TIMER_LOOKUP_STATUS_TAG,
+          TIMER_LOOKUP_STATUS_FOUND);
+    } else {
+      builder.tags(TIMER_LOOKUP_STATUS_TAG, TIMER_LOOKUP_STATUS_NOT_FOUND);
+    }
+
+    builder.register(meterRegistry).record(elapsed);
   }
 
   public void incCsvLookup(final String mapName, final String lookupStatus) {
@@ -104,5 +137,12 @@ public class Statistics {
 
   public void incNoHealthOfficeResponsible() {
     meterRegistry.counter(COUNTER_NO_HEALTH_OFFICE_RESPONSIBLE).increment();
+  }
+
+  public void recordLookupComparison(
+      final boolean hasSameResult, @Nonnull final String lookupComparisonResultValue) {
+    meterRegistry
+        .summary(LOOKUP_COMPARISON, LOOKUP_COMPARISON_RESULT_TAG, lookupComparisonResultValue)
+        .record(hasSameResult ? 1 : 0);
   }
 }

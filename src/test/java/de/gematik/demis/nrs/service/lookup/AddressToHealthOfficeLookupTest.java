@@ -26,45 +26,26 @@ package de.gematik.demis.nrs.service.lookup;
  * #L%
  */
 
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.CITY;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.CITY_STREET;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.CITY_STREET_NO;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.FALLBACK_POSTALCODE;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.FALLBACK_POSTALCODE_CITY;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.FALLBACK_POSTALCODE_CITY_STREET;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.POSTALCODE;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.POSTALCODE_CITY;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.POSTALCODE_CITY_STREET;
-import static de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap.POSTALCODE_CITY_STREET_NO;
-import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.service.Statistics;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
-import de.gematik.demis.nrs.service.lookup.LookupMaps.LookupMap;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.AdditionalAnswers;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -75,134 +56,21 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AddressToHealthOfficeLookupTest {
 
-  private static final String MANY = "many";
   private static final String HEALTH_OFFICE = "1.12";
   private static final AddressDTO GERMAN_ADDRESS = new AddressBuilder().build();
 
   @Mock LookupMaps lookupMaps;
+  @Mock LookupTree lookupTree;
   @Mock AddressNormalization addressNormalization;
   @Mock Statistics statistics;
 
-  @InjectMocks AddressToHealthOfficeLookup underTest;
-
-  private static Stream<Arguments> matchParams() {
-    return Stream.of(
-        // iterative lookup postalCode based
-        Arguments.of(Map.of(POSTALCODE, LookupResultType.MATCH)),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET_NO, LookupResultType.MATCH))),
-
-        // Fallbacks
-
-        // POSTCODE -> iterative City Based Lookup
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET_NO, LookupResultType.MATCH))),
-
-        // Fallback Maps
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE_CITY, LookupResultType.MATCH))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET_NO, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE_CITY_STREET, LookupResultType.MATCH))));
-  }
-
-  private static Stream<Arguments> notFoundParams() {
-    return Stream.of(
-        // City based
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.NOT_FOUND))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET, LookupResultType.NOT_FOUND))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_FOUND),
-                entry(CITY, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET, LookupResultType.NOT_UNIQUE),
-                entry(CITY_STREET_NO, LookupResultType.NOT_FOUND))),
-
-        // Fallback Maps
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE, LookupResultType.NOT_FOUND))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE_CITY, LookupResultType.NOT_FOUND))),
-        Arguments.of(
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET, LookupResultType.NOT_UNIQUE),
-                entry(POSTALCODE_CITY_STREET_NO, LookupResultType.NOT_FOUND),
-                entry(FALLBACK_POSTALCODE_CITY_STREET, LookupResultType.NOT_FOUND))));
-  }
-
-  private static Stream<Arguments> addressDetailsNotProvidedParams() {
-    return Stream.of(
-        Arguments.of(
-            new AddressBuilder().setPostalCode(null).build(),
-            Map.of(CITY, LookupResultType.MATCH),
-            true),
-        Arguments.of(
-            new AddressBuilder().setPostalCode(null).setCity(null).build(), Map.of(), false),
-        Arguments.of(
-            new AddressBuilder().setCity("").build(),
-            Map.ofEntries(
-                entry(POSTALCODE, LookupResultType.NOT_UNIQUE),
-                entry(FALLBACK_POSTALCODE, LookupResultType.MATCH)),
-            true));
-  }
+  AddressToHealthOfficeLookup underTest;
 
   @BeforeEach
-  void setupAddressNormalization() {
+  void setup() {
+    underTest =
+        new AddressToHealthOfficeLookup(
+            lookupMaps, addressNormalization, lookupTree, statistics, true, true);
     when(addressNormalization.normalizePostalCode(anyString())).then(returnsFirstArg());
     when(addressNormalization.normalizeCity(anyString())).then(returnsFirstArg());
     when(addressNormalization.normalizeStreet(anyString())).then(returnsFirstArg());
@@ -212,7 +80,7 @@ class AddressToHealthOfficeLookupTest {
   @ParameterizedTest
   @ValueSource(strings = {"020422", "20421", "2042", "D", "DEUT", "DEUTSCHLAND", "FR"})
   @NullAndEmptySource
-  void notGerman(final String countryCode) {
+  void thatAddressesWithoutGermanCountryCodeAreNotLookedUp(final String countryCode) {
     final AddressDTO address = new AddressBuilder().setCountryCode(countryCode).build();
     final Optional<String> result = underTest.lookup(address);
     assertThat(result).isNotPresent();
@@ -222,102 +90,72 @@ class AddressToHealthOfficeLookupTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"20422", "DE", "de", "DEU", "deu", "dEu"})
-  void german(final String countryCode) {
+  void thatAddressesWithGermanCountryCodeAreLookedUp(final String countryCode) {
     final String postalCode = "12345";
     final AddressDTO address =
         new AddressBuilder().setCountryCode(countryCode).setPostalCode(postalCode).build();
-    setupLookupMaps(Map.of(POSTALCODE, LookupResultType.MATCH), address);
+    final LookupTree.LookupRequest from = LookupTree.LookupRequest.from(address);
+    when(lookupTree.lookupHealthOffice(from))
+        .thenReturn(
+            Optional.of(
+                new LookupTree.LookupResult(HEALTH_OFFICE, 0, LookupTree.Level.POSTAL_CODE)));
+    when(addressNormalization.normalize(from)).thenReturn(from);
     final Optional<String> result = underTest.lookup(address);
     assertThat(result).hasValue(HEALTH_OFFICE);
     Mockito.verify(statistics, Mockito.never()).incNotGermanAddress(any(Boolean.class));
   }
 
-  @ParameterizedTest
-  @MethodSource(value = "matchParams")
-  void match(final Map<LookupMap, LookupResultType> lookupValues) {
-    final AddressDTO address = GERMAN_ADDRESS;
-    setupLookupMaps(lookupValues, address);
-    final Optional<String> result = underTest.lookup(address);
-    assertThat(result).hasValue(HEALTH_OFFICE);
-  }
-
-  @ParameterizedTest
-  @MethodSource(value = "notFoundParams")
-  void notFound(final Map<LookupMap, LookupResultType> lookupValues) {
-    final AddressDTO address = GERMAN_ADDRESS;
-    setupLookupMaps(lookupValues, address);
-    final Optional<String> result = underTest.lookup(address);
+  @Test
+  void thatNotFoundReturnsEmptyResult() {
+    final Optional<String> result = underTest.lookup(GERMAN_ADDRESS);
     assertThat(result).isNotPresent();
   }
 
-  @ParameterizedTest
-  @MethodSource(value = "addressDetailsNotProvidedParams")
-  void addressDetailsNotProvided(
-      final AddressDTO address,
-      final Map<LookupMap, LookupResultType> lookupValues,
-      final boolean found) {
-    setupLookupMaps(lookupValues, address);
-    final Optional<String> result = underTest.lookup(address);
+  /**
+   * Tests that are only relevant while we have the legacy and fuzzy implementation running in
+   * parallel. Remove with the feature toggle.
+   */
+  @Nested
+  class AlgorithmComparison {
+    @Test
+    void thatEqualResultsAreRecognized() {
+      when(lookupTree.lookupHealthOffice(any())).thenReturn(Optional.empty());
+      underTest.lookup(GERMAN_ADDRESS);
+      verify(statistics)
+          .recordLookupComparison(true, Statistics.LOOKUP_COMPARISON_RESULT_IDENTICAL);
+    }
 
-    assertThat(result).isEqualTo(Optional.ofNullable(found ? HEALTH_OFFICE : null));
+    @Test
+    void thatDifferingResultsAreRecognized() {
+      when(lookupTree.lookupHealthOffice(any()))
+          .thenReturn(
+              Optional.of(new LookupTree.LookupResult("any", 0, LookupTree.Level.POSTAL_CODE)));
+      when(lookupMaps.getValue(any(), any())).thenReturn("other");
+      underTest.lookup(GERMAN_ADDRESS);
+      verify(statistics)
+          .recordLookupComparison(false, Statistics.LOOKUP_COMPARISON_RESULT_BOTH_DIFFER);
+    }
+
+    @Test
+    void thatFuzzyMatchIsRecognized() {
+      when(lookupTree.lookupHealthOffice(any()))
+          .thenReturn(
+              Optional.of(
+                  new LookupTree.LookupResult(HEALTH_OFFICE, 0, LookupTree.Level.POSTAL_CODE)));
+      underTest.lookup(GERMAN_ADDRESS);
+      verify(statistics)
+          .recordLookupComparison(false, Statistics.LOOKUP_COMPARISON_RESULT_FUZZY_WINS);
+    }
+
+    @Test
+    void thatExactMatchIsRecognized() {
+      when(lookupTree.lookupHealthOffice(any())).thenReturn(Optional.empty());
+      when(lookupMaps.getValue(any(), any())).thenReturn(HEALTH_OFFICE);
+      underTest.lookup(GERMAN_ADDRESS);
+      verify(statistics)
+          .recordLookupComparison(false, Statistics.LOOKUP_COMPARISON_RESULT_EXACT_WINS);
+    }
   }
-
-  private String[] buildKey(final LookupMap mapType, final AddressDTO address) {
-    final var allKeyParts =
-        Arrays.asList(address.postalCode(), address.city(), address.street(), address.no());
-    final var result =
-        switch (mapType) {
-          case POSTALCODE, FALLBACK_POSTALCODE -> allKeyParts.subList(0, 1);
-          case POSTALCODE_CITY, FALLBACK_POSTALCODE_CITY -> allKeyParts.subList(0, 2);
-          case POSTALCODE_CITY_STREET, FALLBACK_POSTALCODE_CITY_STREET -> allKeyParts.subList(0, 3);
-          case POSTALCODE_CITY_STREET_NO -> allKeyParts.subList(0, 4);
-          case CITY -> allKeyParts.subList(1, 2);
-          case CITY_STREET -> allKeyParts.subList(1, 3);
-          case CITY_STREET_NO -> allKeyParts.subList(1, 4);
-        };
-    return result.toArray(new String[0]);
-  }
-
-  private void setupLookupMaps(
-      final Map<LookupMap, LookupResultType> lookupValues, final AddressDTO address) {
-    final List<LookupCall> expectedCalls =
-        lookupValues.entrySet().stream()
-            .map(
-                entry ->
-                    new LookupCall(
-                        entry.getKey(),
-                        buildKey(entry.getKey(), address),
-                        entry.getValue().getValue()))
-            .toList();
-    setupLookupMaps(expectedCalls);
-  }
-
-  private void setupLookupMaps(final List<LookupCall> calls) {
-    when(lookupMaps.getValue(any(LookupMap.class), any(String[].class)))
-        .then(
-            AdditionalAnswers.answer(
-                (LookupMap map, String[] key) ->
-                    calls.stream()
-                        .filter(call -> call.map() == map && Arrays.equals(call.key(), key))
-                        .map(call -> Optional.ofNullable(call.value()))
-                        .findFirst()
-                        .orElseThrow(
-                            () ->
-                                new IllegalStateException(
-                                    "Unexpected Lookup Call " + map + ", " + Arrays.toString(key)))
-                        .orElse(null)));
-  }
-
-  @Getter
-  @RequiredArgsConstructor
-  private enum LookupResultType {
-    MATCH(HEALTH_OFFICE),
-    NOT_FOUND(null),
-    NOT_UNIQUE(MANY);
-    private final String value;
-  }
-
-  private record LookupCall(LookupMap map, String[] key, String value) {}
 
   @Setter
   @Accessors(chain = true)

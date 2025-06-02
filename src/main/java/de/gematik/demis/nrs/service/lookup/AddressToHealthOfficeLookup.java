@@ -39,14 +39,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AddressToHealthOfficeLookup {
 
@@ -76,6 +77,24 @@ public class AddressToHealthOfficeLookup {
   private final LookupMaps lookupMaps;
   private final AddressNormalization normalizer;
   private final Statistics statistic;
+  private final boolean isFuzzySearchEnabled;
+  private final LookupTree lookupTree;
+  private final boolean isSearchComparisonEnabled;
+
+  public AddressToHealthOfficeLookup(
+      final LookupMaps lookupMaps,
+      final AddressNormalization normalizer,
+      final LookupTree lookupTree,
+      final Statistics statistic,
+      @Value("${feature.flag.search.fuzzy}") final boolean isFuzzySearchEnabled,
+      @Value("${feature.flag.search.comparison}") final boolean isSearchComparisonEnabled) {
+    this.lookupMaps = lookupMaps;
+    this.normalizer = normalizer;
+    this.statistic = statistic;
+    this.isFuzzySearchEnabled = isFuzzySearchEnabled;
+    this.isSearchComparisonEnabled = isSearchComparisonEnabled;
+    this.lookupTree = lookupTree;
+  }
 
   public Optional<String> lookup(final AddressDTO address) {
     Objects.requireNonNull(address, "address is required");
@@ -86,7 +105,59 @@ public class AddressToHealthOfficeLookup {
       return Optional.empty();
     }
 
-    return executeLookup(POSTAL_CODE_BASED, address);
+    final Optional<String> exactMatchBasedResult = executeLookup(POSTAL_CODE_BASED, address);
+    if (isSearchComparisonEnabled || isFuzzySearchEnabled) {
+      final Optional<String> fuzzyMatchBasedResult = lookupWithFuzzySearchStrategy(address);
+      boolean hasSameResult = fuzzyMatchBasedResult.equals(exactMatchBasedResult);
+      if (isSearchComparisonEnabled) {
+        final String comparisonResult =
+            getComparisonResult(hasSameResult, exactMatchBasedResult, fuzzyMatchBasedResult);
+        statistic.recordLookupComparison(hasSameResult, comparisonResult);
+      }
+      if (isFuzzySearchEnabled) {
+        return fuzzyMatchBasedResult;
+      } else {
+        return exactMatchBasedResult;
+      }
+    }
+
+    return exactMatchBasedResult;
+  }
+
+  @Nonnull
+  private String getComparisonResult(
+      final boolean hasSameResult,
+      @Nonnull final Optional<String> exactMatchBasedResult,
+      @Nonnull final Optional<String> fuzzyMatchBasedResult) {
+    if (hasSameResult) {
+      return Statistics.LOOKUP_COMPARISON_RESULT_IDENTICAL;
+    }
+
+    final boolean isFuzzySearchAdvantageous =
+        exactMatchBasedResult.isEmpty() && fuzzyMatchBasedResult.isPresent();
+    if (isFuzzySearchAdvantageous) {
+      return Statistics.LOOKUP_COMPARISON_RESULT_FUZZY_WINS;
+    }
+
+    final boolean isExactSearchAdvantageous =
+        exactMatchBasedResult.isPresent() && fuzzyMatchBasedResult.isEmpty();
+    if (isExactSearchAdvantageous) {
+      return Statistics.LOOKUP_COMPARISON_RESULT_EXACT_WINS;
+    }
+
+    return Statistics.LOOKUP_COMPARISON_RESULT_BOTH_DIFFER;
+  }
+
+  private Optional<String> lookupWithFuzzySearchStrategy(final AddressDTO address) {
+    final Stopwatch stopwatch = Stopwatch.createStarted();
+    LookupTree.LookupRequest lookupRequest = LookupTree.LookupRequest.from(address);
+    lookupRequest = normalizer.normalize(lookupRequest);
+    final Optional<LookupTree.LookupResult> lookupResult =
+        lookupTree.lookupHealthOffice(lookupRequest);
+    final Optional<String> result = lookupResult.map(LookupTree.LookupResult::healthOffice);
+    stopwatch.stop();
+    statistic.recordLookup(stopwatch.elapsed(), lookupResult);
+    return result;
   }
 
   private Optional<String> executeLookup(
