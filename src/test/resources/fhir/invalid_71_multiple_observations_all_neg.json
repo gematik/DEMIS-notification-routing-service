@@ -1,0 +1,574 @@
+{
+  "resourceType": "Bundle",
+  "id": "ed5a7bb4-9fde-498b-9fe1-ea55bd9d2ff6",
+  "meta": {
+    "lastUpdated": "2025-06-27T16:42:29.796+02:00",
+    "profile": [
+      "https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratory"
+    ]
+  },
+  "identifier": {
+    "system": "https://demis.rki.de/fhir/NamingSystem/NotificationBundleId",
+    "value": "51b4ba29-9a53-59ce-9fb5-39571bcfad2e"
+  },
+  "type": "document",
+  "timestamp": "2025-06-13T09:05:00.033+02:00",
+  "entry": [
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Composition/8468be63-31c9-455b-930d-5f3727b85123",
+      "resource": {
+        "resourceType": "Composition",
+        "id": "8468be63-31c9-455b-930d-5f3727b85123",
+        "meta": {
+          "lastUpdated": "2025-06-27T16:42:29.765+02:00",
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotificationLaboratory"
+          ]
+        },
+        "extension": [
+          {
+            "url": "https://demis.rki.de/fhir/StructureDefinition/ReceptionTimeStampType",
+            "valueDateTime": "2025-06-27T16:42:29+02:00"
+          }
+        ],
+        "identifier": {
+          "system": "https://demis.rki.de/fhir/NamingSystem/NotificationId",
+          "value": "f97169df-e34c-4380-8153-d8fb5e7e2123"
+        },
+        "status": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "34782-3",
+              "display": "Infectious disease Note"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "11502-2",
+                "display": "Laboratory report"
+              }
+            ]
+          }
+        ],
+        "subject": {
+          "reference": "Patient/fdecb299-b266-4f64-bf57-619d4ff51123"
+        },
+        "date": "2025-06-13T09:05:00+02:00",
+        "author": [
+          {
+            "reference": "PractitionerRole/95dde7b0-726a-4d6d-a907-8febfda78123"
+          }
+        ],
+        "title": "Hepatitis-B-Virus; Meldepflicht für alle Nachweise",
+        "section": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "11502-2",
+                  "display": "Laboratory report"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "DiagnosticReport/6b8122ad-72bf-417e-85a3-7150b53cf123"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/PractitionerRole/95dde7b0-726a-4d6d-a907-8febfda78123",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "95dde7b0-726a-4d6d-a907-8febfda78123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifierRole"
+          ]
+        },
+        "organization": {
+          "reference": "Organization/d04707ac-144c-4515-a02c-a792768f2123"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Organization/d04707ac-144c-4515-a02c-a792768f2123",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "d04707ac-144c-4515-a02c-a792768f2123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifierFacility"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://fhir.kbv.de/NamingSystem/KBV_NS_Base_BSNR",
+            "value": "123456789"
+          },
+          {
+            "system": "https://demis.rki.de/fhir/NamingSystem/DemisLaboratoryId",
+            "value": "99999"
+          },
+          {
+            "system": "https://demis.rki.de/fhir/NamingSystem/SendingServiceProvider",
+            "value": "99999"
+          },
+          {
+            "system": "https://demis.rki.de/fhir/NamingSystem/SendingServiceProvider",
+            "value": "test-int"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://demis.rki.de/fhir/CodeSystem/organizationType",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "name": "Ulala",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "03322 123456",
+            "use": "work"
+          },
+          {
+            "system": "email",
+            "value": "info@mail.de",
+            "use": "work"
+          },
+          {
+            "system": "fax",
+            "value": "0214 1452145",
+            "use": "work"
+          }
+        ],
+        "address": [
+          {
+            "line": [
+              "Hauptstraße 1"
+            ],
+            "city": "Berlin",
+            "postalCode": "13589",
+            "country": "DE"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Patient/fdecb299-b266-4f64-bf57-619d4ff51123",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "fdecb299-b266-4f64-bf57-619d4ff51123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonNotByName"
+          ]
+        },
+        "gender": "male",
+        "address": [
+          {
+            "extension": [
+              {
+                "url": "https://demis.rki.de/fhir/StructureDefinition/AddressUse",
+                "valueCoding": {
+                  "system": "https://demis.rki.de/fhir/CodeSystem/addressUse",
+                  "code": "primary"
+                }
+              }
+            ],
+            "postalCode": "123"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/DiagnosticReport/6b8122ad-72bf-417e-85a3-7150b53cf123",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "6b8122ad-72bf-417e-85a3-7150b53cf123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/LaboratoryReportHBVP"
+          ]
+        },
+        "basedOn": [
+          {
+            "type": "ServiceRequest",
+            "identifier": {
+              "system": "https://demis.rki.de/fhir/NamingSystem/ServiceRequestId",
+              "value": "RSFF110822"
+            }
+          }
+        ],
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "https://demis.rki.de/fhir/CodeSystem/notificationCategory",
+              "code": "hbvp",
+              "display": "Hepatitis-B-Virus; Meldepflicht für alle Nachweise"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/fdecb299-b266-4f64-bf57-619d4ff51123"
+        },
+        "issued": "2025-06-13T09:05:00+02:00",
+        "result": [
+          {
+            "reference": "Observation/20485e63-23d9-4700-8547-9411d8d84123"
+          },
+          {
+            "reference": "Observation/30485e63-23d9-4700-8547-9411d8d84123"
+          }
+        ],
+        "conclusionCode": [
+          {
+            "coding": [
+              {
+                "system": "https://demis.rki.de/fhir/CodeSystem/conclusionCode",
+                "code": "pathogenDetected"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Observation/30485e63-23d9-4700-8547-9411d8d84123",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "30485e63-23d9-4700-8547-9411d8d84123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/PathogenDetectionHBVP"
+          ]
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "5185-4",
+              "display": "Hepatitis B virus core IgM Ab [Units/volume] in Serum or Plasma by Immunoassay"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/fdecb299-b266-4f64-bf57-619d4ff51123"
+        },
+        "valueString": "1.39",
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "NEG"
+              }
+            ]
+          }
+        ],
+        "note": [
+          {
+            "text": "Aus serologischer Sicht spricht der Befund für das Vorliegen einer akuten Hepatitis B. Anti-HBc-IgM kann mehrere Monate persistieren.\rBlut und Sekrete (Speichel, Sperma, Muttermilch) solcher Patienten sind infektiös.\rAuf eine Meldepflicht gemäß §§ 6, 8, 9 Infektionsschutzgesetz (IfSG) sei verwiesen.Vorname:  Nachname: 052600243252"
+          }
+        ],
+        "specimen": {
+          "reference": "Specimen/3bd0defa-42e2-5385-b290-bfd6c224db29"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Observation/20485e63-23d9-4700-8547-9411d8d84123",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "20485e63-23d9-4700-8547-9411d8d84123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/PathogenDetectionHBVP"
+          ]
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "5185-4",
+              "display": "Hepatitis B virus core IgM Ab [Units/volume] in Serum or Plasma by Immunoassay"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/fdecb299-b266-4f64-bf57-619d4ff51123"
+        },
+        "valueString": "1.39",
+        "interpretation": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+                "code": "NEG"
+              }
+            ]
+          }
+        ],
+        "note": [
+          {
+            "text": "Aus serologischer Sicht spricht der Befund für das Vorliegen einer akuten Hepatitis B. Anti-HBc-IgM kann mehrere Monate persistieren.\rBlut und Sekrete (Speichel, Sperma, Muttermilch) solcher Patienten sind infektiös.\rAuf eine Meldepflicht gemäß §§ 6, 8, 9 Infektionsschutzgesetz (IfSG) sei verwiesen.Vorname:  Nachname: 052600243252"
+          }
+        ],
+        "specimen": {
+          "reference": "Specimen/3bd0defa-42e2-5385-b290-bfd6c224db29"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Specimen/3bd0defa-42e2-5385-b290-bfd6c224db29",
+      "resource": {
+        "resourceType": "Specimen",
+        "id": "3bd0defa-42e2-5385-b290-bfd6c224db29",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/SpecimenHBVP"
+          ]
+        },
+        "status": "available",
+        "type": {
+          "text": "Serum"
+        },
+        "subject": {
+          "reference": "Patient/fdecb299-b266-4f64-bf57-619d4ff51123"
+        },
+        "receivedTime": "2025-06-11T12:48:02+02:00",
+        "collection": {
+          "collector": {
+            "reference": "PractitionerRole/d7800ae6-84f9-48c1-9a6b-9ad377911123"
+          },
+          "collectedDateTime": "2025-06-11T09:30:00+02:00"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/PractitionerRole/d7800ae6-84f9-48c1-9a6b-9ad377911123",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "d7800ae6-84f9-48c1-9a6b-9ad377911123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/SubmittingRole"
+          ]
+        },
+        "organization": {
+          "reference": "Organization/9bbfe8dc-a163-49af-9e9d-a8a26a5cb123"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Organization/9bbfe8dc-a163-49af-9e9d-a8a26a5cb123",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "9bbfe8dc-a163-49af-9e9d-a8a26a5cb123",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/SubmittingFacility"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://fhir.kbv.de/NamingSystem/KBV_NS_Base_BSNR"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://demis.rki.de/fhir/CodeSystem/organizationType",
+                "code": "medFacility"
+              }
+            ]
+          }
+        ],
+        "name": "Lalala",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "01213-486251",
+            "use": "work"
+          },
+          {
+            "system": "fax",
+            "value": "6543216",
+            "use": "work"
+          }
+        ],
+        "address": [
+          {
+            "line": [
+              "Bahnhofstraße 1"
+            ],
+            "city": "Berlin",
+            "postalCode": "14512",
+            "country": "DE"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Provenance/9e72b3ca-9804-4b1e-816a-f179b6b55843",
+      "resource": {
+        "resourceType": "Provenance",
+        "id": "9e72b3ca-9804-4b1e-816a-f179b6b55843",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/DemisProvenance"
+          ]
+        },
+        "target": [
+          {
+            "reference": "Composition/8468be63-31c9-455b-930d-5f3727b85123"
+          }
+        ],
+        "recorded": "2025-06-27T16:42:29.771+02:00",
+        "activity": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-DataOperation",
+              "code": "CREATE"
+            }
+          ]
+        },
+        "agent": [
+          {
+            "extension": [
+              {
+                "url": "https://demis.rki.de/fhir/StructureDefinition/ProvenanceAgentLevelOfAssurance",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "https://demis.rki.de/fhir/CodeSystem/levelOfAssurance",
+                      "code": "substantial"
+                    }
+                  ]
+                }
+              },
+              {
+                "url": "https://demis.rki.de/fhir/StructureDefinition/ProvenanceAgentOrganizationType",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "https://demis.rki.de/fhir/CodeSystem/organizationType",
+                      "code": "laboratory"
+                    }
+                  ]
+                }
+              }
+            ],
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code": "performer"
+                }
+              ]
+            },
+            "role": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+                    "code": "AUT"
+                  }
+                ]
+              }
+            ],
+            "who": {
+              "type": "Organization",
+              "identifier": {
+                "type": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                      "code": "AN"
+                    }
+                  ]
+                },
+                "system": "urn:ietf:rfc:3986",
+                "value": "urn:uuid:3e54a887-9316-43f3-8593-ccb0a62e4bfb"
+              }
+            },
+            "onBehalfOf": {
+              "type": "Organization",
+              "identifier": {
+                "type": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                      "code": "PRN"
+                    }
+                  ]
+                },
+                "system": "https://demis.rki.de/fhir/NamingSystem/DemisParticipantId",
+                "value": "test-int"
+              }
+            }
+          }
+        ],
+        "entity": [
+          {
+            "role": "source",
+            "what": {
+              "type": "Endpoint",
+              "identifier": {
+                "type": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                      "code": "RI"
+                    }
+                  ]
+                },
+                "system": "https://demis.rki.de/fhir/sid/DemisClientId",
+                "value": "demis-adapter"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

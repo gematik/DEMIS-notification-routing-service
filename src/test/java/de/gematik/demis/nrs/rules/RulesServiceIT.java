@@ -144,4 +144,30 @@ class RulesServiceIT {
     assertThat(result.id()).isEqualTo(expectedResultId);
     assertResult(result, "7.3", Set.of(RulesResultTypeEnum.SPECIFIC_RECEIVER));
   }
+
+  /**
+   * Regression for DEMIS-3673 to ensure, that Bundles with mismatching Patient profile are not send
+   * as 7.4 i.e. expected 7.1 with NotifiedPerson, but receive NotifiedPersonNotByName instead
+   */
+  @ParameterizedTest
+  @MethodSource("invalid71Bundles")
+  void thatInvalid7_1BundlesAreProcessedAs7_1(final Path path) throws IOException {
+    final String bundleJson = Files.readString(path);
+    final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+    // Evaluate the rules
+    final Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
+    assertThat(optionalResult).isPresent();
+    final Result result = optionalResult.get();
+    assertThat(result.id()).isEqualTo("notification7_1");
+  }
+
+  private static Stream<Arguments> invalid71Bundles() {
+    return Stream.of(
+        Arguments.of(Path.of("src/test/resources/fhir/invalid_71.json")),
+        Arguments.of(
+            Path.of("src/test/resources/fhir/invalid_71_multiple_observations_mixed.json")),
+        Arguments.of(
+            Path.of("src/test/resources/fhir/invalid_71_multiple_observations_all_neg.json")));
+  }
 }
