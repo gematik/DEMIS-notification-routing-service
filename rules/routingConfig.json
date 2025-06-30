@@ -29,12 +29,12 @@
     },
     "notified_person": {
       "description": "this rule applies to §7.1 and §7.4 cases. we need to distinguish between these two cases.",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is DiagnosticReport).result.reference.resolve().interpretation.coding.where(code = 'POS').empty() and Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdp').empty().not() and Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous'",
       "result": {
-        "conditionNotMet": "notification7_4"
+        "conditionFulfilled": "notification7_4"
       },
       "followingRules": {
-        "conditionFulfilled": "sormas_and_cvdp"
+        "conditionNotMet": "sormas_and_cvdp"
       }
     },
     "sormas_and_cvdp": {

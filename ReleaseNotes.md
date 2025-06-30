@@ -2,6 +2,9 @@
  
 # Release notes
 
+### Release 2.3.1
+- Hotfix for matching Bundles as 7.4 that are 7.1
+
 ## Release 2.3.0
 - Preview for fuzzy search algorithm to lookup health offices
 
