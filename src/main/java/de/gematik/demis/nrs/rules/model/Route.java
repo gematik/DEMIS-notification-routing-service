@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 public record Route(
     @Nonnull RulesResultTypeEnum type,
     @Nullable String specificReceiverId,
-    @Nonnull List<String> actions,
+    @Nonnull List<ActionType> actions,
     boolean optional) {
 
   /** Match any Route with the given type */

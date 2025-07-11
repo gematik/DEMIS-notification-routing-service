@@ -44,17 +44,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-/** This tests verifies the pre-7.3 behaviour and can be removed once 7.3 is ready. */
+/**
+ * This class uses the routingConfig_73enabled.json configuration for it's test cases. It can be
+ * renamed once 7.3 is ready.
+ */
 @SpringBootTest(
     classes = NotificationRoutingApplication.class,
     useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
     properties = {
-      "nrs.routing-rules=rules/routingConfig.json",
+      "nrs.routing-rules=rules/routingConfig_73enabled.json",
       "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
       "nrs.rules-start-id=start"
     })
-class RulesServiceIT {
+class RulesService73IT {
 
   private static final String BASE_PATH = "src/test/resources/fhir";
 
@@ -64,22 +67,24 @@ class RulesServiceIT {
 
   private static Stream<Arguments> bundleToExpectedResultId() {
     return Stream.of(
-        arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "notification6_1"),
+        arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "disease_6_1"),
+        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1_covid"),
+        arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "laboratory_7_1"),
+        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1_covid"),
+        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
         arguments(
-            Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "notification6_1_cvd"),
-        arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "notification7_1"),
-        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "notification7_1_cvd"),
-        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_notification7_3_anonymous"),
+            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"),
+        arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "laboratory_7_4"),
+        arguments(Path.of(BASE_PATH, "invalid_71.json"), "laboratory_7_1_anonymous_follow_up"),
         arguments(
-            Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_notification7_3"),
+            Path.of(BASE_PATH, "invalid_71_multiple_observations_mixed.json"),
+            "laboratory_7_1_anonymous_follow_up"),
         arguments(
-            Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_notification7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_notification7_3"),
-        // This merely records the current behaviour and is not a valid assertion, see
-        // RulesService73IT for a valid assertion.
-        arguments(
-            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_notification7_3"),
-        arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "notification7_4"));
+            Path.of(BASE_PATH, "invalid_71_multiple_observations_all_neg.json"),
+            "laboratory_7_1_anonymous_follow_up"));
   }
 
   @ParameterizedTest
@@ -92,31 +97,5 @@ class RulesServiceIT {
     assertThat(resultCandidate).isPresent();
     final Result result = resultCandidate.get();
     assertThat(result.id()).isEqualTo(expectedRule);
-  }
-
-  /**
-   * Regression for DEMIS-3673 to ensure, that Bundles with mismatching Patient profile are not send
-   * as 7.4 i.e. expected 7.1 with NotifiedPerson, but receive NotifiedPersonNotByName instead
-   */
-  @ParameterizedTest
-  @MethodSource("invalid71Bundles")
-  void thatInvalid7_1BundlesAreProcessedAs7_1(final Path path) throws IOException {
-    final String bundleJson = Files.readString(path);
-    final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
-
-    // Evaluate the rules
-    final Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
-    assertThat(optionalResult).isPresent();
-    final Result result = optionalResult.get();
-    assertThat(result.id()).isEqualTo("notification7_1");
-  }
-
-  private static Stream<Arguments> invalid71Bundles() {
-    return Stream.of(
-        Arguments.of(Path.of("src/test/resources/fhir/invalid_71.json")),
-        Arguments.of(
-            Path.of("src/test/resources/fhir/invalid_71_multiple_observations_mixed.json")),
-        Arguments.of(
-            Path.of("src/test/resources/fhir/invalid_71_multiple_observations_all_neg.json")));
   }
 }

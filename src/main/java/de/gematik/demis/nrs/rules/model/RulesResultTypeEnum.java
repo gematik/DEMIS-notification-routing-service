@@ -41,6 +41,8 @@ public enum RulesResultTypeEnum {
   RESPONSIBLE_HEALTH_OFFICE("responsible_health_office"),
   @JsonProperty("responsible_health_office_sormas")
   RESPONSIBLE_HEALTH_OFFICE_SORMAS("responsible_health_office_sormas"),
+  @JsonProperty("responsible_health_office_with_relates_to")
+  RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO("responsible_health_office_with_relates_to"),
   @JsonProperty("specific_receiver")
   SPECIFIC_RECEIVER("specific_receiver"),
   @JsonProperty("test_department")

@@ -4,35 +4,9 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**determineRouting**](NotificationRoutingControllerApi.md#determineRouting) | **POST** /routing |  |
 | [**determineRuleBasedRouting**](NotificationRoutingControllerApi.md#determineRuleBasedRouting) | **POST** /routing/v2 |  |
 | [**findHealthOfficeByAddress**](NotificationRoutingControllerApi.md#findHealthOfficeByAddress) | **GET** /routing/health-office |  |
 
-
-<a name="determineRouting"></a>
-# **determineRouting**
-> RoutingOutput determineRouting(body)
-
-
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | |
-
-### Return type
-
-[**RoutingOutput**](../Models/RoutingOutput.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
 
 <a name="determineRuleBasedRouting"></a>
 # **determineRuleBasedRouting**

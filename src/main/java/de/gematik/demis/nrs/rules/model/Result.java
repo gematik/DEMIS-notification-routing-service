@@ -36,7 +36,7 @@ import java.util.SequencedSet;
 import java.util.function.Predicate;
 
 /**
- * @param id can be used for testing
+ * @param id from results in routing configuration
  * @param description
  * @param routesTo all routes of the notifications
  * @param type

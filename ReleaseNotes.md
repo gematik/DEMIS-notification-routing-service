@@ -2,7 +2,11 @@
  
 # Release notes
 
-### Release 2.3.1
+## Release 2.3.2
+- Removed already active feature flags
+- Updated dependencies
+
+## Release 2.3.1
 - Hotfix for matching Bundles as 7.4 that are 7.1
 
 ## Release 2.3.0

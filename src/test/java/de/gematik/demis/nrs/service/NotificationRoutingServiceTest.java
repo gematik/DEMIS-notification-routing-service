@@ -56,6 +56,7 @@ import de.gematik.demis.nrs.api.dto.BundleAction;
 import de.gematik.demis.nrs.api.dto.RoutingOutput;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.rules.RulesService;
+import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
@@ -85,7 +86,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -128,55 +128,6 @@ class NotificationRoutingServiceTest {
         Arguments.of(Set.of(NOTIFIED_PERSON_OTHER, SUBMITTER, NOTIFIER), NOTIFIED_PERSON_OTHER),
         Arguments.of(Set.of(SUBMITTER, NOTIFIER), SUBMITTER),
         Arguments.of(Set.of(NOTIFIER), NOTIFIER));
-  }
-
-  @ParameterizedTest
-  @MethodSource("testArguments")
-  void test(
-      final Set<AddressOriginEnum> addressesWithHealthOffice,
-      final AddressOriginEnum responsibleAddress) {
-    final Map<AddressOriginEnum, AddressDTO> addresses =
-        Arrays.stream(AddressOriginEnum.values())
-            .collect(
-                Collectors.toMap(
-                    Function.identity(), type -> createAddress(String.valueOf(type.ordinal()))));
-    final RoutingInput routingInput = new RoutingInput(addresses);
-
-    final Map<AddressDTO, String> addressToHealthOfficeMap =
-        addressesWithHealthOffice.stream()
-            .collect(Collectors.toMap(addresses::get, type -> "GA-" + type));
-
-    final Map<AddressOriginEnum, String> expectedHealthOffices =
-        addressesWithHealthOffice.stream()
-            .collect(
-                Collectors.toMap(
-                    Function.identity(),
-                    type -> addressToHealthOfficeMap.get(addresses.get(type))));
-    final RoutingOutput expectedRoutingOutput =
-        new RoutingOutput(expectedHealthOffices, expectedHealthOffices.get(responsibleAddress));
-
-    when(addressToHealthOfficeLookup.lookup(any()))
-        .then(
-            answer(
-                (AddressDTO address) ->
-                    Optional.ofNullable(addressToHealthOfficeMap.get(address))));
-
-    final String fhirNotification = "krasses json";
-    when(fhirReader.extractRoutingInput(fhirNotification)).thenReturn(routingInput);
-    final RoutingOutput routingOutput = underTest.determineRouting(fhirNotification);
-
-    assertThat(routingOutput).isEqualTo(expectedRoutingOutput);
-  }
-
-  @Test
-  void noAddresses() {
-    final RoutingInput routingInput = new RoutingInput(Map.of());
-    final String fhirNotification = "krasses json";
-    when(fhirReader.extractRoutingInput(fhirNotification)).thenReturn(routingInput);
-    final RoutingOutput routingOutput = underTest.determineRouting(fhirNotification);
-
-    Mockito.verifyNoInteractions(addressToHealthOfficeLookup);
-    assertThat(routingOutput).isEqualTo(new RoutingOutput(Map.of(), null));
   }
 
   @ParameterizedTest
@@ -226,10 +177,14 @@ class NotificationRoutingServiceTest {
             "any",
             "a placeholder result",
             List.of(
-                new Route(RESPONSIBLE_HEALTH_OFFICE, "rewrite-1", List.of("no_action"), false),
                 new Route(
-                    RESPONSIBLE_HEALTH_OFFICE_SORMAS, "rewrite-2", List.of("no_action"), false),
-                new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of("no_action"), false)),
+                    RESPONSIBLE_HEALTH_OFFICE, "rewrite-1", List.of(ActionType.NO_ACTION), false),
+                new Route(
+                    RESPONSIBLE_HEALTH_OFFICE_SORMAS,
+                    "rewrite-2",
+                    List.of(ActionType.NO_ACTION),
+                    false),
+                new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of(ActionType.NO_ACTION), false)),
             "any",
             "any",
             SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
@@ -260,34 +215,43 @@ class NotificationRoutingServiceTest {
         new ArrayList<>(
             List.of(
                 new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", List.of("pseudo_copy"), false)));
+                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                    "1.",
+                    List.of(ActionType.PSEUDO_COPY),
+                    false)));
     List<Route> outputList =
         new ArrayList<>(
             List.of(
                 new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", List.of("pseudo_copy"), false)));
+                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                    "1.",
+                    List.of(ActionType.PSEUDO_COPY),
+                    false)));
 
     if (withRoutingOutput) {
       resultList.addAll(
           List.of(
               new Route(
-                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE, null, List.of("encrypt"), false),
+                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
+                  null,
+                  List.of(ActionType.ENCRYPT),
+                  false),
               new Route(
                   RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                   null,
-                  List.of("encrypt"),
+                  List.of(ActionType.ENCRYPT),
                   false)));
       outputList.addAll(
           List.of(
               new Route(
                   RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                   healthOfficeId,
-                  List.of("encrypt"),
+                  List.of(ActionType.ENCRYPT),
                   false),
               new Route(
                   RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                   expectedMissingHealthOfficeId,
-                  List.of("encrypt"),
+                  List.of(ActionType.ENCRYPT),
                   false)));
     }
     Result result =
@@ -312,8 +276,8 @@ class NotificationRoutingServiceTest {
     if (isTestUser) {
       outputList =
           asList(
-              new Route(TEST_DEPARTMENT, SOME_SENDER_ID, singletonList("encryption"), false),
-              new Route(SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false));
+              new Route(TEST_DEPARTMENT, SOME_SENDER_ID, singletonList(ActionType.ENCRYPT), false),
+              new Route(SPECIFIC_RECEIVER, "1.", singletonList(ActionType.PSEUDO_COPY), false));
     }
 
     String responsible =
@@ -352,7 +316,10 @@ class NotificationRoutingServiceTest {
             "test",
             List.of(
                 new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER, null, List.of("pseudo_copy"), false)),
+                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                    null,
+                    List.of(ActionType.PSEUDO_COPY),
+                    false)),
             "laboratory",
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
@@ -388,7 +355,7 @@ class NotificationRoutingServiceTest {
                 new Route(
                     RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                     null,
-                    List.of("pseudo_copy"),
+                    List.of(ActionType.PSEUDO_COPY),
                     false)),
             "laboratory",
             "7.1",
@@ -524,7 +491,8 @@ class NotificationRoutingServiceTest {
         new Result(
             "123",
             "test",
-            List.of(new Route(SPECIFIC_RECEIVER, "receiver-id", List.of("encrypt"), false)),
+            List.of(
+                new Route(SPECIFIC_RECEIVER, "receiver-id", List.of(ActionType.ENCRYPT), false)),
             "laboratory",
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
