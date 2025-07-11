@@ -38,6 +38,8 @@ import org.springframework.validation.annotation.Validated;
 public record NrsConfigProps(
     @NotEmpty String lookupDataDirectory,
     @NotEmpty String routingRules,
+    @NotEmpty String routingRules73enabled,
+    @NotEmpty String routingRulesWithFollowUp,
     @NotEmpty String rulesStartId) {
 
   @PostConstruct

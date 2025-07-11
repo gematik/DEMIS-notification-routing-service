@@ -42,6 +42,7 @@ import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import de.gematik.demis.nrs.api.dto.BundleAction;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.rules.RulesService;
+import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
@@ -88,7 +89,10 @@ class NotificationRoutingServiceAdditionalTest {
     List<Route> routeListe =
         singletonList(
             new Route(
-                RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("no_action"), false));
+                RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                "1.",
+                singletonList(ActionType.NO_ACTION),
+                false));
     Optional<Result> optResult =
         Optional.of(
             new Result(
@@ -121,7 +125,7 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false));
     Optional<Result> optResult =
         Optional.of(
@@ -168,12 +172,12 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false));
     Optional<Result> optResult =
         Optional.of(
@@ -234,12 +238,12 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 "1.",
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false));
     Optional<Result> optResult =
         Optional.of(
@@ -281,7 +285,10 @@ class NotificationRoutingServiceAdditionalTest {
     List<Route> routeListe =
         singletonList(
             new Route(
-                RulesResultTypeEnum.SPECIFIC_RECEIVER, null, singletonList("no_action"), false));
+                RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                null,
+                singletonList(ActionType.NO_ACTION),
+                false));
     Optional<Result> optResult =
         Optional.of(
             new Result(
@@ -312,15 +319,18 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false),
             new Route(
-                RulesResultTypeEnum.SPECIFIC_RECEIVER, null, singletonList("pseudo_copy"), false));
+                RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                null,
+                singletonList(ActionType.PSEUDO_COPY),
+                false));
     Optional<Result> optResult =
         Optional.of(
             new Result(
@@ -358,15 +368,18 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false),
             new Route(
-                RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false));
+                RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                "1.",
+                singletonList(ActionType.PSEUDO_COPY),
+                false));
     Optional<Result> optResult =
         Optional.of(
             new Result(
@@ -416,15 +429,18 @@ class NotificationRoutingServiceAdditionalTest {
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
-                singletonList("encryption"),
+                singletonList(ActionType.ENCRYPT),
                 false),
             new Route(
-                RulesResultTypeEnum.SPECIFIC_RECEIVER, "1.", singletonList("pseudo_copy"), false));
+                RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                "1.",
+                singletonList(ActionType.PSEUDO_COPY),
+                false));
     Optional<Result> optResult =
         Optional.of(
             new Result(
@@ -451,7 +467,7 @@ class NotificationRoutingServiceAdditionalTest {
                 new Route(
                     RulesResultTypeEnum.SPECIFIC_RECEIVER,
                     "1.",
-                    singletonList("pseudo_copy"),
+                    singletonList(ActionType.PSEUDO_COPY),
                     false)),
             null,
             null);

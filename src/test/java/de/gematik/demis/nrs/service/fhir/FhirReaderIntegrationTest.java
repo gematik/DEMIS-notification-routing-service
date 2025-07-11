@@ -55,7 +55,10 @@ import org.springframework.boot.test.context.SpringBootTest;
     })
 class FhirReaderIntegrationTest {
 
-  private static final String LABORATORY_NOTIFICATION = "/fhir/laboratory-notification.json";
+  private static final String LABORATORY_NOTIFICATION =
+      "/fhir/7_1/cvdp-notifiedperson-parameters.json";
+  // This file is located in /src/main/resources instead of /src/test/resources and is used to warm
+  // up the FHIRParser
   private static final String DISEASE_NOTIFICATION = "/fhir/disease-notification.json";
 
   @Autowired FhirReader underTest;

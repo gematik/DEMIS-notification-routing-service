@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs.api.dto;
+package de.gematik.demis.nrs.rules.model;
 
 /*-
  * #%L
@@ -26,24 +26,36 @@ package de.gematik.demis.nrs.api.dto;
  * #L%
  */
 
-import de.gematik.demis.nrs.rules.model.Route;
-import jakarta.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-public record RuleBasedRouteDTOPreBundleAction(
-    String type,
-    String notificationCategory,
-    List<Route> routes,
-    @Nullable Map<AddressOriginEnum, String> healthOffices,
-    @Nullable String responsible) {
+public enum ActionType {
+  ENCRYPT("encrypt"),
+  STORE_DESTINATION("store_destination"),
+  NO_ACTION("no_action"),
+  PSEUDO_COPY("pseudo_copy"),
+  REPRODUCE("reproduce"),
+  CREATE_PSEUDONYM_RECORD("create_pseudonym_record"),
+  PSEUDO_ORIGINAL("pseudo_original");
 
-  public static RuleBasedRouteDTOPreBundleAction from(final RuleBasedRouteDTO original) {
-    return new RuleBasedRouteDTOPreBundleAction(
-        original.type(),
-        original.notificationCategory(),
-        original.routes(),
-        original.healthOffices(),
-        original.responsible());
+  private final String value;
+
+  ActionType(String value) {
+    this.value = value;
+  }
+
+  @JsonCreator
+  public static ActionType fromValue(String value) {
+    for (ActionType action : ActionType.values()) {
+      if (action.value.equalsIgnoreCase(value)) {
+        return action;
+      }
+    }
+    throw new IllegalArgumentException("Unknown action type: " + value);
+  }
+
+  @JsonValue
+  public String getValue() {
+    return value;
   }
 }

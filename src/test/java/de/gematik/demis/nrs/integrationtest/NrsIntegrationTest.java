@@ -45,7 +45,11 @@ import org.springframework.test.web.servlet.MockMvc;
     classes = NotificationRoutingApplication.class,
     useMainMethod = UseMainMethod.ALWAYS,
     webEnvironment = WebEnvironment.MOCK,
-    properties = "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup")
+    properties = {
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+      "nrs.routingRulesWithFollowUp=true", // oder ein sinnvoller Wert
+      "nrs.routingRules73enabled=true" // oder ein sinnvoller Wert
+    })
 @AutoConfigureMockMvc
 class NrsIntegrationTest {
   private static final String LABORATORY_NOTIFICATION =
@@ -60,55 +64,9 @@ class NrsIntegrationTest {
   @Autowired MockMvc mockMvc;
 
   @Test
-  void routing_success_laboratory() throws Exception {
-    mockMvc
-        .perform(
-            post("/routing")
-                .contentType(APPLICATION_JSON)
-                .content(readResource(LABORATORY_NOTIFICATION)))
-        .andExpect(status().isOk())
-        .andExpect(
-            content()
-                .json(
-"""
-                {"healthOffices": {
-                     "NOTIFIED_PERSON_PRIMARY":"1.10",
-                     "NOTIFIED_PERSON_ORDINARY":"3.14",
-                     "NOTIFIED_PERSON_CURRENT":"1.13",
-                     "NOTIFIER":"3.14",
-                     "SUBMITTER":"3.14"
-                  },
-                  "responsible":"1.13"
-                 }
-"""));
-  }
-
-  @Test
-  void routing_success_disease() throws Exception {
-    mockMvc
-        .perform(
-            post("/routing")
-                .contentType(APPLICATION_JSON)
-                .content(readResource(DISEASE_NOTIFICATION)))
-        .andExpect(status().isOk())
-        .andExpect(
-            content()
-                .json(
-"""
-                {"healthOffices": {
-                     "NOTIFIED_PERSON_PRIMARY":"1.17",
-                     "NOTIFIED_PERSON_CURRENT":"5.6.7",
-                     "NOTIFIER":"5.6.7"
-                  },
-                  "responsible":"5.6.7"
-                 }
-"""));
-  }
-
-  @Test
   void invalidNotification() throws Exception {
     mockMvc
-        .perform(post("/routing").contentType(APPLICATION_JSON).content("{}"))
+        .perform(post("/routing/v2").contentType(APPLICATION_JSON).content("{}"))
         .andExpect(status().isBadRequest());
   }
 
@@ -186,7 +144,7 @@ class NrsIntegrationTest {
                                         "type": "responsible_health_office",
                                         "specificReceiverId": "1.13",
                                         "actions": [
-                                          "encryption"
+                                          "encrypt"
                                         ],
                                         "optional": false
                                       },
@@ -194,7 +152,7 @@ class NrsIntegrationTest {
                                         "type": "responsible_health_office_sormas",
                                         "specificReceiverId": "2.13",
                                         "actions": [
-                                          "encryption"
+                                          "encrypt"
                                         ],
                                         "optional": true
                                       }
@@ -241,7 +199,7 @@ class NrsIntegrationTest {
                                       "type": "responsible_health_office",
                                       "specificReceiverId": "5.6.7",
                                       "actions": [
-                                        "encryption"
+                                        "encrypt"
                                       ],
                                       "optional": false
                                     },
@@ -249,7 +207,7 @@ class NrsIntegrationTest {
                                       "type": "responsible_health_office_sormas",
                                       "specificReceiverId": "2.6.7",
                                       "actions": [
-                                        "encryption"
+                                        "encrypt"
                                       ],
                                       "optional": true
                                     }

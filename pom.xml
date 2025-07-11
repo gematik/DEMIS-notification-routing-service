@@ -4,11 +4,11 @@
   <parent>
     <groupId>de.gematik.demis</groupId>
     <artifactId>spring-parent</artifactId>
-    <version>2.9.0</version>
+    <version>2.12.2</version>
     <relativePath></relativePath><!-- lookup parent from repository -->
   </parent>
   <artifactId>notification-routing-service</artifactId>
-  <version>2.3.1-SNAPSHOT</version>
+  <version>2.3.2-SNAPSHOT</version>
   <name>notification-routing-service</name>
   <packaging>jar</packaging>
   <description>Notification Routing Service</description>
@@ -22,8 +22,6 @@
     <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <demis.fhir-parser-library.version>2.4.1</demis.fhir-parser-library.version>
-    <demis.notification-builder-library.version>5.7.0</demis.notification-builder-library.version>
     <ucum.version>1.0.10</ucum.version>
     <guava.version>33.4.8-jre</guava.version>
     <icu4j.version>77.1</icu4j.version>
@@ -50,6 +48,11 @@
         <groupId>ca.uhn.hapi.fhir</groupId>
         <version>${hl7.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>1.14.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -60,18 +63,13 @@
     <dependency>
       <groupId>de.gematik.demis</groupId>
       <artifactId>fhir-parser-library</artifactId>
-      <version>${demis.fhir-parser-library.version}</version>
+      <version>${fhir.parser.version}</version>
     </dependency>
     <dependency>
       <groupId>de.gematik.demis</groupId>
       <artifactId>notification-builder-library</artifactId>
-      <version>${demis.notification-builder-library.version}</version>
+      <version>${notification.builder.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-csv</artifactId>
-      <version>1.14.0</version>
     </dependency>
     <dependency>
       <groupId>org.fhir</groupId>

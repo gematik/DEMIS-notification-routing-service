@@ -26,16 +26,9 @@ package de.gematik.demis.nrs.api;
  * #L%
  */
 
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_CURRENT;
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_ORDINARY;
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_OTHER;
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
-import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
 import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
-import static java.util.Map.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -48,8 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import de.gematik.demis.nrs.api.dto.BundleAction;
-import de.gematik.demis.nrs.api.dto.RoutingOutput;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
+import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.service.NotificationRoutingService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
@@ -57,23 +50,19 @@ import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.rest.ErrorHandlerConfiguration;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(NotificationRoutingController.class)
 @Import(ErrorHandlerConfiguration.class)
-@TestPropertySource(properties = {"feature.flag.notifications.7_3 = true"})
 class NotificationRoutingControllerTest {
 
-  private static final String URL_DETERMINE_ROUTING = "/routing";
   private static final String URL_DETERMINE_RULE_BASED_ROUTING = "/routing/v2";
   private static final String URL_FIND_HEALTH_OFFICE_BY_ADDRESS = "/routing/health-office";
 
@@ -109,49 +98,6 @@ class NotificationRoutingControllerTest {
   }
 
   @Test
-  void determineRouting_success() throws Exception {
-    final String body = "valid fhir notification as json";
-    final RoutingOutput routingOutput =
-        new RoutingOutput(
-            Map.ofEntries(
-                entry(NOTIFIER, "1.1"),
-                entry(NOTIFIED_PERSON_CURRENT, "1.2"),
-                entry(NOTIFIED_PERSON_ORDINARY, "1.3"),
-                entry(NOTIFIED_PERSON_PRIMARY, "1.4"),
-                entry(NOTIFIED_PERSON_OTHER, "1.5"),
-                entry(SUBMITTER, "1.6")),
-            "1.4");
-
-    when(notificationRoutingService.determineRouting(body)).thenReturn(routingOutput);
-
-    final String expected =
-        """
-            {"healthOffices":
-                {
-                 "NOTIFIED_PERSON_PRIMARY":"1.4",
-                 "NOTIFIED_PERSON_ORDINARY":"1.3",
-                 "NOTIFIED_PERSON_CURRENT":"1.2",
-                 "NOTIFIED_PERSON_OTHER":"1.5",
-                 "NOTIFIER":"1.1",
-                 "SUBMITTER":"1.6"
-                },
-             "responsible":"1.4"}
-            """;
-
-    mockMvc
-        .perform(post(URL_DETERMINE_ROUTING).contentType(APPLICATION_JSON).content(body))
-        .andExpect(status().isOk())
-        .andExpect(content().json(expected));
-  }
-
-  @Test
-  void determineRouting_emptyRequestBody() throws Exception {
-    mockMvc
-        .perform(post(URL_DETERMINE_ROUTING).contentType(APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
   void determineRuleBasedRouting_success() throws Exception {
     final String body = "valid fhir notification as json";
     final RuleBasedRouteDTO routingOutput =
@@ -160,8 +106,9 @@ class NotificationRoutingControllerTest {
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             List.of(
-                new Route(RESPONSIBLE_HEALTH_OFFICE, "7.1", List.of("encrypt"), false),
-                new Route(RESPONSIBLE_HEALTH_OFFICE_SORMAS, "7.1", List.of("encrypt"), true)),
+                new Route(RESPONSIBLE_HEALTH_OFFICE, "7.1", List.of(ActionType.ENCRYPT), false),
+                new Route(
+                    RESPONSIBLE_HEALTH_OFFICE_SORMAS, "7.1", List.of(ActionType.ENCRYPT), true)),
             null,
             null);
 

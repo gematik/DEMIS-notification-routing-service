@@ -77,7 +77,7 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_original", "encryption"]
+          "actions": ["pseudo_original", "encrypt"]
         }
       ]
     },
@@ -91,7 +91,7 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_original", "encryption"]
+          "actions": ["pseudo_original", "encrypt"]
         }
       ]
     },
@@ -105,7 +105,7 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_original", "encryption"]
+          "actions": ["pseudo_original", "encrypt"]
         }
       ]
     },
@@ -118,7 +118,7 @@
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "specific_receiver",
@@ -137,12 +137,12 @@
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "specific_receiver",
@@ -161,7 +161,7 @@
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "specific_receiver",
@@ -180,12 +180,12 @@
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
-          "actions": ["encryption"]
+          "actions": ["encrypt"]
         },
         {
           "type": "specific_receiver",

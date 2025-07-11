@@ -25,7 +25,7 @@ If release name contains chart name it will be used as a full name.
 
 {{- define "notification-routing-service.fullversionname" -}}
 {{- $name := include "notification-routing-service.fullname" . }}
-{{- $version := .Chart.Version | replace "+" "_" }}
+{{- $version := regexReplaceAll "\\.+" .Chart.Version "-" }}
 {{- printf "%s-%s" $name $version | trunc 63 | trimSuffix "-" }}
 {{- end }}
 

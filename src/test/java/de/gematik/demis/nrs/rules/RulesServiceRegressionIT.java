@@ -58,8 +58,8 @@ class RulesServiceRegressionIT {
 
   @ParameterizedTest
   @CsvSource({
-    "src/test/resources/fhir/laboratory-notification-bundle.json,notification7_1",
-    "src/test/resources/fhir/disease-notification-bundle.json,notification6_1",
+    "src/test/resources/fhir/7_1/cvdp-notifiedperson.json,notification7_1",
+    "src/test/resources/fhir/6_1/disease-notification-bundle.json,notification6_1",
   })
   void testEvaluateRules(String path, String resultCase) throws IOException {
     // Load a sample FHIR bundle from a JSON file

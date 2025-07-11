@@ -34,8 +34,6 @@ deploymentLabels: {}
 
 # Environment Variables to be defined
 customEnvVars:
-  FEATURE_FLAG_NOTIFICATIONS_7_3: "false"
-  FEATURE_FLAG_NOTIFICATIONS_7_4: "false"
   FEATURE_FLAG_SEARCH_FUZZY: "false"
   FEATURE_FLAG_SEARCH_COMPARISON: "false"
 
