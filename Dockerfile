@@ -30,7 +30,7 @@ COPY --chown=$USERID:$GROUPID target/notification-routing-service.jar /app.jar
 USER $USERID:$USERID
 
 # Copy Rules
-COPY --chown=$USERID:$GROUPID rules/routingConfig.json /rules/routingConfig.json
+COPY --chown=$USERID:$GROUPID rules/*.json /rules/
 
 ENV ROUTING_RULES_FILE=/rules/routingConfig.json
 
