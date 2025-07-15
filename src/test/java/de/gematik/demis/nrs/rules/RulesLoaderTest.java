@@ -27,21 +27,32 @@ package de.gematik.demis.nrs.rules;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.demis.nrs.config.NrsConfigProps;
+import de.gematik.demis.nrs.rules.model.Rule;
 import de.gematik.demis.nrs.rules.model.RulesConfig;
+import java.util.Map;
+import java.util.stream.Stream;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 class RulesLoaderTest {
 
   @Test
   void loadsDefaultConfigIfNoFlags() throws Exception {
-    NrsConfigProps props = Mockito.mock(NrsConfigProps.class);
+    NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
 
-    RulesLoader loader = new RulesLoader(false, false);
+    RulesLoader loader = new RulesLoader(false, false, new ObjectMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -52,11 +63,11 @@ class RulesLoaderTest {
 
   @Test
   void loads73ConfigIfFlagSet() throws Exception {
-    NrsConfigProps props = Mockito.mock(NrsConfigProps.class);
+    NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
     Mockito.when(props.routingRules73enabled()).thenReturn("rules/routingConfig_73enabled.json");
 
-    RulesLoader loader = new RulesLoader(true, false);
+    RulesLoader loader = new RulesLoader(true, false, new ObjectMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -74,12 +85,12 @@ class RulesLoaderTest {
 
   @Test
   void loadsFollowUpConfigIfFlagSet() throws Exception {
-    NrsConfigProps props = Mockito.mock(NrsConfigProps.class);
+    NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
     Mockito.when(props.routingRulesWithFollowUp())
         .thenReturn("rules/routingConfig_with_follow_up.json");
 
-    RulesLoader loader = new RulesLoader(false, true);
+    RulesLoader loader = new RulesLoader(false, true, new ObjectMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -91,5 +102,40 @@ class RulesLoaderTest {
     assertThat(config.results().get("laboratory_7_1_anonymous_follow_up"))
         .extracting("routesTo", InstanceOfAssertFactories.LIST)
         .hasSize(2);
+  }
+
+  @Test
+  void thatServiceCrashesWhenConfigNotFound() {
+    final RulesLoader rulesLoader = new RulesLoader(false, false, new ObjectMapper());
+    assertThatIllegalStateException()
+        .isThrownBy(
+            () ->
+                rulesLoader.rulesConfig(
+                    new NrsConfigProps(
+                        "/",
+                        "/doesnt-exist.json",
+                        "./doesnt-exist.json",
+                        "./doesnt-exist.json",
+                        "-")));
+  }
+
+  @MethodSource("invalidRules")
+  @ParameterizedTest
+  void thatServiceCrashesWhenNoRulesAndResults(final RulesConfig input)
+      throws JsonProcessingException {
+    final ObjectMapper objectMapper = mock(ObjectMapper.class);
+    when(objectMapper.readValue(anyString(), eq(RulesConfig.class))).thenReturn(input);
+
+    final RulesLoader rulesLoader = new RulesLoader(false, false, objectMapper);
+    final NrsConfigProps props =
+        new NrsConfigProps(
+            "/", "rules/routingConfig.json", "./doesnt-exist.json", "./doesnt-exist.json", "-");
+    assertThatIllegalStateException().isThrownBy(() -> rulesLoader.rulesConfig(props));
+  }
+
+  private static Stream<RulesConfig> invalidRules() {
+    return Stream.of(
+        new RulesConfig(Map.of(), Map.of()),
+        new RulesConfig(Map.of("start", new Rule("", "", "", Map.of(), Map.of())), Map.of()));
   }
 }

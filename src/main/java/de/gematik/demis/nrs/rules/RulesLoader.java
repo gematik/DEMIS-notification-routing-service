@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,41 +47,49 @@ class RulesLoader {
 
   private final boolean notifications73;
   private final boolean followUpNotifications;
+  private final ObjectMapper objectMapper;
 
   public RulesLoader(
       @Value("${feature.flag.notifications.7.3:false}") boolean notifications73,
-      @Value("${feature.flag.follow.up.notifications:false}") boolean followUpNotifications) {
+      @Value("${feature.flag.follow.up.notifications:false}") boolean followUpNotifications,
+      final ObjectMapper objectMapper) {
     this.notifications73 = notifications73;
     this.followUpNotifications = followUpNotifications;
+    this.objectMapper = objectMapper;
   }
 
   @Bean
   RulesConfig rulesConfig(final NrsConfigProps props) {
-    try {
-      String rulesPath = props.routingRules();
-      if (followUpNotifications) {
-        rulesPath = props.routingRulesWithFollowUp();
-      } else if (notifications73) {
-        rulesPath = props.routingRules73enabled();
-      }
-      String rulesContent = Files.readString(Path.of(rulesPath));
-      ObjectMapper mapper = new ObjectMapper();
-      RulesConfig rulesConfig = mapper.readValue(rulesContent, RulesConfig.class);
-      log.info("Loaded routing rules config from {}", rulesPath);
-      checkRules(rulesConfig);
-      return rulesConfig;
-    } catch (IOException e) {
-      log.warn("Error while processing routing rules config file", e);
+    String rulesPath = props.routingRules();
+    if (followUpNotifications) {
+      rulesPath = props.routingRulesWithFollowUp();
+    } else if (notifications73) {
+      rulesPath = props.routingRules73enabled();
     }
-    return new RulesConfig(new LinkedHashMap<>(), new LinkedHashMap<>());
+    log.info("Loading routing rules config from '{}'", rulesPath);
+
+    try {
+      String rulesContent = Files.readString(Path.of(rulesPath));
+      RulesConfig rulesConfig = objectMapper.readValue(rulesContent, RulesConfig.class);
+      checkRules(rulesConfig);
+      log.info("Successfully routing rules config from '{}'", rulesPath);
+      return rulesConfig;
+    } catch (IOException | IllegalStateException e) {
+      final String s =
+          String.format("Error while processing routing rules config file '%s'", rulesPath);
+      throw new IllegalStateException(s, e);
+    }
   }
 
   private void checkRules(RulesConfig rulesConfig) {
+    boolean configHasErrors = false;
     if (rulesConfig.rules().isEmpty()) {
-      log.warn("No rules found in routing rules config");
+      log.error("No rules found in routing rules config");
+      configHasErrors = true;
     }
     if (rulesConfig.results().isEmpty()) {
-      log.warn("No results found in routing rules config");
+      log.error("No results found in routing rules config");
+      configHasErrors = true;
     }
     Collection<Result> values = rulesConfig.results().values();
     for (Result result : values) {
@@ -90,8 +97,13 @@ class RulesLoader {
       for (Route route : routes) {
         if (route.actions().isEmpty()) {
           log.error("No actions found in routing rules config " + result.description());
+          configHasErrors = true;
         }
       }
+    }
+
+    if (configHasErrors) {
+      throw new IllegalStateException();
     }
   }
 }
