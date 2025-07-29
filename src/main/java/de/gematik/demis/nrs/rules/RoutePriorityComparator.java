@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs;
+package de.gematik.demis.nrs.rules;
 
 /*-
  * #%L
@@ -26,17 +26,23 @@ package de.gematik.demis.nrs;
  * #L%
  */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import de.gematik.demis.nrs.rules.model.Route;
+import java.util.Comparator;
+import javax.annotation.Nonnull;
 
-@SpringBootApplication
-@EnableFeignClients
-@ConfigurationPropertiesScan
-public class NotificationRoutingApplication {
+public class RoutePriorityComparator implements Comparator<Route> {
 
-  public static void main(String[] args) {
-    SpringApplication.run(NotificationRoutingApplication.class, args);
+  public static final RoutePriorityComparator INSTANCE = new RoutePriorityComparator();
+
+  private static final Comparator<Route> PRIORITY_COMPARATOR =
+      Comparator.comparing(RoutePriorityComparator::routePriority);
+
+  private static int routePriority(@Nonnull Route route) {
+    return route.type().getPriority();
+  }
+
+  @Override
+  public int compare(@Nonnull final Route o1, @Nonnull final Route o2) {
+    return PRIORITY_COMPARATOR.compare(o1, o2);
   }
 }

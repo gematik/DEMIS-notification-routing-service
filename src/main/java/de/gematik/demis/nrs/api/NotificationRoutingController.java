@@ -29,9 +29,12 @@ package de.gematik.demis.nrs.api;
 import static de.gematik.demis.nrs.service.dto.AddressDTO.COUNTRY_CODE_GERMANY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import de.gematik.demis.nrs.service.NotificationRoutingLegacyService;
 import de.gematik.demis.nrs.service.NotificationRoutingService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,13 +47,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationRoutingController {
 
   private final NotificationRoutingService notificationRoutingService;
+  private final NotificationRoutingLegacyService notificationRoutingLegacyService;
   private final AddressToHealthOfficeLookup healthOfficeLookupService;
+  private final boolean isTuberculosisRoutingEnabled;
 
+  @Autowired
   public NotificationRoutingController(
       final NotificationRoutingService notificationRoutingService,
-      final AddressToHealthOfficeLookup healthOfficeLookupService) {
+      final NotificationRoutingLegacyService notificationRoutingLegacyService,
+      final AddressToHealthOfficeLookup healthOfficeLookupService,
+      final @Value("${feature.flag.tuberculosis.routing.enabled}") boolean
+              isTuberculosisRoutingEnabled) {
     this.notificationRoutingService = notificationRoutingService;
     this.healthOfficeLookupService = healthOfficeLookupService;
+    this.notificationRoutingLegacyService = notificationRoutingLegacyService;
+    this.isTuberculosisRoutingEnabled = isTuberculosisRoutingEnabled;
   }
 
   @PostMapping(
@@ -61,8 +72,13 @@ public class NotificationRoutingController {
       @RequestBody final String fhirNotification,
       @RequestParam("isTestUser") final boolean isTestUser,
       @RequestParam("testUserID") final String sender) {
-    return notificationRoutingService.determineRuleBasedRouting(
-        fhirNotification, isTestUser, sender);
+    if (isTuberculosisRoutingEnabled) {
+      return notificationRoutingService.determineRuleBasedRouting(
+          fhirNotification, isTestUser, sender);
+    } else {
+      return notificationRoutingLegacyService.determineRuleBasedRouting(
+          fhirNotification, isTestUser, sender);
+    }
   }
 
   @GetMapping("/routing/health-office")

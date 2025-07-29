@@ -27,12 +27,9 @@ package de.gematik.demis.nrs.api;
  */
 
 import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -62,9 +59,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
     controllers = {NotificationRoutingController.class},
-    properties = {"feature.flag.tuberculosis.routing.enabled=true"})
+    properties = {"feature.flag.tuberculosis.routing.enabled=false"})
 @Import(ErrorHandlerConfiguration.class)
-class NotificationRoutingControllerTest {
+class NotificationRoutingControllerLegacyTest {
 
   private static final String URL_DETERMINE_RULE_BASED_ROUTING = "/routing/v2";
   private static final String URL_FIND_HEALTH_OFFICE_BY_ADDRESS = "/routing/health-office";
@@ -116,7 +113,8 @@ class NotificationRoutingControllerTest {
             null,
             null);
 
-    when(notificationRoutingService.determineRuleBasedRouting(eq(body), anyBoolean(), anyString()))
+    when(notificationRoutingLegacyService.determineRuleBasedRouting(
+            eq(body), anyBoolean(), anyString()))
         .thenReturn(routingOutput);
 
     final String expected =

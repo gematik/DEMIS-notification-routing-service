@@ -26,6 +26,10 @@ package de.gematik.demis.nrs.service;
  * #L%
  */
 
+import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import javax.annotation.Nonnull;
+import org.hl7.fhir.r4.model.Bundle;
+
 /** definitions of some exceptions * */
 public final class ExceptionMessages {
   public static final String NO_RESULT_FOR_RULE_EVALUATION =
@@ -38,4 +42,19 @@ public final class ExceptionMessages {
       "NRS-004: handling of rule result type '%s' is not supported.";
   public static final String NO_OPTIONAL_HEALTH_OFFICE_FOUND =
       "NRS-005: No health office found for optional route with type '%s'";
+
+  @Nonnull
+  public static String noResultForRuleEvaluation(@Nonnull final Bundle bundle) {
+    return String.format(NO_RESULT_FOR_RULE_EVALUATION, bundle.getIdentifier().getValue());
+  }
+
+  @Nonnull
+  public static String invalidReceiver(@Nonnull RulesResultTypeEnum type) {
+    return String.format(NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE, type.getCode());
+  }
+
+  @Nonnull
+  public static String unsupportedType(@Nonnull RulesResultTypeEnum type) {
+    return String.format(LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED, type.getCode());
+  }
 }

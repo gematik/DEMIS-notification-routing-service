@@ -46,12 +46,11 @@ import org.springframework.test.web.servlet.MockMvc;
     useMainMethod = UseMainMethod.ALWAYS,
     webEnvironment = WebEnvironment.MOCK,
     properties = {
-      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-      "nrs.routingRulesWithFollowUp=true", // oder ein sinnvoller Wert
-      "nrs.routingRules73enabled=true" // oder ein sinnvoller Wert
+      "feature.flag.tuberculosis.routing.enabled=false",
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup"
     })
 @AutoConfigureMockMvc
-class NrsIntegrationTest {
+class NrsIntegrationLegacyTest {
   private static final String LABORATORY_NOTIFICATION =
       "/integrationtest/requests/laboratory-notification.json";
   private static final String LABORATORY_NOTIFICATION_BLANK =
@@ -79,7 +78,27 @@ class NrsIntegrationTest {
                 .content(readResource(NOTIFICATION_NOT_PROCESSABLE))
                 .param("isTestUser", "false")
                 .param("testUserID", ""))
-        .andExpect(status().is(200));
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    """
+                   {
+                     "type": "laboratory",
+                     "notificationCategory": "7.1",
+                     "routes": [
+                       {
+                         "type": "specific_receiver",
+                         "specificReceiverId": "1.",
+                         "actions": [
+                           "pseudo_copy"
+                         ],
+                         "optional": false
+                       }
+                     ],
+                     "healthOffices": null,
+                     "responsible": null
+                   }"""));
   }
 
   @Test

@@ -2,6 +2,15 @@
  
 # Release notes
 
+## Release 2.4.0
+- Tuberculosis routing
+
+## Release 2.3.4
+- add default feature flags FEATURE_FLAG_NOTIFICATIONS_7_3, FEATURE_FLAG_FOLLOW_UP_NOTIFICATIONS to values.yaml
+
+## Release 2.3.3
+- additional results for follow_up notifications 7.1/6.1
+
 ## Release 2.3.2
 - Removed already active feature flags
 - Updated dependencies

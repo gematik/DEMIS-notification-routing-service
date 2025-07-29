@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs;
+package de.gematik.demis.nrs.service.futs;
 
 /*-
  * #%L
@@ -26,17 +26,29 @@ package de.gematik.demis.nrs;
  * #L%
  */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import com.google.common.base.Supplier;
+import java.util.Map;
+import javax.annotation.Nonnull;
 
-@SpringBootApplication
-@EnableFeignClients
-@ConfigurationPropertiesScan
-public class NotificationRoutingApplication {
+/**
+ * A configurable {@link Supplier} implementation to be used with Guava. Allows you to create an
+ * instance and pass it to {@link com.google.common.base.Suppliers} for memoization.
+ */
+public abstract class ConceptMapSupplier<K, V> implements Supplier<Map<K, V>> {
 
-  public static void main(String[] args) {
-    SpringApplication.run(NotificationRoutingApplication.class, args);
+  @Nonnull private final FutsClient futsClient;
+  @Nonnull private final String conceptMapKey;
+
+  public ConceptMapSupplier(
+      @Nonnull final FutsClient futsClient, @Nonnull final String conceptMapKey) {
+    this.futsClient = futsClient;
+    this.conceptMapKey = conceptMapKey;
+  }
+
+  @Nonnull
+  protected Map<String, String> getRaw() {
+    // create an immutable, non-null copy of the underlying map returned by Feign
+    // otherwise a caller might modify the map by accident
+    return Map.copyOf(futsClient.getConceptMap(conceptMapKey));
   }
 }

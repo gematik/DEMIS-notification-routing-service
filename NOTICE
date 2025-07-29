@@ -18,6 +18,7 @@ This project includes:
   Apache Commons Collections under Apache License, Version 2.0
   Apache Commons Compress under Apache-2.0
   Apache Commons CSV under Apache-2.0
+  Apache Commons FileUpload under Apache-2.0
   Apache Commons IO under Apache-2.0
   Apache Commons Lang under Apache-2.0
   Apache Commons Net under Apache License, Version 2.0
@@ -35,6 +36,7 @@ This project includes:
   AspectJ Weaver under Eclipse Public License - v 2.0
   AssertJ Core under Apache-2.0
   Awaitility under Apache 2.0
+  Bouncy Castle Provider under Bouncy Castle Licence
   Byte Buddy (without dependencies) under Apache License, Version 2.0
   Byte Buddy agent under Apache License, Version 2.0
   Caffeine cache under Apache License, Version 2.0
@@ -42,6 +44,10 @@ This project includes:
   context-propagation under The Apache Software License, Version 2.0
   dexx under MIT License
   error-prone annotations under Apache 2.0
+  Feign Core under The Apache Software License, Version 2.0
+  Feign Forms Core under The Apache Software License, Version 2.0
+  Feign Forms Extension for Spring under The Apache Software License, Version 2.0
+  Feign SLF4J under The Apache Software License, Version 2.0
   fhir-parser-library under Licensed under the EUPL 1.2
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   Gson under Apache-2.0
@@ -123,6 +129,10 @@ This project includes:
   SnakeYAML under Apache License, Version 2.0
   Spring AOP under Apache License, Version 2.0
   Spring Beans under Apache License, Version 2.0
+  Spring Cloud Commons under Apache License, Version 2.0
+  Spring Cloud Context under Apache License, Version 2.0
+  Spring Cloud OpenFeign Core under Apache License, Version 2.0
+  Spring Cloud Starter OpenFeign under Apache License, Version 2.0
   Spring Commons Logging Bridge under Apache License, Version 2.0
   Spring Context under Apache License, Version 2.0
   Spring Core under Apache License, Version 2.0
@@ -145,7 +155,9 @@ This project includes:
   spring-boot-starter-web under Apache License, Version 2.0
   spring-boot-test under Apache License, Version 2.0
   spring-boot-test-autoconfigure under Apache License, Version 2.0
+  spring-cloud-starter under Apache License, Version 2.0
   spring-parent under Licensed under the EUPL 1.2
+  spring-security-crypto under Apache License, Version 2.0
   springdoc-openapi-starter-common under The Apache License, Version 2.0
   springdoc-openapi-starter-webmvc-api under The Apache License, Version 2.0
   springdoc-openapi-starter-webmvc-ui under The Apache License, Version 2.0

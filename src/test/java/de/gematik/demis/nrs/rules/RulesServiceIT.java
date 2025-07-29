@@ -67,8 +67,12 @@ class RulesServiceIT {
         arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "notification6_1"),
         arguments(
             Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "notification6_1_cvd"),
+        arguments(Path.of(BASE_PATH, "6_1/mybd-notifiedperson.json"), "disease_6_1_tuberculosis"),
+        arguments(Path.of(BASE_PATH, "6_1/mytd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "notification7_1"),
         arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "notification7_1_cvd"),
+        arguments(
+            Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_notification7_3_anonymous"),
         arguments(
             Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_notification7_3"),

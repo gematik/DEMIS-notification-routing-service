@@ -72,13 +72,13 @@ class RulesLoaderTest {
 
     assertThat(config).isNotNull();
     assertThat(config.rules())
-        .hasSize(11)
+        .hasSize(13)
         .as("rules contain specific keys for §7.3 processing")
         .containsKeys(
             "disease_distinguish_7_3_anonymous_from_7_3_regular",
             "laboratory_distinguish_7_3_from_7_4");
     assertThat(config.results())
-        .hasSize(11)
+        .hasSize(13)
         .as("results contain specific keys for §7.3 processing")
         .containsKeys("laboratory_7_3", "disease_7_3");
   }
