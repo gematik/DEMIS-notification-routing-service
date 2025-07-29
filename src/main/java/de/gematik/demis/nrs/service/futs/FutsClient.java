@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs;
+package de.gematik.demis.nrs.service.futs;
 
 /*-
  * #%L
@@ -26,17 +26,18 @@ package de.gematik.demis.nrs;
  * #L%
  */
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@SpringBootApplication
-@EnableFeignClients
-@ConfigurationPropertiesScan
-public class NotificationRoutingApplication {
+import java.util.Map;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-  public static void main(String[] args) {
-    SpringApplication.run(NotificationRoutingApplication.class, args);
-  }
+@FeignClient(name = "futs", url = "${nrs.client.futs}")
+public interface FutsClient {
+
+  @GetMapping(
+      value = "/fhir-ui-data-model-translation/conceptmap/{name}",
+      produces = APPLICATION_JSON_VALUE)
+  Map<String, String> getConceptMap(@PathVariable String name);
 }

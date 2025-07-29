@@ -32,19 +32,17 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_OTH
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
-import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_OPTIONAL_HEALTH_OFFICE_FOUND;
-import static de.gematik.demis.nrs.service.ExceptionMessages.NO_RESULT_FOR_RULE_EVALUATION;
-import static de.gematik.demis.nrs.service.ExceptionMessages.NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
-import de.gematik.demis.nrs.api.dto.RoutingOutput;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
+import de.gematik.demis.nrs.rules.RoutePriorityComparator;
 import de.gematik.demis.nrs.rules.RulesService;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
@@ -52,27 +50,21 @@ import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
-import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.service.base.error.ServiceException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationRoutingService {
-  static final String LOOKUP_HEALTH_OFFICE_PREFIX_ID = "2";
-  static final String LOOKUP_HEALTH_OFFICE_DELIMITER = ".";
   private static final AddressOriginEnum[] ADDRESS_LOOKUP_ORDER = {
     NOTIFIED_PERSON_CURRENT,
     NOTIFIED_PERSON_ORDINARY,
@@ -83,14 +75,9 @@ public class NotificationRoutingService {
   };
 
   private final FhirReader fhirReader;
-  private final AddressToHealthOfficeLookup addressToHealthOfficeLookup;
   private final Statistics statistics;
   private final RulesService rulesService;
-
-  public RoutingOutput determineRouting(final String fhirBundleAsString) {
-    final RoutingInput routingInput = fhirReader.extractRoutingInput(fhirBundleAsString);
-    return getRoutingResult(routingInput);
-  }
+  private final ReceiverResolutionService receiverResolutionService;
 
   /**
    * Use rule-based routing to determine the routing result.
@@ -103,24 +90,44 @@ public class NotificationRoutingService {
       final String fhirBundleAsString,
       final boolean isTestNotification,
       final String recipientForTestRouting) {
-    RuleBasedRouteDTO returnDTO;
     final Bundle bundle = fhirReader.toBundle(fhirBundleAsString);
-    final Optional<Result> evaluatedRules = rulesService.evaluateRules(bundle);
-    if (evaluatedRules.isEmpty()) {
-      final String errorMessage =
-          String.format(NO_RESULT_FOR_RULE_EVALUATION, bundle.getIdentifier().getValue());
-      throw unprocessableEntityError(errorMessage);
-    }
-    final Result ruleResult = evaluatedRules.get();
-    // search for responsible_health_office in routing data
-    if (ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE))) {
-      returnDTO = handleHealthOfficeResponsible(bundle, ruleResult);
-    }
-    // no responsible_health_office means that a specific receiver is responsible. right now only
-    // the rki is supported as specific receiver.
-    else {
-      returnDTO = handleSpecificReceiver(ruleResult);
-    }
+    final Result ruleResult =
+        rulesService
+            .evaluateRules(bundle)
+            .orElseThrow(
+                () ->
+                    unprocessableEntityError(ExceptionMessages.noResultForRuleEvaluation(bundle)));
+
+    validateRoutingModel(ruleResult);
+
+    final List<Route> processableRoutes =
+        ruleResult.routesTo().stream().filter(Objects::nonNull).toList();
+
+    final ImmutableMap<RulesResultTypeEnum, Map<AddressOriginEnum, String>>
+        healthOfficesByReceiverType = resolveHealthOffices(bundle, processableRoutes);
+
+    final List<Route> resolvedRoutes =
+        processableRoutes.stream()
+            .map(route -> resolveRoute(route, healthOfficesByReceiverType.get(route.type())))
+            .<Route>mapMulti(Optional::ifPresent)
+            .sorted(RoutePriorityComparator.INSTANCE)
+            .toList();
+
+    ensureRoutesAreResolved(processableRoutes, resolvedRoutes);
+
+    final Route responsibleRoute =
+        resolvedRoutes.stream()
+            .findFirst()
+            .orElseThrow(() -> unprocessableEntityError(NO_HEALTH_OFFICE_FOUND));
+
+    // all health offices for the addresses found in the notification that are resolved for the
+    // responsible route (used for debugging/reporting by end-user)
+    final Map<AddressOriginEnum, String> responsibleHealthOffices =
+        healthOfficesByReceiverType.getOrDefault(responsibleRoute.type(), Map.of());
+
+    RuleBasedRouteDTO returnDTO =
+        ruleResult.toRoutingOutput(
+            resolvedRoutes, responsibleHealthOffices, responsibleRoute.specificReceiverId());
 
     if (isTestNotification) {
       final List<Route> rewrittenRoutes =
@@ -139,113 +146,142 @@ public class NotificationRoutingService {
     return returnDTO;
   }
 
-  private RuleBasedRouteDTO handleSpecificReceiver(Result result) {
-    if (result.anyRouteMatches(Route.receiverIsNull())) {
-      final String errorMessage =
-          String.format(NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE, "specific_receiver");
-      throw unprocessableEntityError(errorMessage);
+  /**
+   * Translate addresses for each type of receiver, we can use this result later when we construct
+   * the result
+   *
+   * @param bundle
+   * @param processableRoutes
+   * @return
+   */
+  @Nonnull
+  private ImmutableMap<RulesResultTypeEnum, Map<AddressOriginEnum, String>> resolveHealthOffices(
+      @Nonnull final Bundle bundle, @Nonnull final List<Route> processableRoutes) {
+    final RoutingInput bundleRoutingInput = fhirReader.getRoutingInput(bundle);
+    final Map<AddressOriginEnum, AddressDTO> addresses = bundleRoutingInput.addresses();
+    return processableRoutes.stream()
+        .collect(
+            Maps.toImmutableEnumMap(Route::type, r -> lookupHealthOffices(r.type(), addresses)));
+  }
+
+  private void ensureRoutesAreResolved(
+      @Nonnull final List<Route> processableRoutes, @Nonnull final List<Route> resolvedRoutes) {
+    if (processableRoutes.size() == resolvedRoutes.size()) {
+      return;
     }
 
-    if (result.routesTo().isEmpty()) {
+    final List<Route> expectedRequiredRoutes =
+        processableRoutes.stream().filter(Predicate.not(Route::optional)).toList();
+
+    final List<Route> actualRequiredRoutes =
+        resolvedRoutes.stream().filter(Predicate.not(Route::optional)).toList();
+
+    if (expectedRequiredRoutes != actualRequiredRoutes) {
+      throw unprocessableEntityError(NO_HEALTH_OFFICE_FOUND);
+    }
+
+    // assumes we can always resolve SPECIFIC_RECEIVER, otherwise we'd need to get creative to
+    // distinguish multiple SPECIFIC_RECEIVERs here
+    final Set<RulesResultTypeEnum> expectedOptionalRoutes =
+        processableRoutes.stream()
+            .filter(Route::optional)
+            .filter(Predicate.not(Route.hasType(SPECIFIC_RECEIVER)))
+            .map(Route::type)
+            .collect(Collectors.toSet());
+
+    final Set<RulesResultTypeEnum> actualOptionalRoutes =
+        actualRequiredRoutes.stream()
+            .filter(Route::optional)
+            .filter(Predicate.not(Route.hasType(SPECIFIC_RECEIVER)))
+            .map(Route::type)
+            .collect(Collectors.toSet());
+
+    final Sets.SetView<RulesResultTypeEnum> missingRoutes =
+        Sets.difference(expectedOptionalRoutes, actualOptionalRoutes);
+    for (RulesResultTypeEnum type : missingRoutes) {
+      log.warn(String.format(NO_OPTIONAL_HEALTH_OFFICE_FOUND, type));
+    }
+  }
+
+  /**
+   * Attempt to resolve {@link Route#specificReceiverId} of the given route
+   *
+   * @param route Route to resolve
+   * @param healthOffices Health offices resolved for the receiver type
+   * @return The route if it could be resolved or {@link Optional#empty()} if not
+   * @throws ServiceException in case required routes can't be resolved or similar issues are
+   *     encountered
+   */
+  @Nonnull
+  private Optional<Route> resolveRoute(
+      @Nonnull final Route route, @Nullable final Map<AddressOriginEnum, String> healthOffices) {
+    if (SPECIFIC_RECEIVER.equals(route.type())) {
+      return Optional.of(route);
+    }
+
+    if (healthOffices == null) {
+      return Optional.empty();
+    }
+    final Optional<AddressOriginEnum> highestPrioAddressOrigin =
+        Arrays.stream(ADDRESS_LOOKUP_ORDER).filter(healthOffices::containsKey).findFirst();
+    return highestPrioAddressOrigin
+        .map(healthOffices::get)
+        .map(
+            healthOffice -> {
+              log.debug(
+                  "Responsible Health Office: {} (derived from address origin {})",
+                  healthOffice,
+                  highestPrioAddressOrigin.get());
+              statistics.incResponsibleAddressOrigin(highestPrioAddressOrigin.get());
+              return healthOffice;
+            })
+        .or(
+            () -> {
+              log.info("no health office is responsible");
+              statistics.incNoHealthOfficeResponsible();
+              return Optional.empty();
+            })
+        .map(route::copyWithReceiver);
+  }
+
+  /** Basic sanity checks. In the future we can replace this with static code analysis. */
+  private void validateRoutingModel(@Nonnull final Result routingModel) {
+    if (routingModel.routesTo().isEmpty()) {
       final String errorMessage = String.format(NO_HEALTH_OFFICE_FOUND);
       throw unprocessableEntityError(errorMessage);
     }
 
-    final Route firstRoute = result.routesTo().getFirst();
-    return result.toRoutingOutput(Collections.emptyMap(), firstRoute.specificReceiverId());
-  }
-
-  private RuleBasedRouteDTO handleHealthOfficeResponsible(Bundle bundle, Result ruleResult) {
-    final RoutingInput bundleRoutingInput = fhirReader.getRoutingInput(bundle);
-    final List<Route> ruleRoutingList =
-        ruleResult.routesTo().stream().filter(Objects::nonNull).toList();
-    final List<Route> computedRoutingData =
-        completeRoutingData(ruleRoutingList, bundleRoutingInput);
-    final boolean containsResponsibleHealthOffice =
-        computedRoutingData.stream().anyMatch(Route.hasType(RESPONSIBLE_HEALTH_OFFICE));
-
-    if (!containsResponsibleHealthOffice) {
-      return ruleResult.toRoutingOutput(computedRoutingData, null, null);
-    }
-
-    final RoutingOutput routingOutput = getRoutingResult(bundleRoutingInput);
-    final Map<AddressOriginEnum, String> healthOffices = routingOutput.healthOffices();
-    final String responsible = routingOutput.responsible();
-    return ruleResult.toRoutingOutput(computedRoutingData, healthOffices, responsible);
-  }
-
-  private List<Route> completeRoutingData(final List<Route> routes, RoutingInput routingInput) {
-    final Optional<Route> specificReceiverWithoutId =
-        routes.stream()
-            .filter(Route.hasType(SPECIFIC_RECEIVER))
-            .filter(Route.receiverIsNull())
-            .findFirst();
-    if (specificReceiverWithoutId.isPresent()) {
-      final String type = specificReceiverWithoutId.get().type().getCode();
-      final String errorMessage =
-          String.format(NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE, type);
-      throw unprocessableEntityError(errorMessage);
-    }
-
-    return routes.stream()
-        .map(
+    routingModel.routesTo().stream()
+        .filter(Route.hasType(SPECIFIC_RECEIVER))
+        .filter(Route.receiverIsNull())
+        .findAny()
+        .ifPresent(
             route -> {
-              final boolean hasReceiver = Objects.nonNull(route.specificReceiverId());
-              if (hasReceiver) {
-                return Optional.of(route);
-              }
+              throw unprocessableEntityError(ExceptionMessages.invalidReceiver(route.type()));
+            });
 
-              try {
-                Optional<String> receiverIdOpt = lookupSpecificReceiverId(route, routingInput);
-                return receiverIdOpt.map(route::copyWithReceiver);
-              } catch (ServiceException e) {
-                log.warn(NO_HEALTH_OFFICE_FOUND, e);
-                return Optional.<Route>empty();
-              }
-            })
-        .<Route>mapMulti(Optional::ifPresent)
-        .toList();
+    routingModel.routesTo().stream()
+        .filter(Route.hasType(OTHER))
+        .findFirst()
+        .ifPresent(
+            route -> {
+              throw unprocessableEntityError(ExceptionMessages.unsupportedType(route.type()));
+            });
   }
 
-  private Optional<String> lookupSpecificReceiverId(
-      final Route route, final RoutingInput routingInput) {
-
-    if (RESPONSIBLE_HEALTH_OFFICE.equals(route.type())
-        || RESPONSIBLE_HEALTH_OFFICE_SORMAS.equals(route.type())) {
-
-      final Map<AddressOriginEnum, String> healthOffices =
-          lookupHealthOffices(routingInput.addresses());
-      String targetHealthOffice = determineResponsibleHealthOffice(healthOffices);
-      if (targetHealthOffice == null || targetHealthOffice.isBlank()) {
-        if (route.optional()) {
-          final String errorMessage = String.format(NO_OPTIONAL_HEALTH_OFFICE_FOUND, route.type());
-          log.warn(errorMessage);
-          return Optional.empty();
-        }
-        final String errorMessage = String.format(NO_HEALTH_OFFICE_FOUND);
-        throw unprocessableEntityError(errorMessage);
-      }
-      String s =
-          RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS.equals(route.type())
-              ? (LOOKUP_HEALTH_OFFICE_PREFIX_ID
-                  + targetHealthOffice.substring(
-                      targetHealthOffice.indexOf(LOOKUP_HEALTH_OFFICE_DELIMITER)))
-              : targetHealthOffice;
-      return Optional.of(s);
+  @Nonnull
+  private Map<AddressOriginEnum, String> lookupHealthOffices(
+      @Nonnull final RulesResultTypeEnum type,
+      @Nonnull final Map<AddressOriginEnum, AddressDTO> addresses) {
+    if (SPECIFIC_RECEIVER.equals(type)) {
+      return Map.of();
     }
 
-    final String errorMessage =
-        String.format(LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED, route.type().getCode());
-    throw unprocessableEntityError(errorMessage);
-  }
-
-  private Map<AddressOriginEnum, String> lookupHealthOffices(
-      final Map<AddressOriginEnum, AddressDTO> addresses) {
     final Map<AddressOriginEnum, String> healthOffices = new EnumMap<>(AddressOriginEnum.class);
     for (final Map.Entry<AddressOriginEnum, AddressDTO> addressEntry : addresses.entrySet()) {
       final AddressOriginEnum addressOrigin = addressEntry.getKey();
       final Optional<String> healthOffice =
-          addressToHealthOfficeLookup.lookup(addressEntry.getValue());
+          receiverResolutionService.compute(type, addressEntry.getValue());
       if (healthOffice.isPresent()) {
         healthOffices.put(addressOrigin, healthOffice.get());
         log.debug("health office for '{}': {}", addressOrigin, healthOffice.get());
@@ -255,34 +291,6 @@ public class NotificationRoutingService {
       statistics.incHealthOfficeLookup(addressOrigin, healthOffice.isPresent());
     }
     return Collections.unmodifiableMap(healthOffices);
-  }
-
-  @Nullable
-  private String determineResponsibleHealthOffice(
-      final Map<AddressOriginEnum, String> healthOffices) {
-    final Optional<AddressOriginEnum> highestPrioAddressOrigin =
-        Arrays.stream(ADDRESS_LOOKUP_ORDER).filter(healthOffices::containsKey).findFirst();
-    final String healthOffice = highestPrioAddressOrigin.map(healthOffices::get).orElse(null);
-
-    if (highestPrioAddressOrigin.isPresent()) {
-      log.debug(
-          "Responsible Health Office: {} (derived from address origin {})",
-          healthOffice,
-          highestPrioAddressOrigin.get());
-      statistics.incResponsibleAddressOrigin(highestPrioAddressOrigin.get());
-    } else {
-      log.info("no health office is responsible");
-      statistics.incNoHealthOfficeResponsible();
-    }
-
-    return healthOffice;
-  }
-
-  private RoutingOutput getRoutingResult(final RoutingInput routingInput) {
-    final Map<AddressOriginEnum, String> healthOffices =
-        lookupHealthOffices(routingInput.addresses());
-    final String responsible = determineResponsibleHealthOffice(healthOffices);
-    return new RoutingOutput(healthOffices, responsible);
   }
 
   private ServiceException unprocessableEntityError(final String errorMessage) {

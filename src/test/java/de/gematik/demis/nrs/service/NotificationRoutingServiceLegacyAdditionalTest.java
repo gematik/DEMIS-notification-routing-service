@@ -32,7 +32,8 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRI
 import static de.gematik.demis.nrs.api.dto.BundleActionType.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +49,6 @@ import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
-import de.gematik.demis.nrs.service.futs.ConceptMapService;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
@@ -58,32 +58,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.hl7.fhir.r4.model.Bundle;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationRoutingServiceAdditionalTest {
+class NotificationRoutingServiceLegacyAdditionalTest {
+
+  @InjectMocks NotificationRoutingLegacyService notificationRoutingService;
 
   @Mock FhirReader fhirReaderMock;
+
   @Mock AddressToHealthOfficeLookup addressToHealthOfficeLookupMock;
-  @Mock RulesService rulesServiceMock;
-  @Mock ConceptMapService conceptMapService;
+
   @Mock Statistics statisticsMock;
 
-  NotificationRoutingService notificationRoutingService;
-
-  @BeforeEach
-  void setup() {
-
-    ReceiverResolutionService receiverResolutionService =
-        new ReceiverResolutionService(addressToHealthOfficeLookupMock, conceptMapService);
-    notificationRoutingService =
-        new NotificationRoutingService(
-            fhirReaderMock, statisticsMock, rulesServiceMock, receiverResolutionService);
-  }
+  @Mock RulesService rulesServiceMock;
 
   @Test
   void determineRuleBasedRouting_SpecificReceiver() {
@@ -92,8 +84,6 @@ class NotificationRoutingServiceAdditionalTest {
     String fhirNotification = "i am a fhir notification mock";
     Bundle bundle = new Bundle();
     when(fhirReaderMock.toBundle(fhirNotification)).thenReturn(bundle);
-    // prevent npe
-    when(fhirReaderMock.getRoutingInput(bundle)).thenReturn(new RoutingInput(Map.of()));
 
     // call to rule service
     List<Route> routeListe =
@@ -162,7 +152,7 @@ class NotificationRoutingServiceAdditionalTest {
     RuleBasedRouteDTO ruleBasedRouteDTO =
         notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, "");
 
-    verify(statisticsMock, times(1))
+    verify(statisticsMock, times(2))
         .incHealthOfficeLookup(NOTIFIED_PERSON_PRIMARY, someIdOpt.isPresent());
 
     assertThat(ruleBasedRouteDTO.responsible()).isEqualTo("1.0.1");
@@ -214,7 +204,7 @@ class NotificationRoutingServiceAdditionalTest {
     RuleBasedRouteDTO ruleBasedRouteDTO =
         notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, "");
 
-    verify(statisticsMock, times(2))
+    verify(statisticsMock, times(3))
         .incHealthOfficeLookup(NOTIFIED_PERSON_PRIMARY, someIdOpt.isPresent());
   }
 
@@ -357,6 +347,7 @@ class NotificationRoutingServiceAdditionalTest {
     AddressDTO value = new AddressDTO("street", "1", "12345", "Berlin", "DE");
     map.put(NOTIFIED_PERSON_PRIMARY, value);
     RoutingInput routingInput = new RoutingInput(map);
+    when(fhirReaderMock.getRoutingInput(bundle)).thenReturn(routingInput);
 
     assertThatThrownBy(
             () -> notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, ""))
@@ -465,11 +456,21 @@ class NotificationRoutingServiceAdditionalTest {
     RoutingInput routingInput = new RoutingInput(Collections.emptyMap());
     when(fhirReaderMock.getRoutingInput(bundle)).thenReturn(routingInput);
 
-    assertThatExceptionOfType(ServiceException.class)
-        .isThrownBy(
-            () -> {
-              notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, "");
-            })
-        .withMessage(ExceptionMessages.NO_HEALTH_OFFICE_FOUND);
+    RuleBasedRouteDTO ruleBasedRouteDTO =
+        notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, "");
+    RuleBasedRouteDTO expextedRuleBasedRouteDTO =
+        new RuleBasedRouteDTO(
+            "laboratory",
+            "7.1",
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            singletonList(
+                new Route(
+                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
+                    "1.",
+                    singletonList(ActionType.PSEUDO_COPY),
+                    false)),
+            null,
+            null);
+    assertThat(ruleBasedRouteDTO).isEqualTo(expextedRuleBasedRouteDTO);
   }
 }

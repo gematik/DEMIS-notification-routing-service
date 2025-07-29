@@ -40,8 +40,18 @@
     "sormas_and_cvdp": {
       "description": "this rule applies to §7.1. we need to distinguish between cvdp and other notification categories.",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdp').empty().not()",
+      "followingRules": {
+        "conditionNotMet": "laboratory_7_1_or_7_1_tuberculosis"
+      },
       "result": {
-        "conditionFulfilled": "notification7_1_cvd",
+        "conditionFulfilled": "notification7_1_cvd"
+      }
+    },
+    "laboratory_7_1_or_7_1_tuberculosis": {
+      "description": "decide whether to use the tuberculosis routing or regular 7.1",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'mytp').empty().not()",
+      "result": {
+        "conditionFulfilled": "laboratory_7_1_tuberculosis",
         "conditionNotMet": "notification7_1"
       },
       "followingRules": {}
@@ -59,8 +69,18 @@
     "sormas_and_cvdd": {
       "description": "this rule applies to §6.1. we need to distinguish between cvdd and other notification categories.",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdd').empty().not()",
+      "followingRules": {
+        "conditionNotMet": "disease_6_1_or_6_1_tuberculosis"
+      },
       "result": {
-        "conditionFulfilled": "notification6_1_cvd",
+        "conditionFulfilled": "notification6_1_cvd"
+      }
+    },
+    "disease_6_1_or_6_1_tuberculosis": {
+      "description": "decide whether to use the tuberculosis routing or regular 6.1",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'mybd' or code = 'mytd').empty().not()",
+      "result": {
+        "conditionFulfilled": "disease_6_1_tuberculosis",
         "conditionNotMet": "notification6_1"
       },
       "followingRules": {}
@@ -152,6 +172,25 @@
         }
       ]
     },
+    "disease_6_1_tuberculosis": {
+      "description": "6.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
+      "type": "disease",
+      "notificationCategory": "6.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_tuberculosis",
+          "optional": "false",
+          "actions": ["encrypt"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
     "notification7_1": {
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
@@ -185,6 +224,25 @@
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
+          "actions": ["encrypt"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "laboratory_7_1_tuberculosis": {
+      "description": "7.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
+      "type": "laboratory",
+      "notificationCategory": "7.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_tuberculosis",
+          "optional": "false",
           "actions": ["encrypt"]
         },
         {

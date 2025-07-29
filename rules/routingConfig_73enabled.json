@@ -22,19 +22,28 @@
       "description": "narrow down specific 7.1 cases",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
       "followingRules": {
-        "conditionFulfilled": "laboratory_distinguish_7_1_covid_from_7_1_regular"
+        "conditionFulfilled": "laboratory_narrow_down_7_1_cases_by_pathogen"
       },
       "result": {
         "conditionNotMet": "laboratory_7_1_anonymous_follow_up"
       }
     },
-    "laboratory_distinguish_7_1_covid_from_7_1_regular": {
-      "description": "Distinguish between a regular 7.1 or a COVID-related 7.1",
+    "laboratory_narrow_down_7_1_cases_by_pathogen": {
+      "description": "Distinguish between a regular 7.1, tuberculosis-related 7.1 or a COVID-related 7.1",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdp').empty().not()",
-      "followingRules": {},
+      "followingRules": {
+        "conditionNotMet": "laboratory_distinguish_7_1_tuberculosis_from_7_1_regular"
+      },
+      "result": {
+        "conditionFulfilled": "laboratory_7_1_covid"
+      }
+    },
+    "laboratory_distinguish_7_1_tuberculosis_from_7_1_regular": {
+      "description": "Distinguish between a regular 7.1 or a tuberculosis-related 7.1",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'mytp').empty().not()",
       "result": {
         "conditionNotMet": "laboratory_7_1",
-        "conditionFulfilled": "laboratory_7_1_covid"
+        "conditionFulfilled": "laboratory_7_1_tuberculosis"
       }
     },
     "laboratory_distinguish_7_3_from_7_4": {
@@ -76,18 +85,28 @@
       "description": "",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
       "followingRules": {
-        "conditionFulfilled": "disease_distinguish_6_1_covid_from_6_1_regular"
+        "conditionFulfilled": "disease_narrow_down_6_1_cases_by_pathogen"
       },
       "result": {
         "conditionNotMet": "disease_6_1_anonymous_follow_up"
       }
     },
-    "disease_distinguish_6_1_covid_from_6_1_regular": {
+    "disease_narrow_down_6_1_cases_by_pathogen": {
       "description": "",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdd').empty().not()",
+      "followingRules": {
+        "conditionNotMet": "disease_distinguish_6_1_tuberculosis_from_6_1_regular"
+      },
+      "result": {
+        "conditionFulfilled": "disease_6_1_covid"
+      }
+    },
+    "disease_distinguish_6_1_tuberculosis_from_6_1_regular": {
+      "description": "",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'mytd' or code = 'mybd').empty().not()",
       "followingRules": { },
       "result": {
-        "conditionFulfilled": "disease_6_1_covid",
+        "conditionFulfilled": "disease_6_1_tuberculosis",
         "conditionNotMet": "disease_6_1"
       }
     },
@@ -135,6 +154,25 @@
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
+          "actions": ["encrypt"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "laboratory_7_1_tuberculosis": {
+      "description": "7.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
+      "type": "laboratory",
+      "notificationCategory": "7.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_tuberculosis",
+          "optional": "false",
           "actions": ["encrypt"]
         },
         {
@@ -227,6 +265,25 @@
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
+          "actions": ["encrypt"]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": ["pseudo_copy"]
+        }
+      ]
+    },
+    "disease_6_1_tuberculosis": {
+      "description": "6.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
+      "type": "disease",
+      "notificationCategory": "6.1",
+      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_tuberculosis",
+          "optional": "false",
           "actions": ["encrypt"]
         },
         {
