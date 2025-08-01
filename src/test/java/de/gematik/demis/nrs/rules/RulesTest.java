@@ -32,7 +32,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.fhirpath.IFhirPath;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.disease.NotificationDiseaseDataBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.laboratory.LaboratoryReportDataBuilder;
-import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.laboratory.NonNominalBundleBuilder;
+import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.laboratory.NotificationBundleLaboratoryNonNominalDataBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.laboratory.NotificationLaboratoryDataBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.utils.DemisConstants;
 import de.gematik.demis.nrs.NotificationRoutingApplication;
@@ -79,7 +79,7 @@ class RulesTest {
             .setDefault()
             .setLaboratoryReport(diagnosticReport)
             .build();
-    return new NonNominalBundleBuilder()
+    return new NotificationBundleLaboratoryNonNominalDataBuilder()
         .setDefaults()
         .setLaboratoryReport(diagnosticReport)
         .setNotificationLaboratory(laboratoryReport)
@@ -133,7 +133,7 @@ class RulesTest {
         new NotificationDiseaseDataBuilder().setDefaults().setDisease(disease).build();
     diagnosticReport.setId("DiagnosticReport/123");
     final Bundle build =
-        new NonNominalBundleBuilder()
+        new NotificationBundleLaboratoryNonNominalDataBuilder()
             .setDefaults()
             .setNotificationLaboratory(diagnosticReport)
             .addAdditionalEntry(disease)
