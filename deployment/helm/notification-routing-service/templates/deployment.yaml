@@ -87,6 +87,10 @@ spec:
               value: "Europe/Berlin"
             - name: "DATA_DIR_LOOKUP"
               value: {{ include "notification-routing-service.lookup-directory" . | quote }}
+            {{- if eq (.Values.customEnvVars.FEATURE_FLAG_NEW_API_ENDPOINTS | toString) "true" }}
+            - name: "NRS_CLIENT_FUTS_CONTEXT_PATH"
+              value: "/"
+            {{- end }}
             {{- if .Values.debug.enable }}
             - name: "JAVA_TOOL_OPTIONS"
               value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9000"

@@ -52,11 +52,7 @@ import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,7 +97,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     RuleBasedRouteDTO ruleBasedRouteDTO =
@@ -135,7 +132,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -187,7 +185,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -253,7 +252,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -297,7 +297,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     assertThatThrownBy(
@@ -339,7 +340,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -388,7 +390,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -449,7 +452,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                 routeListe,
                 "laboratory",
                 "7.1",
-                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD))));
+                SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+                Set.of("role_1", "role_2")));
     when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
 
     // extract routingInput
@@ -470,6 +474,8 @@ class NotificationRoutingServiceLegacyAdditionalTest {
                     singletonList(ActionType.PSEUDO_COPY),
                     false)),
             null,
+            null,
+            Set.of("role_1", "role_2"),
             null);
     assertThat(ruleBasedRouteDTO).isEqualTo(expextedRuleBasedRouteDTO);
   }

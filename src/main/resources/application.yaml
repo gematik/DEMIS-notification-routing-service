@@ -29,6 +29,7 @@ nrs:
     rules-start-id: ${RULES_START_ID:start}
     client:
         futs: "http://futs.demis.svc.cluster.local"
+        futs_context_path: "/fhir-ui-data-model-translation/"
 
 feature.flag:
     search.fuzzy: false
@@ -36,3 +37,5 @@ feature.flag:
     notifications.7.3: false
     follow.up.notifications: false
     tuberculosis.routing.enabled: false
+    permission.check.enabled: false
+    custodian.enabled: false

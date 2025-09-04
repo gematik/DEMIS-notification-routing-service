@@ -101,7 +101,7 @@ class NotificationRoutingServiceTest {
         new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
     underTest =
         new NotificationRoutingService(
-            fhirReader, statistics, ruleService, receiverResolutionService);
+            fhirReader, statistics, ruleService, receiverResolutionService, false);
   }
 
   private static AddressDTO createAddress(final String postalCode) {
@@ -199,7 +199,8 @@ class NotificationRoutingServiceTest {
                 new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of(ActionType.NO_ACTION), false)),
             "any",
             "any",
-            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
 
     // this is just here to avoid an NPE
     when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
@@ -274,7 +275,8 @@ class NotificationRoutingServiceTest {
             resultList,
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     final Map<AddressDTO, String> addressToHealthOfficeMap =
         addressesWithHealthOffice.stream()
             .collect(Collectors.toMap(addresses::get, type -> healthOfficeId));
@@ -295,7 +297,9 @@ class NotificationRoutingServiceTest {
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             outputList,
             withRoutingOutput ? expectedRoutingOutput.healthOffices() : emptyMap(),
-            responsible);
+            responsible,
+            Set.of("role_1", "role_2"),
+            null);
     return Triple.of(result, addressToHealthOfficeMap, expectedOutput);
   }
 
@@ -319,7 +323,8 @@ class NotificationRoutingServiceTest {
                     false)),
             "any",
             "any",
-            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
 
     // this is just here to avoid an NPE
     when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
@@ -365,7 +370,8 @@ class NotificationRoutingServiceTest {
                     false)),
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     // mock services
     when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
@@ -402,7 +408,8 @@ class NotificationRoutingServiceTest {
                     false)),
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     // mock services
     when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
@@ -437,7 +444,8 @@ class NotificationRoutingServiceTest {
             List.of(new Route(OTHER, null, List.of(), false)),
             "",
             "",
-            SequencedSets.of());
+            SequencedSets.of(),
+            Set.of("role_1", "role_2"));
     final Bundle bundle = new Bundle();
     bundle.setIdentifier(new Identifier().setValue("1"));
     // AND the addresses from the bundle can't be resolved to a health office
@@ -458,7 +466,8 @@ class NotificationRoutingServiceTest {
             List.of(new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(), false)),
             "",
             "",
-            SequencedSets.of());
+            SequencedSets.of(),
+            Set.of("role_1", "role_2"));
     final Bundle bundle = new Bundle();
     bundle.setIdentifier(new Identifier().setValue("1"));
     // AND the addresses from the bundle can't be resolved to a health office
@@ -485,7 +494,8 @@ class NotificationRoutingServiceTest {
             List.of(new Route(SPECIFIC_RECEIVER, null, List.of(), false)),
             "",
             "",
-            SequencedSets.of());
+            SequencedSets.of(),
+            Set.of("role_1", "role_2"));
     when(ruleService.evaluateRules(any())).thenReturn(Optional.of(value));
 
     // THEN
@@ -499,11 +509,35 @@ class NotificationRoutingServiceTest {
   @Test
   void thatModelIsInvalidForEmptyRoutes() {
     // GIVEN a routing model with a specific receiver, but without an id
-    final Result value = new Result("id", "desc", List.of(), "", "", SequencedSets.of());
+    final Result value = new Result("id", "desc", List.of(), "", "", SequencedSets.of(), Set.of());
     when(ruleService.evaluateRules(any())).thenReturn(Optional.of(value));
     // THEN
     assertThatExceptionOfType(ServiceException.class)
         .isThrownBy(() -> underTest.determineRuleBasedRouting("", false, ""))
         .withMessage(NO_HEALTH_OFFICE_FOUND);
+  }
+
+  @Test
+  void thatCustodianIsSetForTestUser() {
+    final AddressDTO address = new AddressDTO("Str", "1", "12071", "Berlin", "DE");
+    final RoutingInput routingInput = new RoutingInput(Map.of(NOTIFIED_PERSON_PRIMARY, address));
+
+    final Result originalResult =
+        new Result(
+            "",
+            "",
+            List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.NO_ACTION), false)),
+            "any",
+            "any",
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
+
+    // this is just here to avoid an NPE
+    when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
+    when(ruleService.evaluateRules(any())).thenReturn(Optional.of(originalResult));
+
+    final RuleBasedRouteDTO ruleBasedRouteDTO =
+        underTest.determineRuleBasedRouting("", true, "testUser");
+    assertThat(ruleBasedRouteDTO.custodian()).isEqualTo("testUser");
   }
 }

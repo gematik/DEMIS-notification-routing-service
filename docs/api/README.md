@@ -14,6 +14,9 @@ All URIs are relative to *http://localhost*
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [BundleAction](./Models/BundleAction.md)
+ - [Route](./Models/Route.md)
+ - [RuleBasedRouteDTO](./Models/RuleBasedRouteDTO.md)
 
 
 <a name="documentation-for-authorization"></a>

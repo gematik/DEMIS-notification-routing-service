@@ -99,7 +99,8 @@
           "optional": "false",
           "actions": ["pseudo_original", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-nonnominal-sender"]
     },
     "laboratory_notification7_3_anonymous": {
       "description": "if this case is active the notification is a §7.3 anonymous case. it should only be send to the RKI.",
@@ -113,7 +114,8 @@
           "optional": "false",
           "actions": ["pseudo_original", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-anonymous-sender"]
     },
     "disease_notification7_3": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
@@ -127,7 +129,8 @@
           "optional": "false",
           "actions": ["pseudo_original", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-nonnominal-sender", "disease-notification-anonymous-sender"]
     },
     "notification6_1": {
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
@@ -146,7 +149,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "notification6_1_cvd": {
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
@@ -170,7 +174,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_tuberculosis": {
       "description": "6.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
@@ -189,7 +194,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "notification7_1": {
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
@@ -208,7 +214,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "notification7_1_cvd": {
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
@@ -232,7 +239,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_tuberculosis": {
       "description": "7.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
@@ -251,7 +259,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "notification7_4": {
       "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
@@ -265,7 +274,8 @@
           "optional": "false",
           "actions": ["no_action"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-negative-sender"]
     }
   }
 }

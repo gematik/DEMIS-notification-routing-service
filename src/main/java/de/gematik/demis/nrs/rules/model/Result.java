@@ -33,6 +33,7 @@ import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.SequencedSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -48,7 +49,8 @@ public record Result(
     List<Route> routesTo,
     String type,
     String notificationCategory,
-    SequencedSet<BundleAction> bundleActions) {
+    SequencedSet<BundleAction> bundleActions,
+    Set<String> allowedRoles) {
 
   /** Copy the data from original but set the id to newId. */
   public static Result replaceId(final Result original, final String newId) {
@@ -58,7 +60,8 @@ public record Result(
         original.routesTo(),
         original.type(),
         original.notificationCategory(),
-        original.bundleActions());
+        original.bundleActions(),
+        original.allowedRoles());
   }
 
   /**
@@ -70,18 +73,40 @@ public record Result(
     return routesTo.stream().anyMatch(matcher);
   }
 
+  /**
+   * Transform this result into {@link RuleBasedRouteDTO} by supplementing the dynamic routing
+   * information
+   */
   public RuleBasedRouteDTO toRoutingOutput(
       final @Nullable Map<AddressOriginEnum, String> healthOffices,
       final @Nullable String responsible) {
     return new RuleBasedRouteDTO(
-        type(), notificationCategory(), bundleActions(), routesTo(), healthOffices, responsible);
+        type(),
+        notificationCategory(),
+        bundleActions(),
+        routesTo(),
+        healthOffices,
+        responsible,
+        allowedRoles(),
+        null);
   }
 
+  /**
+   * Transform this result into {@link RuleBasedRouteDTO} by supplementing the dynamic routing
+   * information
+   */
   public RuleBasedRouteDTO toRoutingOutput(
       final List<Route> routes,
       final @Nullable Map<AddressOriginEnum, String> healthOffices,
       final @Nullable String responsible) {
     return new RuleBasedRouteDTO(
-        type(), notificationCategory(), bundleActions(), routes, healthOffices, responsible);
+        type(),
+        notificationCategory(),
+        bundleActions(),
+        routes,
+        healthOffices,
+        responsible,
+        allowedRoles(),
+        null);
   }
 }

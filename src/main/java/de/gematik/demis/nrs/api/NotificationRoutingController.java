@@ -29,6 +29,7 @@ package de.gematik.demis.nrs.api;
 import static de.gematik.demis.nrs.service.dto.AddressDTO.COUNTRY_CODE_GERMANY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.service.NotificationRoutingLegacyService;
 import de.gematik.demis.nrs.service.NotificationRoutingService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
@@ -68,17 +69,22 @@ public class NotificationRoutingController {
       path = "/routing/v2",
       consumes = APPLICATION_JSON_VALUE,
       produces = APPLICATION_JSON_VALUE)
-  public Object determineRuleBasedRouting(
+  public RuleBasedRouteDTO determineRuleBasedRouting(
       @RequestBody final String fhirNotification,
       @RequestParam("isTestUser") final boolean isTestUser,
       @RequestParam("testUserID") final String sender) {
+    final RuleBasedRouteDTO routing;
     if (isTuberculosisRoutingEnabled) {
-      return notificationRoutingService.determineRuleBasedRouting(
-          fhirNotification, isTestUser, sender);
+      routing =
+          notificationRoutingService.determineRuleBasedRouting(
+              fhirNotification, isTestUser, sender);
     } else {
-      return notificationRoutingLegacyService.determineRuleBasedRouting(
-          fhirNotification, isTestUser, sender);
+      routing =
+          notificationRoutingLegacyService.determineRuleBasedRouting(
+              fhirNotification, isTestUser, sender);
     }
+
+    return routing;
   }
 
   @GetMapping("/routing/health-office")
