@@ -29,6 +29,7 @@ package de.gematik.demis.nrs.api;
 import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -51,8 +52,11 @@ import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.rest.ErrorHandlerConfiguration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -62,7 +66,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
     controllers = {NotificationRoutingController.class},
-    properties = {"feature.flag.tuberculosis.routing.enabled=true"})
+    properties = {
+      "feature.flag.tuberculosis.routing.enabled=true",
+      "feature.flag.permission.check.enabled=true"
+    })
 @Import(ErrorHandlerConfiguration.class)
 class NotificationRoutingControllerTest {
 
@@ -114,6 +121,8 @@ class NotificationRoutingControllerTest {
                 new Route(
                     RESPONSIBLE_HEALTH_OFFICE_SORMAS, "7.1", List.of(ActionType.ENCRYPT), true)),
             null,
+            null,
+            Set.of("role_1", "role_2"),
             null);
 
     when(notificationRoutingService.determineRuleBasedRouting(eq(body), anyBoolean(), anyString()))
@@ -144,7 +153,8 @@ class NotificationRoutingControllerTest {
                 }
               ],
               "healthOffices": null,
-              "responsible": null
+              "responsible": null,
+              "allowedRoles": ["role_1", "role_2"]
             }
             """;
 
@@ -164,5 +174,67 @@ class NotificationRoutingControllerTest {
     mockMvc
         .perform(post(URL_DETERMINE_RULE_BASED_ROUTING).contentType(APPLICATION_JSON))
         .andExpect(status().isBadRequest());
+  }
+
+  @Nested
+  class PermissionRelated {
+    @Test
+    void thatNoPermissionsAreReturnedWhenFeatureFlagDisabled() {
+      final RuleBasedRouteDTO routingOutput =
+          new RuleBasedRouteDTO(
+              "laboratory",
+              "7.1",
+              SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+              List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.ENCRYPT), false)),
+              Map.of(),
+              "1.",
+              Set.of("role_1", "role_2"),
+              null);
+
+      when(notificationRoutingService.determineRuleBasedRouting("any", false, "any"))
+          .thenReturn(routingOutput);
+
+      final NotificationRoutingController controller =
+          new NotificationRoutingController(
+              notificationRoutingService,
+              notificationRoutingLegacyService,
+              healthDepartmentLookupService,
+              true);
+      final Object actual = controller.determineRuleBasedRouting("any", false, "any");
+      assertThat(actual).isInstanceOf(RuleBasedRouteDTO.class);
+    }
+
+    @Test
+    void thatPermissionsAreReturnedWhenFeatureFlagEnabled() {
+      final RuleBasedRouteDTO routingOutput =
+          new RuleBasedRouteDTO(
+              "laboratory",
+              "7.1",
+              SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+              List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.ENCRYPT), false)),
+              Map.of(),
+              "1.",
+              Set.of("a permission", "another permission"),
+              null);
+
+      when(notificationRoutingService.determineRuleBasedRouting("any", false, "any"))
+          .thenReturn(routingOutput);
+
+      final NotificationRoutingController controller =
+          new NotificationRoutingController(
+              notificationRoutingService,
+              notificationRoutingLegacyService,
+              healthDepartmentLookupService,
+              true);
+      final Object actual = controller.determineRuleBasedRouting("any", false, "any");
+      assertThat(actual).isInstanceOf(RuleBasedRouteDTO.class);
+      assertThat(actual)
+          .isInstanceOfSatisfying(
+              RuleBasedRouteDTO.class,
+              (actualResult) -> {
+                assertThat(actualResult.allowedRoles())
+                    .containsExactlyInAnyOrder("a permission", "another permission");
+              });
+    }
   }
 }

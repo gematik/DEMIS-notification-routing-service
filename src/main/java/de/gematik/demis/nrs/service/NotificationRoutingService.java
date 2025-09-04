@@ -55,14 +55,13 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NotificationRoutingService {
   private static final AddressOriginEnum[] ADDRESS_LOOKUP_ORDER = {
@@ -78,6 +77,20 @@ public class NotificationRoutingService {
   private final Statistics statistics;
   private final RulesService rulesService;
   private final ReceiverResolutionService receiverResolutionService;
+  private final boolean isCustodianEnabled;
+
+  public NotificationRoutingService(
+      final FhirReader fhirReader,
+      final Statistics statistics,
+      final RulesService rulesService,
+      final ReceiverResolutionService receiverResolutionService,
+      @Value("${feature.flag.custodian.enabled}") final boolean isCustodianEnabled) {
+    this.fhirReader = fhirReader;
+    this.statistics = statistics;
+    this.rulesService = rulesService;
+    this.receiverResolutionService = receiverResolutionService;
+    this.isCustodianEnabled = isCustodianEnabled;
+  }
 
   /**
    * Use rule-based routing to determine the routing result.
@@ -130,19 +143,9 @@ public class NotificationRoutingService {
             resolvedRoutes, responsibleHealthOffices, responsibleRoute.specificReceiverId());
 
     if (isTestNotification) {
-      final List<Route> rewrittenRoutes =
-          returnDTO.routes().stream()
-              .map(r -> r.copyWithReceiver(recipientForTestRouting))
-              .toList();
-      returnDTO =
-          new RuleBasedRouteDTO(
-              returnDTO.type(),
-              returnDTO.notificationCategory(),
-              returnDTO.bundleActions(),
-              rewrittenRoutes,
-              returnDTO.healthOffices(),
-              returnDTO.responsible());
+      returnDTO = RuleBasedRouteDTO.rewriteForTests(returnDTO, recipientForTestRouting);
     }
+
     return returnDTO;
   }
 

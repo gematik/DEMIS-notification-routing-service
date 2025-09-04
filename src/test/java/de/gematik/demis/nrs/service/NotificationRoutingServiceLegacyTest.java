@@ -182,7 +182,8 @@ class NotificationRoutingServiceLegacyTest {
                 new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of(ActionType.NO_ACTION), false)),
             "any",
             "any",
-            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
 
     // this is just here to avoid an NPE
     when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
@@ -216,7 +217,8 @@ class NotificationRoutingServiceLegacyTest {
                     false)),
             "any",
             "any",
-            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)));
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
 
     // this is just here to avoid an NPE
     when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
@@ -293,7 +295,8 @@ class NotificationRoutingServiceLegacyTest {
             resultList,
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     final Map<AddressDTO, String> addressToHealthOfficeMap =
         addressesWithHealthOffice.stream()
             .collect(Collectors.toMap(addresses::get, type -> healthOfficeId));
@@ -314,7 +317,9 @@ class NotificationRoutingServiceLegacyTest {
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             outputList,
             withRoutingOutput ? expectedRoutingOutput.healthOffices() : emptyMap(),
-            responsible);
+            responsible,
+            Set.of("role_1", "role_2"),
+            null);
     return Triple.of(result, addressToHealthOfficeMap, expectedOutput);
   }
 
@@ -345,7 +350,8 @@ class NotificationRoutingServiceLegacyTest {
                     false)),
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     // mock services
     when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(any(Bundle.class))).thenReturn(Optional.of(result));
@@ -382,7 +388,8 @@ class NotificationRoutingServiceLegacyTest {
                     false)),
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
     // mock services
     when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
@@ -399,6 +406,8 @@ class NotificationRoutingServiceLegacyTest {
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             List.of(),
             null,
+            null,
+            Set.of("role_1", "role_2"),
             null);
     assertThat(ruleBasedRouteDTO).isEqualTo(expectedRuleBasedRouteDTO);
   }
@@ -491,7 +500,8 @@ class NotificationRoutingServiceLegacyTest {
             List.of() /* empty routes */,
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
 
     // Verify exception is thrown with correct message
     assertThatThrownBy(() -> handleSpecificReceiverMethod.invoke(underTest, result))
@@ -519,7 +529,8 @@ class NotificationRoutingServiceLegacyTest {
                 new Route(SPECIFIC_RECEIVER, "receiver-id", List.of(ActionType.ENCRYPT), false)),
             "laboratory",
             "7.1",
-            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)));
+            SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
 
     // Mock required behavior
     when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(new RoutingInput(Map.of()));

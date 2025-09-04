@@ -62,13 +62,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NotificationRoutingLegacyService {
   static final String LOOKUP_HEALTH_OFFICE_PREFIX_ID = "2";
@@ -87,9 +85,15 @@ public class NotificationRoutingLegacyService {
   private final Statistics statistics;
   private final RulesService rulesService;
 
-  public RoutingOutput determineRouting(final String fhirBundleAsString) {
-    final RoutingInput routingInput = fhirReader.extractRoutingInput(fhirBundleAsString);
-    return getRoutingResult(routingInput);
+  public NotificationRoutingLegacyService(
+      final FhirReader fhirReader,
+      final AddressToHealthOfficeLookup addressToHealthOfficeLookup,
+      final Statistics statistics,
+      final RulesService rulesService) {
+    this.fhirReader = fhirReader;
+    this.addressToHealthOfficeLookup = addressToHealthOfficeLookup;
+    this.statistics = statistics;
+    this.rulesService = rulesService;
   }
 
   /**
@@ -136,7 +140,8 @@ public class NotificationRoutingLegacyService {
             routeStream,
             ruleResult.type(),
             ruleResult.notificationCategory(),
-            ruleResult.bundleActions());
+            ruleResult.bundleActions(),
+            ruleResult.allowedRoles());
 
     // search for responsible_health_office in routing data
     if (ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE))) {
@@ -149,19 +154,9 @@ public class NotificationRoutingLegacyService {
     }
 
     if (isTestNotification) {
-      final List<Route> rewrittenRoutes =
-          returnDTO.routes().stream()
-              .map(r -> r.copyWithReceiver(recipientForTestRouting))
-              .toList();
-      returnDTO =
-          new RuleBasedRouteDTO(
-              returnDTO.type(),
-              returnDTO.notificationCategory(),
-              returnDTO.bundleActions(),
-              rewrittenRoutes,
-              returnDTO.healthOffices(),
-              returnDTO.responsible());
+      returnDTO = RuleBasedRouteDTO.rewriteForTests(returnDTO, recipientForTestRouting);
     }
+
     return returnDTO;
   }
 

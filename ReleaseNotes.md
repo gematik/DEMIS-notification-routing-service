@@ -2,7 +2,13 @@
  
 # Release notes
 
-## Release 2.4.0
+## Release 2.3.6
+- refine rules for invalid 7.1 bundles
+- implement option to return allowed roles for routing result
+- implement option to return custodian field for routing result
+- add support for new FUTS API endpoints
+
+## Release 2.3.5
 - Tuberculosis routing
 
 ## Release 2.3.4

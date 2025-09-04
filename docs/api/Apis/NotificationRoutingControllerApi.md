@@ -10,7 +10,7 @@ All URIs are relative to *http://localhost*
 
 <a name="determineRuleBasedRouting"></a>
 # **determineRuleBasedRouting**
-> Object determineRuleBasedRouting(isTestUser, testUserID, body)
+> RuleBasedRouteDTO determineRuleBasedRouting(isTestUser, testUserID, body)
 
 
 
@@ -24,7 +24,7 @@ All URIs are relative to *http://localhost*
 
 ### Return type
 
-**Object**
+[**RuleBasedRouteDTO**](../Models/RuleBasedRouteDTO.md)
 
 ### Authorization
 

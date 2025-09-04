@@ -94,8 +94,8 @@ class RulesLoaderTest {
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
-    assertThat(config.rules()).hasSize(11);
-    assertThat(config.results()).hasSize(11);
+    assertThat(config.rules()).hasSize(13);
+    assertThat(config.results()).hasSize(13);
     assertThat(config.results().get("disease_6_1_anonymous_follow_up"))
         .extracting("routesTo", InstanceOfAssertFactories.LIST)
         .hasSize(2);

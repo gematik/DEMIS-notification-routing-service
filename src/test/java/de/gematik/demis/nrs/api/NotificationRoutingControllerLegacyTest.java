@@ -49,6 +49,7 @@ import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.rest.ErrorHandlerConfiguration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +112,8 @@ class NotificationRoutingControllerLegacyTest {
                 new Route(
                     RESPONSIBLE_HEALTH_OFFICE_SORMAS, "7.1", List.of(ActionType.ENCRYPT), true)),
             null,
+            null,
+            Set.of("role_1", "role_2"),
             null);
 
     when(notificationRoutingLegacyService.determineRuleBasedRouting(

@@ -20,12 +20,12 @@
     },
     "laboratory_narrow_down_7_1_cases": {
       "description": "narrow down specific 7.1 cases",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous'",
       "followingRules": {
-        "conditionFulfilled": "laboratory_narrow_down_7_1_cases_by_pathogen"
+        "conditionNotMet": "laboratory_narrow_down_7_1_cases_by_pathogen"
       },
       "result": {
-        "conditionNotMet": "laboratory_7_1_anonymous_follow_up"
+        "conditionFulfilled": "laboratory_7_1_anonymous_follow_up"
       }
     },
     "laboratory_narrow_down_7_1_cases_by_pathogen": {
@@ -83,12 +83,12 @@
     },
     "disease_narrow_down_6_1_cases": {
       "description": "",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous'",
       "followingRules": {
-        "conditionFulfilled": "disease_narrow_down_6_1_cases_by_pathogen"
+        "conditionNotMet": "disease_narrow_down_6_1_cases_by_pathogen"
       },
       "result": {
-        "conditionNotMet": "disease_6_1_anonymous_follow_up"
+        "conditionFulfilled": "disease_6_1_anonymous_follow_up"
       }
     },
     "disease_narrow_down_6_1_cases_by_pathogen": {
@@ -138,7 +138,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_covid": {
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
@@ -162,7 +163,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_tuberculosis": {
       "description": "7.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
@@ -181,14 +183,16 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_anonymous_follow_up": {
       "description": "currently not implemented. currently not implemented. empty routesTo will result in error being returned by NRS",
       "type": "laboratory",
       "notificationCategory": "7.1",
       "bundleActions": [{"type": "no_action", "optional": true}],
-      "routesTo": []
+      "routesTo": [],
+      "allowedRoles": []
     },
     "laboratory_7_3": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
@@ -202,7 +206,8 @@
           "optional": "false",
           "actions": ["reproduce", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-nonnominal-sender"]
     },
     "laboratory_7_3_anonymous": {
       "description": "if this case is active the notification is a §7.3 anonymous case. it should only be send to the RKI.",
@@ -216,7 +221,8 @@
           "optional": "false",
           "actions": ["reproduce", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-anonymous-sender"]
     },
     "laboratory_7_4": {
       "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
@@ -230,7 +236,8 @@
           "optional": "false",
           "actions": ["no_action"]
         }
-      ]
+      ],
+      "allowedRoles": ["pathogen-notification-negative-sender"]
     },
     "disease_6_1": {
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
@@ -249,7 +256,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_covid": {
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
@@ -273,7 +281,8 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_tuberculosis": {
       "description": "6.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
@@ -292,14 +301,16 @@
           "optional": "false",
           "actions": ["pseudo_copy"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_anonymous_follow_up": {
       "description": "currently not implemented. empty routesTo will result in error being returned by NRS",
       "type": "disease",
       "notificationCategory": "6.1",
       "bundleActions": [{"type": "no_action", "optional": true}],
-      "routesTo": []
+      "routesTo": [],
+      "allowedRoles": []
     },
     "disease_7_3": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
@@ -313,7 +324,8 @@
           "optional": "false",
           "actions": ["reproduce", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-nonnominal-sender"]
     },
     "disease_7_3_anonymous": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
@@ -327,7 +339,8 @@
           "optional": "false",
           "actions": ["reproduce", "encrypt"]
         }
-      ]
+      ],
+      "allowedRoles": ["disease-notification-anonymous-sender"]
     }
   }
 }
