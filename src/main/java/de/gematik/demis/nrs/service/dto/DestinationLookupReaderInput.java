@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs.rules.model;
+package de.gematik.demis.nrs.service.dto;
 
 /*-
  * #%L
@@ -26,35 +26,4 @@ package de.gematik.demis.nrs.rules.model;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-public enum ActionType {
-  ENCRYPT("encrypt"),
-  NO_ACTION("no_action"),
-  PSEUDO_COPY("pseudo_copy"),
-  REPRODUCE("reproduce"),
-  CREATE_PSEUDONYM_RECORD("create_pseudonym_record"),
-  PSEUDO_ORIGINAL("pseudo_original");
-
-  private final String value;
-
-  ActionType(String value) {
-    this.value = value;
-  }
-
-  @JsonCreator
-  public static ActionType fromValue(String value) {
-    for (ActionType action : ActionType.values()) {
-      if (action.value.equalsIgnoreCase(value)) {
-        return action;
-      }
-    }
-    throw new IllegalArgumentException("Unknown action type: " + value);
-  }
-
-  @JsonValue
-  public String getValue() {
-    return value;
-  }
-}
+public record DestinationLookupReaderInput(String notificationId, String notificationCategory) {}

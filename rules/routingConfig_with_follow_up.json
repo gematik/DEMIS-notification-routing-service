@@ -136,8 +136,7 @@
           "type": "responsible_health_office",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -166,8 +165,7 @@
           "type": "responsible_health_office",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -189,6 +187,7 @@
       "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_tuberculosis": {
+      "allowedRoles": ["pathogen-notification-sender"],
       "description": "7.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
       "type": "laboratory",
       "notificationCategory": "7.1",
@@ -222,8 +221,7 @@
           "type": "responsible_health_office_with_relates_to",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -254,7 +252,6 @@
           "optional": "false",
           "actions": [
             "reproduce",
-            "store_destination",
             "encrypt"
           ]
         }
@@ -278,7 +275,6 @@
           "optional": "false",
           "actions": [
             "reproduce",
-            "store_destination",
             "encrypt"
           ]
         }
@@ -322,8 +318,7 @@
           "type": "responsible_health_office",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -352,8 +347,7 @@
           "type": "responsible_health_office",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -375,6 +369,7 @@
       "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_tuberculosis": {
+      "allowedRoles": ["disease-notification-sender"],
       "description": "6.1 tuberculosis case: lookup the responsible healthoffice and check if there is a specialised one dealing with tuberculosis ",
       "type": "disease",
       "notificationCategory": "6.1",
@@ -408,8 +403,7 @@
           "type": "responsible_health_office_with_relates_to",
           "optional": "false",
           "actions": [
-            "encrypt",
-            "store_destination"
+            "encrypt"
           ]
         },
         {
@@ -440,7 +434,6 @@
           "optional": "false",
           "actions": [
             "reproduce",
-            "store_destination",
             "encrypt"
           ]
         }
@@ -464,7 +457,6 @@
           "optional": "false",
           "actions": [
             "reproduce",
-            "store_destination",
             "encrypt"
           ]
         }

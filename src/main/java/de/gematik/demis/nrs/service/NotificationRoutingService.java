@@ -32,7 +32,9 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_OTH
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.OTHER;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_OPTIONAL_HEALTH_OFFICE_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -47,11 +49,19 @@ import de.gematik.demis.nrs.rules.RulesService;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import de.gematik.demis.nrs.service.dlr.DestinationLookupReaderService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.service.base.error.ServiceException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -77,19 +87,23 @@ public class NotificationRoutingService {
   private final Statistics statistics;
   private final RulesService rulesService;
   private final ReceiverResolutionService receiverResolutionService;
-  private final boolean isCustodianEnabled;
+  private final DestinationLookupReaderService destinationLookupReaderService;
+  private final boolean isFollowUpNotificationEnabled;
 
   public NotificationRoutingService(
       final FhirReader fhirReader,
       final Statistics statistics,
       final RulesService rulesService,
       final ReceiverResolutionService receiverResolutionService,
-      @Value("${feature.flag.custodian.enabled}") final boolean isCustodianEnabled) {
+      final DestinationLookupReaderService destinationLookupReaderService,
+      @Value("${feature.flag.follow.up.notification}")
+          final boolean isFollowUpNotificationEnabled) {
     this.fhirReader = fhirReader;
     this.statistics = statistics;
     this.rulesService = rulesService;
     this.receiverResolutionService = receiverResolutionService;
-    this.isCustodianEnabled = isCustodianEnabled;
+    this.destinationLookupReaderService = destinationLookupReaderService;
+    this.isFollowUpNotificationEnabled = isFollowUpNotificationEnabled;
   }
 
   /**
@@ -103,6 +117,7 @@ public class NotificationRoutingService {
       final String fhirBundleAsString,
       final boolean isTestNotification,
       final String recipientForTestRouting) {
+
     final Bundle bundle = fhirReader.toBundle(fhirBundleAsString);
     final Result ruleResult =
         rulesService
@@ -113,6 +128,15 @@ public class NotificationRoutingService {
 
     validateRoutingModel(ruleResult);
 
+    final Optional<String> followUpDepartment;
+    if (isFollowUpNotificationEnabled
+        && ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
+      followUpDepartment =
+          destinationLookupReaderService.getDepartmentForFollowUpNotification(bundle);
+    } else {
+      followUpDepartment = Optional.empty();
+    }
+
     final List<Route> processableRoutes =
         ruleResult.routesTo().stream().filter(Objects::nonNull).toList();
 
@@ -121,7 +145,12 @@ public class NotificationRoutingService {
 
     final List<Route> resolvedRoutes =
         processableRoutes.stream()
-            .map(route -> resolveRoute(route, healthOfficesByReceiverType.get(route.type())))
+            .map(
+                route ->
+                    resolveRoute(
+                        route,
+                        healthOfficesByReceiverType.get(route.type()),
+                        followUpDepartment.orElse(null)))
             .<Route>mapMulti(Optional::ifPresent)
             .sorted(RoutePriorityComparator.INSTANCE)
             .toList();
@@ -133,8 +162,6 @@ public class NotificationRoutingService {
             .findFirst()
             .orElseThrow(() -> unprocessableEntityError(NO_HEALTH_OFFICE_FOUND));
 
-    // all health offices for the addresses found in the notification that are resolved for the
-    // responsible route (used for debugging/reporting by end-user)
     final Map<AddressOriginEnum, String> responsibleHealthOffices =
         healthOfficesByReceiverType.getOrDefault(responsibleRoute.type(), Map.of());
 
@@ -217,7 +244,17 @@ public class NotificationRoutingService {
    */
   @Nonnull
   private Optional<Route> resolveRoute(
-      @Nonnull final Route route, @Nullable final Map<AddressOriginEnum, String> healthOffices) {
+      @Nonnull final Route route,
+      @Nullable final Map<AddressOriginEnum, String> healthOffices,
+      @Nullable final String initialDepartment) {
+
+    if (RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO.equals(route.type())) {
+      if (initialDepartment != null) {
+        return Optional.of(route.copyWithReceiver(initialDepartment));
+      } else {
+        return Optional.empty();
+      }
+    }
     if (SPECIFIC_RECEIVER.equals(route.type())) {
       return Optional.of(route);
     }
@@ -297,7 +334,6 @@ public class NotificationRoutingService {
   }
 
   private ServiceException unprocessableEntityError(final String errorMessage) {
-    log.error(errorMessage);
     throw new ServiceException(UNPROCESSABLE_ENTITY, null, errorMessage);
   }
 }

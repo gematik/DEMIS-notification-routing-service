@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs.rules.model;
+package de.gematik.demis.nrs.service.dlr;
 
 /*-
  * #%L
@@ -26,35 +26,27 @@ package de.gematik.demis.nrs.rules.model;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.gematik.demis.nrs.service.fhir.FhirReader;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hl7.fhir.r4.model.Bundle;
+import org.springframework.stereotype.Service;
 
-public enum ActionType {
-  ENCRYPT("encrypt"),
-  NO_ACTION("no_action"),
-  PSEUDO_COPY("pseudo_copy"),
-  REPRODUCE("reproduce"),
-  CREATE_PSEUDONYM_RECORD("create_pseudonym_record"),
-  PSEUDO_ORIGINAL("pseudo_original");
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class DestinationLookupReaderService {
 
-  private final String value;
+  private final DestinationLookupReaderClient destinationLookupReaderClient;
+  private final FhirReader fhirReader;
 
-  ActionType(String value) {
-    this.value = value;
-  }
-
-  @JsonCreator
-  public static ActionType fromValue(String value) {
-    for (ActionType action : ActionType.values()) {
-      if (action.value.equalsIgnoreCase(value)) {
-        return action;
-      }
-    }
-    throw new IllegalArgumentException("Unknown action type: " + value);
-  }
-
-  @JsonValue
-  public String getValue() {
-    return value;
+  public Optional<String> getDepartmentForFollowUpNotification(Bundle bundle) {
+    log.info("RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO rule active. Calling DLR Service");
+    return fhirReader
+        .getDestinationLookupReaderInformation(bundle)
+        .map(
+            input ->
+                destinationLookupReaderClient.getDepartment(input.notificationId()).department());
   }
 }

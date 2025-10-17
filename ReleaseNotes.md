@@ -2,6 +2,13 @@
  
 # Release notes
 
+## Release 2.4.0
+- add client to lookup destination notification reader information for §7.1 follow up notifications
+- updated SpringParent to 2.13.2
+- remove store_destination action
+- drop notification category parameter from DLS request
+- add missing allowedRoles for tuberculosis routing in follow-up
+
 ## Release 2.3.6
 - refine rules for invalid 7.1 bundles
 - implement option to return allowed roles for routing result

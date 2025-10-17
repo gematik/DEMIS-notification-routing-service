@@ -30,12 +30,13 @@ nrs:
     client:
         futs: "http://futs.demis.svc.cluster.local"
         futs_context_path: "/fhir-ui-data-model-translation/"
+        dlr: "http://destination-lookup-reader.demis.svc.cluster.local"
 
 feature.flag:
     search.fuzzy: false
     search.comparison: false
     notifications.7.3: false
-    follow.up.notifications: false
+    follow.up.notification: false
     tuberculosis.routing.enabled: false
     permission.check.enabled: false
     custodian.enabled: false

@@ -43,8 +43,8 @@ import java.util.Set;
  * @param notificationCategory Broader type of notification that was matched, e.g. laboratory or
  *     disease
  * @param bundleActions A set of bundle actions that should be processed
- * @param routes A list of routes to process
- * @param healthOffices A map of health offices by the address they were resolved for
+ * @param routes A list of receivers who get the notification
+ * @param healthOffices A map of health offices (GA) by the address tag they were resolved for
  * @param responsible The single responsible recipient for the matched notification
  * @param allowedRoles A set of roles that are allowed to send the matched notification
  */

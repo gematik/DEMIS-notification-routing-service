@@ -1,4 +1,4 @@
-package de.gematik.demis.nrs.rules.model;
+package de.gematik.demis.nrs.service.dlr;
 
 /*-
  * #%L
@@ -26,35 +26,19 @@ package de.gematik.demis.nrs.rules.model;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-public enum ActionType {
-  ENCRYPT("encrypt"),
-  NO_ACTION("no_action"),
-  PSEUDO_COPY("pseudo_copy"),
-  REPRODUCE("reproduce"),
-  CREATE_PSEUDONYM_RECORD("create_pseudonym_record"),
-  PSEUDO_ORIGINAL("pseudo_original");
+import de.gematik.demis.nrs.service.dto.DestinationLookupReaderResponse;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-  private final String value;
+@FeignClient(name = "dlr", url = "${nrs.client.dlr}")
+public interface DestinationLookupReaderClient {
 
-  ActionType(String value) {
-    this.value = value;
-  }
-
-  @JsonCreator
-  public static ActionType fromValue(String value) {
-    for (ActionType action : ActionType.values()) {
-      if (action.value.equalsIgnoreCase(value)) {
-        return action;
-      }
-    }
-    throw new IllegalArgumentException("Unknown action type: " + value);
-  }
-
-  @JsonValue
-  public String getValue() {
-    return value;
-  }
+  @GetMapping(
+      value = "/notification/{notificationId}/department",
+      consumes = APPLICATION_JSON_VALUE,
+      produces = APPLICATION_JSON_VALUE)
+  DestinationLookupReaderResponse getDepartment(@PathVariable String notificationId);
 }

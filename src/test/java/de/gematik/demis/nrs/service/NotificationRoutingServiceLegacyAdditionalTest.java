@@ -46,6 +46,7 @@ import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import de.gematik.demis.nrs.service.dlr.DestinationLookupReaderService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
@@ -54,24 +55,36 @@ import de.gematik.demis.nrs.util.SequencedSets;
 import de.gematik.demis.service.base.error.ServiceException;
 import java.util.*;
 import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationRoutingServiceLegacyAdditionalTest {
 
-  @InjectMocks NotificationRoutingLegacyService notificationRoutingService;
+  @Mock NotificationRoutingLegacyService notificationRoutingService;
 
   @Mock FhirReader fhirReaderMock;
 
   @Mock AddressToHealthOfficeLookup addressToHealthOfficeLookupMock;
-
   @Mock Statistics statisticsMock;
 
   @Mock RulesService rulesServiceMock;
+  @Mock DestinationLookupReaderService destinationLookupReaderServiceMock;
+
+  @BeforeEach
+  void setup() {
+    notificationRoutingService =
+        new NotificationRoutingLegacyService(
+            fhirReaderMock,
+            addressToHealthOfficeLookupMock,
+            statisticsMock,
+            rulesServiceMock,
+            destinationLookupReaderServiceMock,
+            false);
+  }
 
   @Test
   void determineRuleBasedRouting_SpecificReceiver() {

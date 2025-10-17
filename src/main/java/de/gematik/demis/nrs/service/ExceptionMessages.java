@@ -42,6 +42,12 @@ public final class ExceptionMessages {
       "NRS-004: handling of rule result type '%s' is not supported.";
   public static final String NO_OPTIONAL_HEALTH_OFFICE_FOUND =
       "NRS-005: No health office found for optional route with type '%s'";
+  public static final String INTERNAL_SERVER_ERROR =
+      "NRS-006: Internal server error occurred processing request";
+  public static final String UNPROCESSABLE_ENTITY_DLR =
+      "NRS-007: NotificationId for NotificationCategory not found in DLR";
+  public static final String MISSING_REQUIRED_RECEIVER =
+      "NRS-008: Missing receiver for required relates to route";
 
   @Nonnull
   public static String noResultForRuleEvaluation(@Nonnull final Bundle bundle) {

@@ -29,8 +29,10 @@ package de.gematik.demis.nrs.service.fhir;
 import ca.uhn.fhir.model.api.annotation.ResourceDef;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Composition;
+import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.PractitionerRole;
@@ -65,6 +67,33 @@ class BundleResourceProvider {
 
   private Composition getComposition() {
     return (Composition) bundle.getEntryFirstRep().getResource();
+  }
+
+  public String getRelatesToNotificationId() {
+    return Optional.ofNullable(bundle.getEntryFirstRep().getResource())
+        .filter(Composition.class::isInstance)
+        .map(Composition.class::cast)
+        .map(Composition::getRelatesTo)
+        .filter(relatesTo -> !relatesTo.isEmpty())
+        .map(
+            relatesTo -> {
+              try {
+                return relatesTo.getFirst().getTargetReference().getIdentifier().getValue();
+              } catch (FHIRException e) {
+                return null;
+              }
+            })
+        .orElse(null);
+  }
+
+  public String getNotificationCategory() {
+    for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
+      Resource resource = entry.getResource();
+      if (resource instanceof DiagnosticReport diagnosticReport) {
+        return diagnosticReport.getCode().getCodingFirstRep().getCode();
+      }
+    }
+    return null;
   }
 
   private <T extends Resource> Optional<T> findResource(

@@ -38,9 +38,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import de.gematik.demis.nrs.config.FhirConfiguration;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
+import de.gematik.demis.nrs.service.dto.DestinationLookupReaderInput;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.test.FileUtil;
 import de.gematik.demis.service.base.error.ServiceException;
+import java.util.Optional;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,8 @@ class FhirReaderIntegrationTest {
   // This file is located in /src/main/resources instead of /src/test/resources and is used to warm
   // up the FHIRParser
   private static final String DISEASE_NOTIFICATION = "/fhir/disease-notification.json";
+  private static final String FOLLOW_UP_NOTIFICATION =
+      "/fhir/7_1/anonymous-followup-notification.json";
 
   @Autowired FhirReader underTest;
 
@@ -113,5 +117,31 @@ class FhirReaderIntegrationTest {
   void extractRoutingInput_InvalidNotification() {
     org.junit.jupiter.api.Assertions.assertThrows(
         ServiceException.class, () -> underTest.extractRoutingInput("{}"));
+  }
+
+  @Test
+  void validDestinationLookupReaderInformation() {
+    final DestinationLookupReaderInput expected =
+        new DestinationLookupReaderInput("5001b5e1-a94c-4d7c-a35d-5d62fe491196", "denp");
+    Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
+        underTest.getDestinationLookupReaderInformation(
+            underTest.toBundle(FileUtil.readResource(FOLLOW_UP_NOTIFICATION)));
+    assertThat(destinationLookupReaderInformation).contains(expected);
+  }
+
+  @Test
+  void invalidDestinationLookupReaderInformationOtherRelatesTo() {
+    Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
+        underTest.getDestinationLookupReaderInformation(
+            underTest.toBundle(FileUtil.readResource(DISEASE_NOTIFICATION)));
+    assertThat(destinationLookupReaderInformation).isEmpty();
+  }
+
+  @Test
+  void invalidDestinationLookupReaderInformationNoRelatesTo() {
+    Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
+        underTest.getDestinationLookupReaderInformation(
+            underTest.toBundle(FileUtil.readResource(LABORATORY_NOTIFICATION)));
+    assertThat(destinationLookupReaderInformation).isEmpty();
   }
 }

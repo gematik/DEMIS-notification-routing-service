@@ -38,6 +38,7 @@ import de.gematik.demis.fhirparserlibrary.FhirParser;
 import de.gematik.demis.fhirparserlibrary.MessageType;
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
+import de.gematik.demis.nrs.service.dto.DestinationLookupReaderInput;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.service.base.error.ServiceException;
 import java.util.Collections;
@@ -99,6 +100,24 @@ public class FhirReader {
     } catch (final DataFormatException ex) {
       throw new ServiceException(HttpStatus.BAD_REQUEST, null, "Error parsing notification", ex);
     }
+  }
+
+  /**
+   * Receives a bundle and extracts DestinationLookupReaderInput
+   *
+   * @param bundle the FHIR bundle containing the data to be evaluated.
+   * @return DestinationLookupReaderInput with notificationId and notificationCategory from bundle
+   *     or null if information in bundle is not present
+   */
+  public Optional<DestinationLookupReaderInput> getDestinationLookupReaderInformation(
+      final Bundle bundle) {
+    final BundleResourceProvider bundleResources = new BundleResourceProvider(bundle);
+    final String notificationId = bundleResources.getRelatesToNotificationId();
+    final String notificationCategory = bundleResources.getNotificationCategory();
+    if (notificationId != null && notificationCategory != null) {
+      return Optional.of(new DestinationLookupReaderInput(notificationId, notificationCategory));
+    }
+    return Optional.empty();
   }
 
   private class AddressMapBuilder {

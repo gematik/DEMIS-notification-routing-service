@@ -45,6 +45,7 @@ import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import de.gematik.demis.nrs.service.dlr.DestinationLookupReaderService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
@@ -68,17 +69,22 @@ class NotificationRoutingServiceAdditionalTest {
   @Mock RulesService rulesServiceMock;
   @Mock ConceptMapService conceptMapService;
   @Mock Statistics statisticsMock;
+  @Mock DestinationLookupReaderService destinationLookupReaderService;
 
   NotificationRoutingService notificationRoutingService;
 
   @BeforeEach
   void setup() {
-
     ReceiverResolutionService receiverResolutionService =
         new ReceiverResolutionService(addressToHealthOfficeLookupMock, conceptMapService);
     notificationRoutingService =
         new NotificationRoutingService(
-            fhirReaderMock, statisticsMock, rulesServiceMock, receiverResolutionService, false);
+            fhirReaderMock,
+            statisticsMock,
+            rulesServiceMock,
+            receiverResolutionService,
+            destinationLookupReaderService,
+            false);
   }
 
   @Test
