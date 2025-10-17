@@ -7,8 +7,8 @@ All URIs are relative to *http://localhost*
 
 | Class | Method | HTTP request | Description |
 |------------ | ------------- | ------------- | -------------|
-| *NotificationRoutingControllerApi* | [**determineRuleBasedRouting**](Apis/NotificationRoutingControllerApi.md#determinerulebasedrouting) | **POST** /routing/v2 |  |
-*NotificationRoutingControllerApi* | [**findHealthOfficeByAddress**](Apis/NotificationRoutingControllerApi.md#findhealthofficebyaddress) | **GET** /routing/health-office |  |
+| *NotificationRoutingControllerApi* | [**determineRuleBasedRouting**](Apis/NotificationRoutingControllerApi.md#determineRuleBasedRouting) | **POST** /routing/v2 |  |
+*NotificationRoutingControllerApi* | [**findHealthOfficeByAddress**](Apis/NotificationRoutingControllerApi.md#findHealthOfficeByAddress) | **GET** /routing/health-office |  |
 
 
 <a name="documentation-for-models"></a>

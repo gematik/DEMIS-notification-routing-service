@@ -32,8 +32,14 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_OTH
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIED_PERSON_PRIMARY;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
-import static de.gematik.demis.nrs.api.dto.BundleActionType.*;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.*;
+import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
+import static de.gematik.demis.nrs.api.dto.BundleActionType.NO_ACTION;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.OTHER;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_RESULT_FOR_RULE_EVALUATION;
@@ -45,6 +51,7 @@ import static org.mockito.AdditionalAnswers.answer;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import de.gematik.demis.nrs.api.dto.BundleAction;
@@ -54,7 +61,7 @@ import de.gematik.demis.nrs.rules.RulesService;
 import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
-import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import de.gematik.demis.nrs.service.dlr.DestinationLookupReaderService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
@@ -74,12 +81,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Triple;
 import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -91,8 +98,31 @@ class NotificationRoutingServiceLegacyTest {
   @Mock AddressToHealthOfficeLookup addressToHealthOfficeLookup;
   @Mock RulesService ruleService;
   @Mock Statistics statistics;
+  @Mock DestinationLookupReaderService destinationLookupReaderService;
 
-  @InjectMocks NotificationRoutingLegacyService underTest;
+  @Mock NotificationRoutingLegacyService underTest;
+  @Mock NotificationRoutingLegacyService underTestFollowUp;
+
+  @BeforeEach
+  void setup() {
+    underTest =
+        new NotificationRoutingLegacyService(
+            fhirReader,
+            addressToHealthOfficeLookup,
+            statistics,
+            ruleService,
+            destinationLookupReaderService,
+            false);
+
+    underTestFollowUp =
+        new NotificationRoutingLegacyService(
+            fhirReader,
+            addressToHealthOfficeLookup,
+            statistics,
+            ruleService,
+            destinationLookupReaderService,
+            true);
+  }
 
   private static AddressDTO createAddress(final String postalCode) {
     return new AddressDTO(null, null, postalCode, null, AddressDTO.COUNTRY_CODE_GERMANY);
@@ -155,6 +185,43 @@ class NotificationRoutingServiceLegacyTest {
 
       // WHEN calling rule based routing with fhir message
       final RuleBasedRouteDTO routingOutput = underTest.determineRuleBasedRouting("", false, "");
+
+      // THEN output is equals expected output
+      assertThat(routingOutput).isEqualTo(testData.getRight());
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("testArguments")
+  void determineRuleBasedRoutingDeliverCorrectDataFollowUpRegression(
+      final Set<AddressOriginEnum> addressesWithHealthOffice,
+      final AddressOriginEnum responsibleAddress) {
+    // GIVEN routing input with addresses
+    final Map<AddressOriginEnum, AddressDTO> addresses =
+        Arrays.stream(AddressOriginEnum.values())
+            .collect(
+                Collectors.toMap(
+                    Function.identity(), type -> createAddress(String.valueOf(type.ordinal()))));
+    final RoutingInput routingInput = new RoutingInput(addresses);
+    // mock Services
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
+    when(fhirReader.getRoutingInput(any(Bundle.class))).thenReturn(routingInput);
+    // check with and without routing output
+    for (int idx = 0; idx < 2; idx++) {
+      final boolean withRoutingOutput = (idx != 0);
+      Triple<Result, Map<AddressDTO, String>, RuleBasedRouteDTO> testData =
+          generateTestData(
+              withRoutingOutput, addresses, addressesWithHealthOffice, responsibleAddress);
+      when(ruleService.evaluateRules(any(Bundle.class)))
+          .thenReturn(Optional.of(testData.getLeft()));
+      when(addressToHealthOfficeLookup.lookup(any()))
+          .then(
+              answer(
+                  (AddressDTO address) -> Optional.ofNullable(testData.getMiddle().get(address))));
+
+      // WHEN calling rule based routing with fhir message
+      final RuleBasedRouteDTO routingOutput =
+          underTestFollowUp.determineRuleBasedRouting("", false, "");
 
       // THEN output is equals expected output
       assertThat(routingOutput).isEqualTo(testData.getRight());
@@ -247,43 +314,23 @@ class NotificationRoutingServiceLegacyTest {
     final String expectedMissingHealthOfficeId = "2.05.3.78.";
     List<Route> resultList =
         new ArrayList<>(
-            List.of(
-                new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
-                    "1.",
-                    List.of(ActionType.PSEUDO_COPY),
-                    false)));
+            List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.PSEUDO_COPY), false)));
     List<Route> outputList =
         new ArrayList<>(
-            List.of(
-                new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
-                    "1.",
-                    List.of(ActionType.PSEUDO_COPY),
-                    false)));
+            List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.PSEUDO_COPY), false)));
 
     if (withRoutingOutput) {
       resultList.addAll(
           List.of(
+              new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(ActionType.ENCRYPT), false),
               new Route(
-                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
-                  null,
-                  List.of(ActionType.ENCRYPT),
-                  false),
-              new Route(
-                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                  null,
-                  List.of(ActionType.ENCRYPT),
-                  false)));
+                  RESPONSIBLE_HEALTH_OFFICE_SORMAS, null, List.of(ActionType.ENCRYPT), false)));
       outputList.addAll(
           List.of(
               new Route(
-                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
-                  healthOfficeId,
-                  List.of(ActionType.ENCRYPT),
-                  false),
+                  RESPONSIBLE_HEALTH_OFFICE, healthOfficeId, List.of(ActionType.ENCRYPT), false),
               new Route(
-                  RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
+                  RESPONSIBLE_HEALTH_OFFICE_SORMAS,
                   expectedMissingHealthOfficeId,
                   List.of(ActionType.ENCRYPT),
                   false)));
@@ -342,12 +389,7 @@ class NotificationRoutingServiceLegacyTest {
         new Result(
             "123",
             "test",
-            List.of(
-                new Route(
-                    RulesResultTypeEnum.SPECIFIC_RECEIVER,
-                    null,
-                    List.of(ActionType.PSEUDO_COPY),
-                    false)),
+            List.of(new Route(SPECIFIC_RECEIVER, null, List.of(ActionType.PSEUDO_COPY), false)),
             "laboratory",
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
@@ -363,7 +405,7 @@ class NotificationRoutingServiceLegacyTest {
         .hasMessageStartingWith(
             String.format(
                 NULL_FOR_SPECIFIC_RECEIVER_ID_IS_NOT_ALLOWED_FOR_TYPE,
-                RulesResultTypeEnum.SPECIFIC_RECEIVER.getCode()));
+                SPECIFIC_RECEIVER.getCode()));
   }
 
   @Test
@@ -381,11 +423,7 @@ class NotificationRoutingServiceLegacyTest {
             "123",
             "test",
             List.of(
-                new Route(
-                    RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
-                    null,
-                    List.of(ActionType.PSEUDO_COPY),
-                    false)),
+                new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(ActionType.PSEUDO_COPY), false)),
             "laboratory",
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
@@ -554,7 +592,7 @@ class NotificationRoutingServiceLegacyTest {
 
     // Create Route with unsupported type (neither RESPONSIBLE_HEALTH_OFFICE nor
     // RESPONSIBLE_HEALTH_OFFICE_SORMAS)
-    Route route = new Route(RulesResultTypeEnum.OTHER, "test-id", List.of(), false);
+    Route route = new Route(OTHER, "test-id", List.of(), false);
     RoutingInput input = new RoutingInput(Map.of());
 
     // Verify exception is thrown with correct message about unsupported type
@@ -562,5 +600,66 @@ class NotificationRoutingServiceLegacyTest {
         .hasCauseInstanceOf(ServiceException.class)
         .extracting(throwable -> ((InvocationTargetException) throwable).getTargetException())
         .isInstanceOf(ServiceException.class);
+  }
+
+  @Test
+  void thatFollowUpNotificationIsSetCorrectly() {
+    final Result followUpResult =
+        new Result(
+            "",
+            "",
+            List.of(
+                new Route(
+                    RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO,
+                    null,
+                    List.of(ActionType.NO_ACTION),
+                    false)),
+            "any",
+            "any",
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
+
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
+    when(ruleService.evaluateRules(any())).thenReturn(Optional.of(followUpResult));
+
+    final Optional<String> department = Optional.of("testDepartment");
+    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any()))
+        .thenReturn(department);
+
+    final RuleBasedRouteDTO ruleBasedRouteDTO =
+        underTestFollowUp.determineRuleBasedRouting("", false, null);
+
+    assertThat(ruleBasedRouteDTO.routes()).hasSize(1);
+    assertThat(ruleBasedRouteDTO.routes())
+        .extracting("type")
+        .containsExactlyInAnyOrder(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO);
+  }
+
+  @Test
+  void thatFollowUpNotificationWith422() {
+    final Result followUpResult =
+        new Result(
+            "",
+            "",
+            List.of(
+                new Route(
+                    RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO,
+                    null,
+                    List.of(ActionType.NO_ACTION),
+                    false)),
+            "any",
+            "any",
+            SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
+            Set.of("role_1", "role_2"));
+
+    when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
+    when(ruleService.evaluateRules(any())).thenReturn(Optional.of(followUpResult));
+
+    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any()))
+        .thenThrow(new ServiceException(UNPROCESSABLE_ENTITY, null, "Error"));
+
+    assertThatThrownBy(() -> underTestFollowUp.determineRuleBasedRouting("", false, null))
+        .isInstanceOf(ServiceException.class)
+        .hasMessageStartingWith("Error");
   }
 }

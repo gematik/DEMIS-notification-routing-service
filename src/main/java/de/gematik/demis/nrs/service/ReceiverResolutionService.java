@@ -68,6 +68,19 @@ public class ReceiverResolutionService {
     this.conceptMaps = conceptMaps;
   }
 
+  /**
+   * Resolves the health office identifier for the given receiver type and address.
+   *
+   * <p>Motivation: - SORMAS requires a derived ID (replace first digit with '2'). - Tuberculosis
+   * mapping uses concept maps to obtain the canonical representation to avoid lookup failures due
+   * to typos/inconsistent formatting (see ticket ABC-456).
+   *
+   * @param receiverType Strategy used for resolution; SPECIFIC_RECEIVER is intentionally
+   *     unsupported.
+   * @param address Input used for lookup.
+   * @return Resolved health office ID, or empty if not resolvable.
+   * @throws IllegalArgumentException if receiverType is SPECIFIC_RECEIVER.
+   */
   @Nonnull
   public Optional<String> compute(
       @Nonnull final RulesResultTypeEnum receiverType, @Nonnull final AddressDTO address) {

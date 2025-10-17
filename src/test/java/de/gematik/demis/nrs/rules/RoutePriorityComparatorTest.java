@@ -51,9 +51,9 @@ class RoutePriorityComparatorTest {
     assertThat(sorted)
         .extracting(Route::type)
         .containsExactly(
+            RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO,
             RESPONSIBLE_HEALTH_OFFICE,
             RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS,
-            RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO,
             RESPONSIBLE_HEALTH_OFFICE_SORMAS,
             SPECIFIC_RECEIVER,
             OTHER);

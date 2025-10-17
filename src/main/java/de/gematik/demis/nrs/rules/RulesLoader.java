@@ -51,7 +51,7 @@ class RulesLoader {
 
   public RulesLoader(
       @Value("${feature.flag.notifications.7.3:false}") boolean notifications73,
-      @Value("${feature.flag.follow.up.notifications:false}") boolean followUpNotifications,
+      @Value("${feature.flag.follow.up.notification:false}") boolean followUpNotifications,
       final ObjectMapper objectMapper) {
     this.notifications73 = notifications73;
     this.followUpNotifications = followUpNotifications;

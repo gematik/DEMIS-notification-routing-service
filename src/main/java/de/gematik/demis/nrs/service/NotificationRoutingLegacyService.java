@@ -34,6 +34,7 @@ import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.NOTIFIER;
 import static de.gematik.demis.nrs.api.dto.AddressOriginEnum.SUBMITTER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
+import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
@@ -49,6 +50,7 @@ import de.gematik.demis.nrs.rules.RulesService;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
+import de.gematik.demis.nrs.service.dlr.DestinationLookupReaderService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.dto.RoutingInput;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
@@ -64,6 +66,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -84,16 +87,23 @@ public class NotificationRoutingLegacyService {
   private final AddressToHealthOfficeLookup addressToHealthOfficeLookup;
   private final Statistics statistics;
   private final RulesService rulesService;
+  private final DestinationLookupReaderService destinationLookupReaderService;
+  private final boolean isFollowUpNotificationEnabled;
 
   public NotificationRoutingLegacyService(
       final FhirReader fhirReader,
       final AddressToHealthOfficeLookup addressToHealthOfficeLookup,
       final Statistics statistics,
-      final RulesService rulesService) {
+      final RulesService rulesService,
+      final DestinationLookupReaderService destinationLookupReaderService,
+      @Value("${feature.flag.follow.up.notification}")
+          final boolean isFollowUpNotificationEnabled) {
     this.fhirReader = fhirReader;
     this.addressToHealthOfficeLookup = addressToHealthOfficeLookup;
     this.statistics = statistics;
     this.rulesService = rulesService;
+    this.destinationLookupReaderService = destinationLookupReaderService;
+    this.isFollowUpNotificationEnabled = isFollowUpNotificationEnabled;
   }
 
   /**
@@ -108,6 +118,7 @@ public class NotificationRoutingLegacyService {
       final boolean isTestNotification,
       final String recipientForTestRouting) {
     RuleBasedRouteDTO returnDTO;
+    final Optional<String> followUpDepartment;
     final Bundle bundle = fhirReader.toBundle(fhirBundleAsString);
     final Optional<Result> evaluatedRules = rulesService.evaluateRules(bundle);
     if (evaluatedRules.isEmpty()) {
@@ -116,6 +127,21 @@ public class NotificationRoutingLegacyService {
       throw unprocessableEntityError(errorMessage);
     }
     Result ruleResult = evaluatedRules.get();
+
+    if (this.isFollowUpNotificationEnabled
+        && ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
+      followUpDepartment =
+          destinationLookupReaderService.getDepartmentForFollowUpNotification(bundle);
+      boolean isDepartmentRequired =
+          ruleResult.routesTo().stream()
+              .filter(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))
+              .anyMatch(route -> !route.optional());
+      if (isDepartmentRequired && followUpDepartment.isEmpty()) {
+        throw unprocessableEntityError(ExceptionMessages.MISSING_REQUIRED_RECEIVER);
+      }
+    } else {
+      followUpDepartment = Optional.empty();
+    }
 
     // replace tuberculosis ones here so we dont have to change the legacy code
     final List<Route> routeStream =
@@ -143,8 +169,24 @@ public class NotificationRoutingLegacyService {
             ruleResult.bundleActions(),
             ruleResult.allowedRoles());
 
+    if (followUpDepartment.isPresent()) {
+      returnDTO =
+          ruleResult.toRoutingOutput(
+              routeStream.stream()
+                  .map(
+                      r -> {
+                        if (RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO.equals(r.type())) {
+                          return r.copyWithReceiver(followUpDepartment.get());
+                        } else {
+                          return r;
+                        }
+                      })
+                  .toList(),
+              Map.of(),
+              followUpDepartment.get());
+    }
     // search for responsible_health_office in routing data
-    if (ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE))) {
+    else if (ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE))) {
       returnDTO = handleHealthOfficeResponsible(bundle, ruleResult);
     }
     // no responsible_health_office means that a specific receiver is responsible. right now only
