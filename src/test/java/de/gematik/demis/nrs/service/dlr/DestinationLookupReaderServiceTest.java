@@ -37,6 +37,7 @@ import de.gematik.demis.nrs.service.dto.DestinationLookupReaderInput;
 import de.gematik.demis.nrs.service.dto.DestinationLookupReaderResponse;
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.service.base.error.ServiceCallException;
+import de.gematik.demis.service.base.error.ServiceException;
 import java.util.Optional;
 import org.hl7.fhir.r4.model.Bundle;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +61,9 @@ class DestinationLookupReaderServiceTest {
   void getDepartmentFromDlr_success() {
     final String responseBody = "myDepartment";
     when(fhirReader.getDestinationLookupReaderInformation(any()))
-        .thenReturn(Optional.of(new DestinationLookupReaderInput("123", "cat")));
+        .thenReturn(
+            Optional.of(
+                new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
     when(destinationLookupReaderClient.getDepartment(anyString()))
         .thenReturn(new DestinationLookupReaderResponse(responseBody));
     Optional<String> department =
@@ -71,7 +74,9 @@ class DestinationLookupReaderServiceTest {
   @Test
   void getDepartmentFromDlr_notFound() {
     when(fhirReader.getDestinationLookupReaderInformation(any()))
-        .thenReturn(Optional.of(new DestinationLookupReaderInput("123", "cat")));
+        .thenReturn(
+            Optional.of(
+                new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
     when(destinationLookupReaderClient.getDepartment(anyString()))
         .thenThrow(new ServiceCallException("Not found", "404", 404, new Throwable()));
 
@@ -84,7 +89,9 @@ class DestinationLookupReaderServiceTest {
   @Test
   void getDepartmentFromDlr_error() {
     when(fhirReader.getDestinationLookupReaderInformation(any()))
-        .thenReturn(Optional.of(new DestinationLookupReaderInput("123", "cat")));
+        .thenReturn(
+            Optional.of(
+                new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
     when(destinationLookupReaderClient.getDepartment(anyString()))
         .thenThrow(
             new ServiceCallException("service response: error", "123", 500, new Throwable()));
@@ -93,5 +100,17 @@ class DestinationLookupReaderServiceTest {
             () -> destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle()))
         .isInstanceOf(ServiceCallException.class)
         .hasMessageContaining("service response: error");
+  }
+
+  @Test
+  void getDepartmentFromDlr_invalidUUID() {
+    when(fhirReader.getDestinationLookupReaderInformation(any()))
+        .thenReturn(Optional.of(new DestinationLookupReaderInput("12345", "cat")));
+
+    assertThatThrownBy(
+            () -> destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle()))
+        .isInstanceOf(ServiceException.class)
+        .hasMessageContaining(
+            "NRS-003: no responsible health department found. NotificationId is not a valid UUID: 12345");
   }
 }
