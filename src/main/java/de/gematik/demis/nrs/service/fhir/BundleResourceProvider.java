@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Composition;
+import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Patient;
@@ -86,11 +87,20 @@ class BundleResourceProvider {
         .orElse(null);
   }
 
-  public String getNotificationCategory() {
-    for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
-      Resource resource = entry.getResource();
-      if (resource instanceof DiagnosticReport diagnosticReport) {
-        return diagnosticReport.getCode().getCodingFirstRep().getCode();
+  public String getNotificationCategory(String notificationType) {
+    if (notificationType.equals("disease")) {
+      for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
+        Resource resource = entry.getResource();
+        if (resource instanceof Condition condition) {
+          return condition.getCode().getCodingFirstRep().getCode();
+        }
+      }
+    } else {
+      for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
+        Resource resource = entry.getResource();
+        if (resource instanceof DiagnosticReport diagnosticReport) {
+          return diagnosticReport.getCode().getCodingFirstRep().getCode();
+        }
       }
     }
     return null;

@@ -1,0 +1,517 @@
+{
+  "resourceType": "Bundle",
+  "id": "bc90ed0d-e328-487a-9147-a5fccfb5d014",
+  "meta": {
+    "profile": [
+      "https://demis.rki.de/fhir/StructureDefinition/NotificationBundleDisease"
+    ]
+  },
+  "identifier": {
+    "system": "https://demis.rki.de/fhir/NamingSystem/NotificationBundleId",
+    "value": "d9545164-7426-459a-9b49-fd7895b0c009"
+  },
+  "type": "document",
+  "timestamp": "2025-11-14T10:17:05.451+01:00",
+  "entry": [
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Composition/89275751-64ec-4523-a4c9-883cd6946d81",
+      "resource": {
+        "resourceType": "Composition",
+        "id": "89275751-64ec-4523-a4c9-883cd6946d81",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotificationDiseaseCJKD"
+          ]
+        },
+        "identifier": {
+          "system": "https://demis.rki.de/fhir/NamingSystem/NotificationId",
+          "value": "94ee33d3-b302-4f20-a857-8d1c39450fd2"
+        },
+        "status": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "version": "0.0.0",
+              "code": "34782-3",
+              "display": "Infectious disease Note"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "https://demis.rki.de/fhir/CodeSystem/notificationType",
+                "version": "0.0.0",
+                "code": "6.1_2",
+                "display": "Meldung gemäß §6 Absatz 1, 2 IfSG"
+              }
+            ]
+          }
+        ],
+        "subject": {
+          "reference": "Patient/08938957-a4dc-48ef-9e10-e21fad570114"
+        },
+        "date": "2025-11-14T10:17:13+01:00",
+        "author": [
+          {
+            "reference": "PractitionerRole/db2f30a8-b79b-408e-8dce-65e4d0242f5e"
+          }
+        ],
+        "title": "Meldung gemäß §6 Absatz 1, 2 IfSG",
+        "relatesTo": [
+          {
+            "code": "appends",
+            "targetReference": {
+              "type": "Composition",
+              "identifier": {
+                "system": "https://demis.rki.de/fhir/NamingSystem/NotificationId",
+                "value": "c8fc0aa5-803a-4341-82d6-f6fb19731570"
+              }
+            }
+          }
+        ],
+        "section": [
+          {
+            "title": "disease",
+            "code": {
+              "coding": [
+                {
+                  "system": "https://demis.rki.de/fhir/CodeSystem/sectionCode",
+                  "version": "0.0.0",
+                  "code": "diagnosis",
+                  "display": "Diagnose"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "Condition/914e106d-f5d9-4188-b11a-0c559fbb9e5c"
+              }
+            ]
+          },
+          {
+            "title": "Meldetatbestandsübergreifende klinische und epidemiologische Angaben",
+            "code": {
+              "coding": [
+                {
+                  "system": "https://demis.rki.de/fhir/CodeSystem/sectionCode",
+                  "version": "0.0.0",
+                  "code": "generalClinAndEpiInformation",
+                  "display": "Meldetatbestandsübergreifende klinische und epidemiologische Angaben"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "QuestionnaireResponse/ab0f866f-c636-47c3-a1e1-5e2aa210d57f"
+              }
+            ]
+          },
+          {
+            "title": "Meldetatbestandsspezifische klinische und epidemiologische Angaben",
+            "code": {
+              "coding": [
+                {
+                  "system": "https://demis.rki.de/fhir/CodeSystem/sectionCode",
+                  "version": "0.0.0",
+                  "code": "specificClinAndEpiInformation",
+                  "display": "Meldetatbestandsspezifische klinische und epidemiologische Angaben"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "QuestionnaireResponse/d1df910d-ed33-485e-9735-5086b6883601"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Patient/08938957-a4dc-48ef-9e10-e21fad570114",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "08938957-a4dc-48ef-9e10-e21fad570114",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous"
+          ]
+        },
+        "gender": "other",
+        "_gender": {
+          "extension": [
+            {
+              "url": "https://demis.rki.de/fhir/StructureDefinition/gender-amtlich-de",
+              "valueCoding": {
+                "system": "https://demis.rki.de/fhir/CodeSystem/gender-amtlich-de",
+                "code": "D"
+              }
+            }
+          ]
+        },
+        "address": [
+          {
+            "extension": [
+              {
+                "url": "https://demis.rki.de/fhir/StructureDefinition/AddressUse",
+                "valueCoding": {
+                  "system": "https://demis.rki.de/fhir/CodeSystem/addressUse",
+                  "version": "0.0.0",
+                  "code": "primary"
+                }
+              }
+            ],
+            "country": "DE"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Condition/914e106d-f5d9-4188-b11a-0c559fbb9e5c",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "914e106d-f5d9-4188-b11a-0c559fbb9e5c",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/DiseaseCJKD"
+          ]
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "version": "0.0.0",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "version": "0.0.0",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "https://demis.rki.de/fhir/CodeSystem/notificationDiseaseCategory",
+              "version": "0.0.0",
+              "code": "cjkd"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/08938957-a4dc-48ef-9e10-e21fad570114"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/PractitionerRole/db2f30a8-b79b-408e-8dce-65e4d0242f5e",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "db2f30a8-b79b-408e-8dce-65e4d0242f5e",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifierRole"
+          ]
+        },
+        "organization": {
+          "reference": "Organization/db26b581-417e-4a2c-aaae-2f8c39a4c97d"
+        }
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/Organization/db26b581-417e-4a2c-aaae-2f8c39a4c97d",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "db26b581-417e-4a2c-aaae-2f8c39a4c97d",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/NotifierFacility"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://fhir.kbv.de/NamingSystem/KBV_NS_Base_BSNR",
+            "value": "123456789"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "https://demis.rki.de/fhir/CodeSystem/organizationType",
+                "version": "0.0.0",
+                "code": "hospital",
+                "display": "Krankenhaus"
+              }
+            ]
+          }
+        ],
+        "name": "Kreiskrankenhaus Riedlingen",
+        "telecom": [
+          {
+            "system": "email",
+            "value": "t.person@gmail.com"
+          },
+          {
+            "system": "email",
+            "value": "test.person@kh-rie.de"
+          },
+          {
+            "system": "phone",
+            "value": "01234567",
+            "use": "work"
+          }
+        ],
+        "address": [
+          {
+            "line": [
+              "Im Himmelreich 1"
+            ],
+            "city": "Frühling",
+            "postalCode": "21481",
+            "country": "DE"
+          }
+        ],
+        "contact": [
+          {
+            "name": {
+              "text": "Test Person",
+              "family": "Person",
+              "given": [
+                "Test"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/QuestionnaireResponse/ab0f866f-c636-47c3-a1e1-5e2aa210d57f",
+      "resource": {
+        "resourceType": "QuestionnaireResponse",
+        "id": "ab0f866f-c636-47c3-a1e1-5e2aa210d57f",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/DiseaseInformationCommon"
+          ]
+        },
+        "questionnaire": "https://demis.rki.de/fhir/Questionnaire/DiseaseQuestionsCommon",
+        "status": "completed",
+        "subject": {
+          "reference": "Patient/08938957-a4dc-48ef-9e10-e21fad570114"
+        },
+        "item": [
+          {
+            "linkId": "isDead",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "militaryAffiliation",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "labSpecimenTaken",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "hospitalized",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "infectProtectFacility",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "placeExposure",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "organDonation",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://demis.rki.de/fhir/QuestionnaireResponse/d1df910d-ed33-485e-9735-5086b6883601",
+      "resource": {
+        "resourceType": "QuestionnaireResponse",
+        "id": "d1df910d-ed33-485e-9735-5086b6883601",
+        "meta": {
+          "profile": [
+            "https://demis.rki.de/fhir/StructureDefinition/DiseaseInformationCJKD"
+          ]
+        },
+        "questionnaire": "https://demis.rki.de/fhir/Questionnaire/DiseaseQuestionsCJKD",
+        "status": "completed",
+        "subject": {
+          "reference": "Patient/08938957-a4dc-48ef-9e10-e21fad570114"
+        },
+        "item": [
+          {
+            "linkId": "form",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "biopsy",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "autopsy",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "diagnosis",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "infectionPathKind",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "neuropath",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "outbreak",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://snomed.info/sct",
+                  "version": "0.0.0",
+                  "code": "1631000175102",
+                  "display": "Patient/Patientin nicht gefragt"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

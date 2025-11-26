@@ -62,8 +62,10 @@ class FhirReaderIntegrationTest {
   // This file is located in /src/main/resources instead of /src/test/resources and is used to warm
   // up the FHIRParser
   private static final String DISEASE_NOTIFICATION = "/fhir/disease-notification.json";
-  private static final String FOLLOW_UP_NOTIFICATION =
+  private static final String FOLLOW_UP_NOTIFICATION_PATHOGEN =
       "/fhir/7_1/anonymous-followup-notification.json";
+  private static final String FOLLOW_UP_NOTIFICATION_DISEASE =
+      "/fhir/6_1/anonymous-followup-notification.json";
 
   @Autowired FhirReader underTest;
 
@@ -120,12 +122,22 @@ class FhirReaderIntegrationTest {
   }
 
   @Test
-  void validDestinationLookupReaderInformation() {
+  void validDestinationLookupReaderInformationPathogen() {
     final DestinationLookupReaderInput expected =
         new DestinationLookupReaderInput("5001b5e1-a94c-4d7c-a35d-5d62fe491196", "denp");
     Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
         underTest.getDestinationLookupReaderInformation(
-            underTest.toBundle(FileUtil.readResource(FOLLOW_UP_NOTIFICATION)));
+            underTest.toBundle(FileUtil.readResource(FOLLOW_UP_NOTIFICATION_PATHOGEN)), "pathogen");
+    assertThat(destinationLookupReaderInformation).contains(expected);
+  }
+
+  @Test
+  void validDestinationLookupReaderInformationDisease() {
+    final DestinationLookupReaderInput expected =
+        new DestinationLookupReaderInput("c8fc0aa5-803a-4341-82d6-f6fb19731570", "cjkd");
+    Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
+        underTest.getDestinationLookupReaderInformation(
+            underTest.toBundle(FileUtil.readResource(FOLLOW_UP_NOTIFICATION_DISEASE)), "disease");
     assertThat(destinationLookupReaderInformation).contains(expected);
   }
 
@@ -133,7 +145,7 @@ class FhirReaderIntegrationTest {
   void invalidDestinationLookupReaderInformationOtherRelatesTo() {
     Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
         underTest.getDestinationLookupReaderInformation(
-            underTest.toBundle(FileUtil.readResource(DISEASE_NOTIFICATION)));
+            underTest.toBundle(FileUtil.readResource(DISEASE_NOTIFICATION)), "disease");
     assertThat(destinationLookupReaderInformation).isEmpty();
   }
 
@@ -141,7 +153,7 @@ class FhirReaderIntegrationTest {
   void invalidDestinationLookupReaderInformationNoRelatesTo() {
     Optional<DestinationLookupReaderInput> destinationLookupReaderInformation =
         underTest.getDestinationLookupReaderInformation(
-            underTest.toBundle(FileUtil.readResource(LABORATORY_NOTIFICATION)));
+            underTest.toBundle(FileUtil.readResource(LABORATORY_NOTIFICATION)), "pathogen");
     assertThat(destinationLookupReaderInformation).isEmpty();
   }
 }
