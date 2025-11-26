@@ -131,7 +131,8 @@ public class NotificationRoutingLegacyService {
     if (this.isFollowUpNotificationEnabled
         && ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
       followUpDepartment =
-          destinationLookupReaderService.getDepartmentForFollowUpNotification(bundle);
+          destinationLookupReaderService.getDepartmentForFollowUpNotification(
+              bundle, evaluatedRules.get().type());
       boolean isDepartmentRequired =
           ruleResult.routesTo().stream()
               .filter(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))

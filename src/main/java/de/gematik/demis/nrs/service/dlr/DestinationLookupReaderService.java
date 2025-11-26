@@ -46,10 +46,11 @@ public class DestinationLookupReaderService {
   private final DestinationLookupReaderClient destinationLookupReaderClient;
   private final FhirReader fhirReader;
 
-  public Optional<String> getDepartmentForFollowUpNotification(Bundle bundle) {
+  public Optional<String> getDepartmentForFollowUpNotification(
+      Bundle bundle, String notificationType) {
     log.info("RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO rule active. Calling DLR Service");
     return fhirReader
-        .getDestinationLookupReaderInformation(bundle)
+        .getDestinationLookupReaderInformation(bundle, notificationType)
         .map(
             input -> {
               if (!UUIDValidator.isValidUUID(input.notificationId())) {

@@ -132,7 +132,8 @@ public class NotificationRoutingService {
     if (isFollowUpNotificationEnabled
         && ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
       followUpDepartment =
-          destinationLookupReaderService.getDepartmentForFollowUpNotification(bundle);
+          destinationLookupReaderService.getDepartmentForFollowUpNotification(
+              bundle, ruleResult.type());
     } else {
       followUpDepartment = Optional.empty();
     }

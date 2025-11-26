@@ -2,6 +2,9 @@
  
 # Release notes
 
+## Release 2.4.2
+- fix notificationId handling for follow up notification disease
+
 ## Release 2.4.1
 - add validation of notificationId to be UUID, before sending request to get responsible health office to DLS, return with 422 if invalid
 - bump spring parent to 2.14.2

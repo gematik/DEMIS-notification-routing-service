@@ -29,7 +29,6 @@ package de.gematik.demis.nrs.service.dlr;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -60,55 +59,62 @@ class DestinationLookupReaderServiceTest {
   @Test
   void getDepartmentFromDlr_success() {
     final String responseBody = "myDepartment";
-    when(fhirReader.getDestinationLookupReaderInformation(any()))
+    when(fhirReader.getDestinationLookupReaderInformation(any(), any()))
         .thenReturn(
             Optional.of(
                 new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
-    when(destinationLookupReaderClient.getDepartment(anyString()))
+    when(destinationLookupReaderClient.getDepartment(any()))
         .thenReturn(new DestinationLookupReaderResponse(responseBody));
     Optional<String> department =
-        destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle());
+        destinationLookupReaderService.getDepartmentForFollowUpNotification(
+            new Bundle(), "pathogen");
     assertThat(department).contains(responseBody);
   }
 
   @Test
   void getDepartmentFromDlr_notFound() {
-    when(fhirReader.getDestinationLookupReaderInformation(any()))
+    when(fhirReader.getDestinationLookupReaderInformation(any(), any()))
         .thenReturn(
             Optional.of(
                 new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
-    when(destinationLookupReaderClient.getDepartment(anyString()))
+    when(destinationLookupReaderClient.getDepartment(any()))
         .thenThrow(new ServiceCallException("Not found", "404", 404, new Throwable()));
 
     assertThatThrownBy(
-            () -> destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle()))
+            () ->
+                destinationLookupReaderService.getDepartmentForFollowUpNotification(
+                    new Bundle(), "pathogen"))
         .isInstanceOf(ServiceCallException.class)
         .hasMessageContaining("Not found");
   }
 
   @Test
   void getDepartmentFromDlr_error() {
-    when(fhirReader.getDestinationLookupReaderInformation(any()))
+    when(fhirReader.getDestinationLookupReaderInformation(any(), any()))
         .thenReturn(
             Optional.of(
                 new DestinationLookupReaderInput("3bc0a462-5088-4f04-b94a-f9b2d3433cfe", "cat")));
-    when(destinationLookupReaderClient.getDepartment(anyString()))
+    when(destinationLookupReaderClient.getDepartment(any()))
         .thenThrow(
             new ServiceCallException("service response: error", "123", 500, new Throwable()));
 
     assertThatThrownBy(
-            () -> destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle()))
+            () ->
+                destinationLookupReaderService.getDepartmentForFollowUpNotification(
+                    new Bundle(), "pathogen"))
         .isInstanceOf(ServiceCallException.class)
         .hasMessageContaining("service response: error");
   }
 
   @Test
   void getDepartmentFromDlr_invalidUUID() {
-    when(fhirReader.getDestinationLookupReaderInformation(any()))
+    when(fhirReader.getDestinationLookupReaderInformation(any(), any()))
         .thenReturn(Optional.of(new DestinationLookupReaderInput("12345", "cat")));
 
     assertThatThrownBy(
-            () -> destinationLookupReaderService.getDepartmentForFollowUpNotification(new Bundle()))
+            () ->
+                destinationLookupReaderService.getDepartmentForFollowUpNotification(
+                    new Bundle(), "pathogen"))
         .isInstanceOf(ServiceException.class)
         .hasMessageContaining(
             "NRS-003: no responsible health department found. NotificationId is not a valid UUID: 12345");

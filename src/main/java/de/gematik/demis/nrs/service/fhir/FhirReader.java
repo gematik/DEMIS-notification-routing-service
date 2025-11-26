@@ -110,10 +110,10 @@ public class FhirReader {
    *     or null if information in bundle is not present
    */
   public Optional<DestinationLookupReaderInput> getDestinationLookupReaderInformation(
-      final Bundle bundle) {
+      final Bundle bundle, String notificationType) {
     final BundleResourceProvider bundleResources = new BundleResourceProvider(bundle);
     final String notificationId = bundleResources.getRelatesToNotificationId();
-    final String notificationCategory = bundleResources.getNotificationCategory();
+    final String notificationCategory = bundleResources.getNotificationCategory(notificationType);
     if (notificationId != null && notificationCategory != null) {
       return Optional.of(new DestinationLookupReaderInput(notificationId, notificationCategory));
     }

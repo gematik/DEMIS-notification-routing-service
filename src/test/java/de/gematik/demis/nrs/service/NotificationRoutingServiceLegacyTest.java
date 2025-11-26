@@ -623,7 +623,7 @@ class NotificationRoutingServiceLegacyTest {
     when(ruleService.evaluateRules(any())).thenReturn(Optional.of(followUpResult));
 
     final Optional<String> department = Optional.of("testDepartment");
-    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any()))
+    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any(), any()))
         .thenReturn(department);
 
     final RuleBasedRouteDTO ruleBasedRouteDTO =
@@ -655,7 +655,7 @@ class NotificationRoutingServiceLegacyTest {
     when(fhirReader.toBundle(anyString())).thenReturn(new Bundle());
     when(ruleService.evaluateRules(any())).thenReturn(Optional.of(followUpResult));
 
-    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any()))
+    when(destinationLookupReaderService.getDepartmentForFollowUpNotification(any(), any()))
         .thenThrow(new ServiceException(UNPROCESSABLE_ENTITY, null, "Error"));
 
     assertThatThrownBy(() -> underTestFollowUp.determineRuleBasedRouting("", false, null))
