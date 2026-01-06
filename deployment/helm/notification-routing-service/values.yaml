@@ -119,10 +119,10 @@ service:
 # Resources
 resources:
   limits:
-    memory: "650Mi"
+    memory: "900Mi"
   requests:
     cpu: "100m"
-    memory: "650Mi"
+    memory: "900Mi"
 
 autoscaling:
   enabled: false

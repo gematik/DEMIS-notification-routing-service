@@ -4,7 +4,7 @@ package de.gematik.demis.nrs.rules;
  * #%L
  * notification-routing-service
  * %%
- * Copyright (C) 2025 gematik GmbH
+ * Copyright (C) 2025 - 2026 gematik GmbH
  * %%
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
  * European Commission – subsequent versions of the EUPL (the "Licence").
@@ -22,7 +22,8 @@ package de.gematik.demis.nrs.rules;
  *
  * *******
  *
- * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+ * For additional notes and disclaimer from gematik and in case of changes by gematik,
+ * find details in the "Readme" file.
  * #L%
  */
 
@@ -48,7 +49,7 @@ import org.mockito.Mockito;
 class RulesLoaderTest {
 
   @Test
-  void loadsDefaultConfigIfNoFlags() throws Exception {
+  void loadsDefaultConfigIfNoFlags() {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
 
@@ -56,13 +57,11 @@ class RulesLoaderTest {
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
-    assertThat(config.toString().contains("notification7_1"))
-        .as("Standard config should be loaded")
-        .isTrue();
+    assertThat(config.toString()).contains("notification7_1");
   }
 
   @Test
-  void loads73ConfigIfFlagSet() throws Exception {
+  void loads73ConfigIfFlagSet() {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
     Mockito.when(props.routingRules73enabled()).thenReturn("rules/routingConfig_73enabled.json");
@@ -84,7 +83,7 @@ class RulesLoaderTest {
   }
 
   @Test
-  void loadsFollowUpConfigIfFlagSet() throws Exception {
+  void loadsFollowUpConfigIfFlagSet() {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
     Mockito.when(props.routingRulesWithFollowUp())

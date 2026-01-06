@@ -1,4 +1,4 @@
-<img src="media/Gematik_Logo_Flag.png" alt="Gematik Logo" width="200" height="37">
+<div style="text-align:right"><img src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png" width="250" height="47" alt="gematik GmbH Logo"/> <br/> </div> <br/>
 
 [![Quality Gate Status](https://sonar.prod.ccs.gematik.solutions/api/project_badges/measure?project=de.gematik.demis%3Anotification-routing-service&metric=alert_status&token=sqb_1d5c90204d1303826a75a29a8ed57699fc2da1b5)](https://sonar.prod.ccs.gematik.solutions/dashboard?id=de.gematik.demis%3Anotification-routing-service)
 [![Vulnerabilities](https://sonar.prod.ccs.gematik.solutions/api/project_badges/measure?project=de.gematik.demis%3Anotification-routing-service&metric=vulnerabilities&token=sqb_1d5c90204d1303826a75a29a8ed57699fc2da1b5)](https://sonar.prod.ccs.gematik.solutions/dashboard?id=de.gematik.demis%3Anotification-routing-service)

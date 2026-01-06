@@ -1,6 +1,10 @@
-<img align="right" width="200" height="37" src="media/Gematik_Logo_Flag.png"/> <br/> 
- 
+<div style="text-align:right"><img src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png" width="250" height="47" alt="gematik GmbH Logo"/> <br/> </div> <br/>
+
 # Release notes
+
+## Release 2.4.3
+- upgraded spring parent to version 2.14.11
+- increased standard memory resources to 900Mi in helm chart
 
 ## Release 2.4.2
 - fix notificationId handling for follow up notification disease
