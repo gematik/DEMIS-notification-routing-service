@@ -4,7 +4,7 @@ package de.gematik.demis.nrs.service.fhir;
  * #%L
  * notification-routing-service
  * %%
- * Copyright (C) 2025 gematik GmbH
+ * Copyright (C) 2025 - 2026 gematik GmbH
  * %%
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
  * European Commission – subsequent versions of the EUPL (the "Licence").
@@ -22,7 +22,8 @@ package de.gematik.demis.nrs.service.fhir;
  *
  * *******
  *
- * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+ * For additional notes and disclaimer from gematik and in case of changes by gematik,
+ * find details in the "Readme" file.
  * #L%
  */
 
@@ -30,7 +31,7 @@ import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.NotifiedPersonDataBuilder;
+import de.gematik.demis.notification.builder.demis.fhir.notification.builder.infectious.NotifiedPersonNominalDataBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.technicals.AddressDataBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.technicals.OrganizationBuilder;
 import de.gematik.demis.notification.builder.demis.fhir.notification.builder.technicals.PractitionerBuilder;
@@ -83,7 +84,7 @@ class AddressResolverTest {
   @Test
   void fromPatient() {
     final Address address = createAddress();
-    final Patient patient = new NotifiedPersonDataBuilder().addAddress(address).build();
+    final Patient patient = new NotifiedPersonNominalDataBuilder().addAddress(address).build();
 
     final Map<AddressUseEnum, Address> result = underTest.fromPatient(patient);
     assertThat(result).containsExactly(entry(AddressUseEnum.OTHER, address));
@@ -94,7 +95,7 @@ class AddressResolverTest {
     final Address orgaAddress = createAddress();
     final Organization orga = new OrganizationBuilder().setAddress(orgaAddress).build();
     final Patient patient =
-        new NotifiedPersonDataBuilder()
+        new NotifiedPersonNominalDataBuilder()
             .addAddress(
                 new AddressDataBuilder()
                     .withOrganizationReferenceExtension(orga)
@@ -124,7 +125,7 @@ class AddressResolverTest {
         new AddressDataBuilder().setCity("Bochum").withAddressUseExtension("current", null).build();
 
     final Patient patient =
-        new NotifiedPersonDataBuilder()
+        new NotifiedPersonNominalDataBuilder()
             .addAddress(primaryAddress)
             .addAddress(ignoredSecondPrimaryAddress)
             .addAddress(currentAddress)
