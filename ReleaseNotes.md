@@ -2,6 +2,10 @@
 
 # Release notes
 
+## Release 2.5.0
+- upgraded spring parent to version 2.14.12
+- add workaround for cologne tbc routing
+
 ## Release 2.4.3
 - upgraded spring parent to version 2.14.11
 - increased standard memory resources to 900Mi in helm chart

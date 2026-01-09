@@ -87,6 +87,10 @@ spec:
               value: "Europe/Berlin"
             - name: "DATA_DIR_LOOKUP"
               value: {{ include "notification-routing-service.lookup-directory" . | quote }}
+            - name: "NRS_CLIENT_FUTS"
+              value: {{ printf "%s%s%s" "http://futs." .Release.Namespace ".svc.cluster.local" | quote }}
+            - name: "NRS_CLIENT_DLR"
+              value: {{ printf "%s%s%s" "http://destination-lookup-reader." .Release.Namespace ".svc.cluster.local" | quote }}
             {{- if eq (.Values.customEnvVars.FEATURE_FLAG_NEW_API_ENDPOINTS | toString) "true" }}
             - name: "NRS_CLIENT_FUTS_CONTEXT_PATH"
               value: "/"

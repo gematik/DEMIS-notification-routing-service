@@ -53,7 +53,8 @@ import org.springframework.boot.test.context.SpringBootTest;
     properties = {
       "nrs.routing-rules=rules/routingConfig.json",
       "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-      "nrs.rules-start-id=start"
+      "nrs.rules-start-id=start",
+      "nrs.checkWorkaroundIsWorking=false"
     })
 class RulesServiceIT {
 

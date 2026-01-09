@@ -48,8 +48,9 @@ import org.springframework.test.web.servlet.MockMvc;
     webEnvironment = WebEnvironment.MOCK,
     properties = {
       "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-      "nrs.routingRulesWithFollowUp=true", // oder ein sinnvoller Wert
-      "nrs.routingRules73enabled=true" // oder ein sinnvoller Wert
+      "nrs.routingRulesWithFollowUp=true",
+      "nrs.routingRules73enabled=true",
+      "nrs.checkWorkaroundIsWorking=false"
     })
 @AutoConfigureMockMvc
 class NrsIntegrationTest {

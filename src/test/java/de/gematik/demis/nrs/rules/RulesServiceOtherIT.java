@@ -82,7 +82,8 @@ class RulesServiceOtherIT {
       properties = {
         "nrs.routing-rules=rules/routingConfig_73enabled.json",
         "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start"
+        "nrs.rules-start-id=start",
+        "nrs.checkWorkaroundIsWorking=false"
       })
   @Nested
   class For73 {
@@ -110,7 +111,8 @@ class RulesServiceOtherIT {
       properties = {
         "nrs.routing-rules=rules/routingConfig_with_follow_up.json",
         "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start"
+        "nrs.rules-start-id=start",
+        "nrs.checkWorkaroundIsWorking=false"
       })
   @Nested
   class FollowUp {

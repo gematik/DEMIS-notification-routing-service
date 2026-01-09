@@ -48,7 +48,8 @@ import org.springframework.test.web.servlet.MockMvc;
     webEnvironment = WebEnvironment.MOCK,
     properties = {
       "feature.flag.tuberculosis.routing.enabled=false",
-      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup"
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+      "nrs.checkWorkaroundIsWorking=false"
     })
 @AutoConfigureMockMvc
 class NrsIntegrationLegacyTest {
