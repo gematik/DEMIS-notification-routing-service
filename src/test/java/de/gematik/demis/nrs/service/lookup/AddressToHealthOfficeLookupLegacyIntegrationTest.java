@@ -62,7 +62,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(
     classes = NotificationRoutingApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    properties = "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup")
+    properties = {
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+      "nrs.checkWorkaroundIsWorking=false"
+    })
 class AddressToHealthOfficeLookupLegacyIntegrationTest {
 
   @Autowired AddressToHealthOfficeLookup underTest;

@@ -63,7 +63,8 @@ import org.springframework.boot.test.context.SpringBootTest;
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
     properties = {
       "feature.flag.fuzzy.search=true",
-      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup"
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+      "nrs.checkWorkaroundIsWorking=false"
     })
 class AddressToHealthOfficeLookupIntegrationTest {
 

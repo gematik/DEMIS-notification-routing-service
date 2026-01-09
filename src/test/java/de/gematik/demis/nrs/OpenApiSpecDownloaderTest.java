@@ -32,7 +32,11 @@ import de.gematik.demis.nrs.service.lookup.LookupMaps;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@TestPropertySource(properties = {"nrs.lookup-data-directory=src/test/resources/lookup/maps"})
+@TestPropertySource(
+    properties = {
+      "nrs.lookup-data-directory=src/test/resources/lookup/maps",
+      "nrs.checkWorkaroundIsWorking=false"
+    })
 class OpenApiSpecDownloaderTest extends AbstractOpenApiSpecDownloaderTest {
   @MockitoBean LookupMaps lookupMaps;
 }

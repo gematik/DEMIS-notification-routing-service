@@ -59,7 +59,10 @@ import org.springframework.boot.test.context.SpringBootTest;
     classes = NotificationRoutingApplication.class,
     useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
     webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-    properties = "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup")
+    properties = {
+      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+      "nrs.checkWorkaroundIsWorking=false"
+    })
 class RulesTest {
   @Autowired private RulesConfig config;
 

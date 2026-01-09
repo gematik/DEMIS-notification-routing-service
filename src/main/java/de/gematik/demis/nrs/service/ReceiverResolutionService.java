@@ -34,6 +34,7 @@ import de.gematik.demis.nrs.service.futs.ConceptMapService;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,6 +55,8 @@ public class ReceiverResolutionService {
   private static final String LOOKUP_HEALTH_OFFICE_PREFIX_ID = "2";
   private static final String LOOKUP_HEALTH_OFFICE_DELIMITER = ".";
 
+  private final boolean workaroundForCologneEnabled;
+
   @Nonnull private final AddressToHealthOfficeLookup addressToHealthOfficeLookup;
 
   @Nonnull private final ConceptMapService conceptMaps;
@@ -64,9 +67,11 @@ public class ReceiverResolutionService {
    */
   public ReceiverResolutionService(
       @Nonnull final AddressToHealthOfficeLookup addressToHealthOfficeLookup,
-      @Nonnull final ConceptMapService conceptMaps) {
+      @Nonnull final ConceptMapService conceptMaps,
+      @Value("${nrs.workaroundForCologne}") boolean workaroundForCologne) {
     this.addressToHealthOfficeLookup = addressToHealthOfficeLookup;
     this.conceptMaps = conceptMaps;
+    this.workaroundForCologneEnabled = workaroundForCologne;
   }
 
   /**
@@ -98,6 +103,12 @@ public class ReceiverResolutionService {
       }
       case RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS -> {
         final Optional<String> immediateHealthOffice = addressToHealthOfficeLookup.lookup(address);
+        // TODO(DEMIS-4950): Remove this workaround.
+        if (workaroundForCologneEnabled
+            && immediateHealthOffice.isPresent()
+            && immediateHealthOffice.get().equals("1.05.3.15.")) {
+          yield immediateHealthOffice;
+        }
         // Standardize raw health office ids to their canonical form for reliable lookup and avoid
         // issues from typos or inconsistent formatting.
         yield immediateHealthOffice

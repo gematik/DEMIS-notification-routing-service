@@ -77,7 +77,7 @@ class NotificationRoutingServiceAdditionalTest {
   @BeforeEach
   void setup() {
     ReceiverResolutionService receiverResolutionService =
-        new ReceiverResolutionService(addressToHealthOfficeLookupMock, conceptMapService);
+        new ReceiverResolutionService(addressToHealthOfficeLookupMock, conceptMapService, false);
     notificationRoutingService =
         new NotificationRoutingService(
             fhirReaderMock,
