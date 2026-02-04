@@ -47,7 +47,6 @@ import org.springframework.test.web.servlet.MockMvc;
     useMainMethod = UseMainMethod.ALWAYS,
     webEnvironment = WebEnvironment.MOCK,
     properties = {
-      "feature.flag.tuberculosis.routing.enabled=false",
       "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
       "nrs.checkWorkaroundIsWorking=false"
     })
@@ -72,7 +71,7 @@ class NrsIntegrationLegacyTest {
   }
 
   @Test
-  void routing_returns_200_with_empty_health_office_list() throws Exception {
+  void routing_returns_422_for_no_health_offices_found() throws Exception {
     mockMvc
         .perform(
             post("/routing/v2")
@@ -80,27 +79,7 @@ class NrsIntegrationLegacyTest {
                 .content(readResource(NOTIFICATION_NOT_PROCESSABLE))
                 .param("isTestUser", "false")
                 .param("testUserID", ""))
-        .andExpect(status().isOk())
-        .andExpect(
-            content()
-                .json(
-                    """
-                   {
-                     "type": "laboratory",
-                     "notificationCategory": "7.1",
-                     "routes": [
-                       {
-                         "type": "specific_receiver",
-                         "specificReceiverId": "1.",
-                         "actions": [
-                           "pseudo_copy"
-                         ],
-                         "optional": false
-                       }
-                     ],
-                     "healthOffices": null,
-                     "responsible": null
-                   }"""));
+        .andExpect(status().is(422));
   }
 
   @Test

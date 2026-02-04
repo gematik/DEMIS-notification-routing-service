@@ -61,18 +61,22 @@ class RulesServiceOtherIT {
         arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1_covid"),
         arguments(
             Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
-        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
-        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
-        arguments(
-            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"),
         arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "laboratory_7_4"),
         arguments(Path.of(BASE_PATH, "invalid_71.json"), "laboratory_7_1"),
         arguments(
             Path.of(BASE_PATH, "invalid_71_multiple_observations_mixed.json"), "laboratory_7_1"),
         arguments(
             Path.of(BASE_PATH, "invalid_71_multiple_observations_all_neg.json"), "laboratory_7_1"));
+  }
+
+  private static Stream<Arguments> bundleToExpectedResultId7_3() {
+    return Stream.of(
+        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
+        arguments(
+            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"));
   }
 
   @SpringBootTest(
@@ -91,7 +95,41 @@ class RulesServiceOtherIT {
 
     @Autowired private FhirContext fhirContext;
 
-    @MethodSource("de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId")
+    @MethodSource({
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
+    })
+    @ParameterizedTest
+    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
+      final String bundleJson = Files.readString(path);
+      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
+      assertThat(resultCandidate).isPresent();
+      final Result result = resultCandidate.get();
+      assertThat(result.id()).isEqualTo(expectedRule);
+    }
+  }
+
+  @SpringBootTest(
+      classes = NotificationRoutingApplication.class,
+      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
+      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+      properties = {
+        "nrs.routing-rules=rules/routingConfig_73enabled_excerptEncryption.json",
+        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+        "nrs.rules-start-id=start"
+      })
+  @Nested
+  class For73Encryption {
+    @Autowired private RulesService rulesService;
+
+    @Autowired private FhirContext fhirContext;
+
+    @MethodSource({
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
+    })
     @ParameterizedTest
     void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
       final String bundleJson = Files.readString(path);

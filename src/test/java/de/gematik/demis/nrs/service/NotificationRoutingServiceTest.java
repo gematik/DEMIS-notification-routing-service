@@ -101,6 +101,7 @@ class NotificationRoutingServiceTest {
   @Mock DestinationLookupReaderService destinationLookupReaderService;
 
   NotificationRoutingService underTest;
+  NotificationRoutingService underTest73;
   NotificationRoutingService underTestFollowUp;
 
   @BeforeEach
@@ -114,7 +115,18 @@ class NotificationRoutingServiceTest {
             ruleService,
             receiverResolutionService,
             destinationLookupReaderService,
+            false,
             false);
+
+    underTest73 =
+        new NotificationRoutingService(
+            fhirReader,
+            statistics,
+            ruleService,
+            receiverResolutionService,
+            destinationLookupReaderService,
+            false,
+            true);
 
     underTestFollowUp =
         new NotificationRoutingService(
@@ -123,7 +135,8 @@ class NotificationRoutingServiceTest {
             ruleService,
             receiverResolutionService,
             destinationLookupReaderService,
-            true);
+            true,
+            false);
   }
 
   private static AddressDTO createAddress(final String postalCode) {
@@ -280,6 +293,42 @@ class NotificationRoutingServiceTest {
         .extracting("type")
         .containsExactlyInAnyOrder(
             RESPONSIBLE_HEALTH_OFFICE, RESPONSIBLE_HEALTH_OFFICE_SORMAS, SPECIFIC_RECEIVER);
+    assertThat(ruleBasedRouteDTO.routes()).extracting("specificReceiverId").containsOnly("1.");
+  }
+
+  @Test
+  void thatRuleBasedRoutingWorksFor73Notifications() {
+    final RoutingInput routingInput =
+        new RoutingInput(
+            Map.of(NOTIFIED_PERSON_PRIMARY, new AddressDTO("Str", "1", "12071", "Berlin", "DE")));
+
+    final Result originalResult =
+        new Result(
+            "disease_7_3",
+            "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+            List.of(
+                new Route(
+                    SPECIFIC_RECEIVER,
+                    "1.",
+                    List.of(ActionType.REPRODUCE, ActionType.ENCRYPT),
+                    false),
+                new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.PSEUDO_COPY), false)),
+            "disease",
+            "7.3",
+            SequencedSets.of(BundleAction.requiredOf(CREATE_PSEUDONYM_RECORD)),
+            Set.of("role_1", "role_2"));
+
+    // this is just here to avoid an NPE
+    when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
+    // we care about rewriting these
+    when(ruleService.evaluateRules(any())).thenReturn(Optional.of(originalResult));
+
+    final RuleBasedRouteDTO ruleBasedRouteDTO =
+        underTest73.determineRuleBasedRouting("", true, "1.");
+    assertThat(ruleBasedRouteDTO.routes()).hasSize(2);
+    assertThat(ruleBasedRouteDTO.routes())
+        .extracting("type")
+        .containsExactlyInAnyOrder(SPECIFIC_RECEIVER, SPECIFIC_RECEIVER);
     assertThat(ruleBasedRouteDTO.routes()).extracting("specificReceiverId").containsOnly("1.");
   }
 

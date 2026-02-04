@@ -47,7 +47,6 @@ import de.gematik.demis.nrs.api.dto.BundleAction;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
 import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Route;
-import de.gematik.demis.nrs.service.NotificationRoutingLegacyService;
 import de.gematik.demis.nrs.service.NotificationRoutingService;
 import de.gematik.demis.nrs.service.dto.AddressDTO;
 import de.gematik.demis.nrs.service.lookup.AddressToHealthOfficeLookup;
@@ -68,10 +67,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
     controllers = {NotificationRoutingController.class},
-    properties = {
-      "feature.flag.tuberculosis.routing.enabled=true",
-      "feature.flag.permission.check.enabled=true"
-    })
+    properties = {"feature.flag.permission.check.enabled=true"})
 @Import(ErrorHandlerConfiguration.class)
 class NotificationRoutingControllerTest {
 
@@ -81,7 +77,6 @@ class NotificationRoutingControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private NotificationRoutingService notificationRoutingService;
-  @MockitoBean private NotificationRoutingLegacyService notificationRoutingLegacyService;
   @MockitoBean private AddressToHealthOfficeLookup healthDepartmentLookupService;
 
   @Test
@@ -198,10 +193,7 @@ class NotificationRoutingControllerTest {
 
       final NotificationRoutingController controller =
           new NotificationRoutingController(
-              notificationRoutingService,
-              notificationRoutingLegacyService,
-              healthDepartmentLookupService,
-              true);
+              notificationRoutingService, healthDepartmentLookupService);
       final Object actual = controller.determineRuleBasedRouting("any", false, "any");
       assertThat(actual).isInstanceOf(RuleBasedRouteDTO.class);
     }
@@ -224,10 +216,7 @@ class NotificationRoutingControllerTest {
 
       final NotificationRoutingController controller =
           new NotificationRoutingController(
-              notificationRoutingService,
-              notificationRoutingLegacyService,
-              healthDepartmentLookupService,
-              true);
+              notificationRoutingService, healthDepartmentLookupService);
       final Object actual = controller.determineRuleBasedRouting("any", false, "any");
       assertThat(actual).isInstanceOf(RuleBasedRouteDTO.class);
       assertThat(actual)

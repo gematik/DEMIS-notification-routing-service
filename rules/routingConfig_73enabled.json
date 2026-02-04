@@ -125,18 +125,27 @@
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
       "notificationCategory": "7.1",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": true
+        }
+      ],
       "routesTo": [
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-sender"]
@@ -145,23 +154,34 @@
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
       "notificationCategory": "7.1",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": true
+        }
+      ],
       "routesTo": [
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-sender"]
@@ -181,30 +201,69 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_1_anonymous_follow_up": {
-      "description": "currently not implemented. currently not implemented. empty routesTo will result in error being returned by NRS",
+      "description": "if this case is active the notification is a §7.1 case with a relates to id. the relates to id has to be used to find the responsible health office.",
       "type": "laboratory",
       "notificationCategory": "7.1",
-      "bundleActions": [{"type": "no_action", "optional": true}],
-      "routesTo": [],
-      "allowedRoles": []
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": true
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_with_relates_to",
+          "optional": "false",
+          "actions": [
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
+        }
+      ],
+      "allowedRoles": ["pathogen-notification-sender"]
     },
     "laboratory_7_3": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
       "type": "laboratory",
       "notificationCategory": "7.3",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["reproduce", "encrypt"]
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-nonnominal-sender"]
@@ -213,13 +272,29 @@
       "description": "if this case is active the notification is a §7.3 anonymous case. it should only be send to the RKI.",
       "type": "laboratory",
       "notificationCategory": "7.3",
-      "bundleActions": [{"type": "no_action", "optional":  false}],
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": false
+        }
+      ],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["reproduce", "encrypt"]
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-anonymous-sender"]
@@ -228,13 +303,20 @@
       "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
       "type": "laboratory",
       "notificationCategory": "7.4",
-      "bundleActions": [{"type": "no_action", "optional": false}],
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": false
+        }
+      ],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["no_action"]
+          "actions": [
+            "no_action"
+          ]
         }
       ],
       "allowedRoles": ["pathogen-notification-negative-sender"]
@@ -243,18 +325,27 @@
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
       "type": "disease",
       "notificationCategory": "6.1",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": true
+        }
+      ],
       "routesTo": [
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["disease-notification-sender"]
@@ -263,23 +354,34 @@
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
       "type": "disease",
       "notificationCategory": "6.1",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  true}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": true
+        }
+      ],
       "routesTo": [
         {
           "type": "responsible_health_office",
           "optional": "false",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "responsible_health_office_sormas",
           "optional": "true",
-          "actions": ["encrypt"]
+          "actions": [
+            "encrypt"
+          ]
         },
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["disease-notification-sender"]
@@ -299,30 +401,69 @@
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["pseudo_copy"]
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["disease-notification-sender"]
     },
     "disease_6_1_anonymous_follow_up": {
-      "description": "currently not implemented. empty routesTo will result in error being returned by NRS",
+      "description": "if this case is active the notification is a §6.1 case with a relates to id. the relates to id has to be used to find the responsible health office.",
       "type": "disease",
       "notificationCategory": "6.1",
-      "bundleActions": [{"type": "no_action", "optional": true}],
-      "routesTo": [],
-      "allowedRoles": []
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": true
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "responsible_health_office_with_relates_to",
+          "optional": "false",
+          "actions": [
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
+        }
+      ],
+      "allowedRoles": ["disease-notification-sender"]
     },
     "disease_7_3": {
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
       "type": "disease",
       "notificationCategory": "7.3",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["reproduce", "encrypt"]
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["disease-notification-nonnominal-sender"]
@@ -331,13 +472,29 @@
       "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
       "type": "disease",
       "notificationCategory": "7.3",
-      "bundleActions": [{"type": "create_pseudonym_record", "optional":  false}],
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
       "routesTo": [
         {
           "type": "specific_receiver",
           "specificReceiverId": "1.",
           "optional": "false",
-          "actions": ["reproduce", "encrypt"]
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy"
+          ]
         }
       ],
       "allowedRoles": ["disease-notification-anonymous-sender"]
