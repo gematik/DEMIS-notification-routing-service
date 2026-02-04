@@ -40,6 +40,7 @@ public record NrsConfigProps(
     @NotEmpty String lookupDataDirectory,
     @NotEmpty String routingRules,
     @NotEmpty String routingRules73enabled,
+    @NotEmpty String routingRules73enabledExcerptEncryption,
     @NotEmpty String routingRulesWithFollowUp,
     @NotEmpty String rulesStartId) {
 

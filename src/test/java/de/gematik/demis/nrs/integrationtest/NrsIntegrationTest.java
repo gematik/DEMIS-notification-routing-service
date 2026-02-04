@@ -73,7 +73,7 @@ class NrsIntegrationTest {
   }
 
   @Test
-  void routing_returns_200_with_empty_health_office_list() throws Exception {
+  void routing_returns_422_for_no_health_offices_found() throws Exception {
     mockMvc
         .perform(
             post("/routing/v2")
@@ -81,7 +81,7 @@ class NrsIntegrationTest {
                 .content(readResource(NOTIFICATION_NOT_PROCESSABLE))
                 .param("isTestUser", "false")
                 .param("testUserID", ""))
-        .andExpect(status().is(200));
+        .andExpect(status().is(422));
   }
 
   @Test

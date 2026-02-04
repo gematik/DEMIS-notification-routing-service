@@ -25,6 +25,7 @@ nrs:
     lookup-data-directory: ${DATA_DIR_LOOKUP:notification-routing-data/data/lookup}
     routing-rules: ${ROUTING_RULES_FILE:rules/routingConfig.json}
     routing-rules73enabled: ${ROUTING_RULES_FILE_7_3:rules/routingConfig_73enabled.json}
+    routing-rules73enabled_excerptEncryption: ${ROUTING_RULES_FILE_7_3_EXCERPT_ENCRYPTION:rules/routingConfig_73enabled_excerptEncryption.json}
     routing-rules-with-follow-up: ${ROUTING_RULES_FILE_FOLLOW_UP:rules/routingConfig_with_follow_up.json}
     rules-start-id: ${RULES_START_ID:start}
     client:
@@ -37,7 +38,7 @@ feature.flag:
     search.fuzzy: false
     search.comparison: false
     notifications.7.3: false
+    excerpt.encryption.enabled: false
     follow.up.notification: false
-    tuberculosis.routing.enabled: false
     permission.check.enabled: false
     custodian.enabled: false

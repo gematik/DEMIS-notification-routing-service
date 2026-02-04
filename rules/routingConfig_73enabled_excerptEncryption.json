@@ -14,7 +14,7 @@
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratory'",
       "followingRules": {
         "conditionFulfilled": "laboratory_narrow_down_7_1_cases",
-        "conditionNotMet": "laboratory_detect_7_4"
+        "conditionNotMet": "laboratory_distinguish_7_3_from_7_4"
       },
       "result": {}
     },
@@ -46,6 +46,24 @@
         "conditionFulfilled": "laboratory_7_1_tuberculosis"
       }
     },
+    "laboratory_distinguish_7_3_from_7_4": {
+      "description": "narrow down specific 7.3 cases or detect 7.4 cases",
+      "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNonNominal' or Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryAnonymous'",
+      "followingRules": {
+        "conditionFulfilled": "laboratory_distinguish_7_3_anonymous_from_7_3_regular",
+        "conditionNotMet": "laboratory_detect_7_4"
+      },
+      "result": {}
+    },
+    "laboratory_distinguish_7_3_anonymous_from_7_3_regular": {
+      "description": "narrow down specific 7.3 cases",
+      "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNonNominal'",
+      "followingRules": {},
+      "result": {
+        "conditionFulfilled": "laboratory_7_3",
+        "conditionNotMet": "laboratory_7_3_anonymous"
+      }
+    },
     "laboratory_detect_7_4": {
       "description": "matches 7.4 cases",
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNegative'",
@@ -58,7 +76,8 @@
       "description": "pick 6.1 or check 7.3 disease",
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleDisease'",
       "followingRules": {
-        "conditionFulfilled": "disease_narrow_down_6_1_cases"
+        "conditionFulfilled": "disease_narrow_down_6_1_cases",
+        "conditionNotMet": "disease_distinguish_7_3_anonymous_from_7_3_regular"
       },
       "result": {}
     },
@@ -90,6 +109,15 @@
         "conditionFulfilled": "disease_6_1_tuberculosis",
         "conditionNotMet": "disease_6_1"
       }
+    },
+    "disease_distinguish_7_3_anonymous_from_7_3_regular": {
+      "description": "",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
+      "followingRules": {},
+      "result": {
+        "conditionFulfilled": "disease_7_3",
+        "conditionNotMet": "disease_7_3_anonymous"
+      }
     }
   },
   "results": {
@@ -116,7 +144,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -152,7 +181,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -174,7 +204,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -203,11 +234,76 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
       "allowedRoles": ["pathogen-notification-sender"]
+    },
+    "laboratory_7_3": {
+      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.3",
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy",
+            "encrypt"
+          ]
+        }
+      ],
+      "allowedRoles": ["pathogen-notification-nonnominal-sender"]
+    },
+    "laboratory_7_3_anonymous": {
+      "description": "if this case is active the notification is a §7.3 anonymous case. it should only be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.3",
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": false
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy",
+            "encrypt"
+          ]
+        }
+      ],
+      "allowedRoles": ["pathogen-notification-anonymous-sender"]
     },
     "laboratory_7_4": {
       "description": "if this case is active the notification is a §7.4 case. this must be send to the RKI.",
@@ -254,7 +350,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -290,7 +387,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -312,7 +410,8 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
@@ -341,11 +440,76 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "pseudo_copy"
+            "pseudo_copy",
+            "encrypt"
           ]
         }
       ],
       "allowedRoles": ["disease-notification-sender"]
+    },
+    "disease_7_3": {
+      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+      "type": "disease",
+      "notificationCategory": "7.3",
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy",
+            "encrypt"
+          ]
+        }
+      ],
+      "allowedRoles": ["disease-notification-nonnominal-sender"]
+    },
+    "disease_7_3_anonymous": {
+      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+      "type": "disease",
+      "notificationCategory": "7.3",
+      "bundleActions": [
+        {
+          "type": "create_pseudonym_record",
+          "optional": false
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy",
+            "encrypt"
+          ]
+        }
+      ],
+      "allowedRoles": ["disease-notification-anonymous-sender"]
     }
   }
 }

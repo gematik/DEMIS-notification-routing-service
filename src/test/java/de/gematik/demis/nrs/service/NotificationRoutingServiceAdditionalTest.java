@@ -85,6 +85,7 @@ class NotificationRoutingServiceAdditionalTest {
             rulesServiceMock,
             receiverResolutionService,
             destinationLookupReaderService,
+            false,
             false);
   }
 
