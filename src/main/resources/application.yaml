@@ -30,7 +30,7 @@ nrs:
     rules-start-id: ${RULES_START_ID:start}
     client:
         futs: "http://futs.demis.svc.cluster.local"
-        futs_context_path: "/fhir-ui-data-model-translation/"
+        futs_context_path: "/"
         dlr: "http://destination-lookup-reader.demis.svc.cluster.local"
     workaroundForCologne: ${WORKAROUND_FOR_COLOGNE:true}
 

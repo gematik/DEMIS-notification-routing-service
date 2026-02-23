@@ -2,6 +2,9 @@
 
 # Release notes
 
+## 2.5.2
+- removed feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
+
 ## 2.5.1
 - removed feature flag FEATURE_FLAG_TUBERCULOSIS_ROUTING_ENABLED
 - removed legacy service for routing
