@@ -91,10 +91,6 @@ spec:
               value: {{ printf "%s%s%s" "http://futs." .Release.Namespace ".svc.cluster.local" | quote }}
             - name: "NRS_CLIENT_DLR"
               value: {{ printf "%s%s%s" "http://destination-lookup-reader." .Release.Namespace ".svc.cluster.local" | quote }}
-            {{- if eq (.Values.customEnvVars.FEATURE_FLAG_NEW_API_ENDPOINTS | toString) "true" }}
-            - name: "NRS_CLIENT_FUTS_CONTEXT_PATH"
-              value: "/"
-            {{- end }}
             {{- if .Values.debug.enable }}
             - name: "JAVA_TOOL_OPTIONS"
               value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9000"
