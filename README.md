@@ -101,11 +101,9 @@ The Spring application properties of the service.
 
 | Flag                                      | Description                                                                                                                                | Default                                               |
 |-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| feature.flag.notifications.7_3            | Set to true to return routing information suitable for 7.3 processing (requires feature.flag.follow.up.notification to be true)            | false                                                 |
 | feature.flag.search.fuzzy                 | Set to true to return lookup data from new fuzzy search algorithm                                                                          | false                                                 |
 | feature.flag.search.comparison            | Set to true to compare new fuzzy search algorithm to old algorithm (will run new algorithm)                                                | false                                                 |
-| feature.flag.follow.up.notification       | Set to true to enable follow-up notifications routing                                                                                      | false    
-| feature.flag.excerpt.encryption.enabled   | Set to true to enable encryption for excerpts (requires feature.flag.notifications.7_3 and feature.flag.follow.up.notification to be true) | false                                                 |
+| feature.flag.excerpt.encryption.enabled   | Set to true to enable encryption for excerpts                                                                                              | false                                                 |
 
 
 ## Security Policy

@@ -46,18 +46,12 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 class RulesLoader {
 
-  private final boolean notifications73;
-  private final boolean followUpNotifications;
   private final boolean excerptEncryptionEnabled;
   private final ObjectMapper objectMapper;
 
   public RulesLoader(
-      @Value("${feature.flag.notifications.7.3:false}") boolean notifications73,
-      @Value("${feature.flag.follow.up.notification:false}") boolean followUpNotifications,
       @Value("${feature.flag.excerpt.encryption.enabled:false}") boolean excerptEncryptionEnabled,
       final ObjectMapper objectMapper) {
-    this.notifications73 = notifications73;
-    this.followUpNotifications = followUpNotifications;
     this.excerptEncryptionEnabled = excerptEncryptionEnabled;
     this.objectMapper = objectMapper;
   }
@@ -65,12 +59,8 @@ class RulesLoader {
   @Bean
   RulesConfig rulesConfig(final NrsConfigProps props) {
     String rulesPath = props.routingRules();
-    if (notifications73 && followUpNotifications && excerptEncryptionEnabled) {
+    if (excerptEncryptionEnabled) {
       rulesPath = props.routingRules73enabledExcerptEncryption();
-    } else if (notifications73 && followUpNotifications) {
-      rulesPath = props.routingRules73enabled();
-    } else if (!notifications73 && followUpNotifications) {
-      rulesPath = props.routingRulesWithFollowUp();
     }
     log.info("Loading routing rules config from '{}'", rulesPath);
 

@@ -84,39 +84,7 @@ class RulesServiceOtherIT {
       useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
       webEnvironment = SpringBootTest.WebEnvironment.MOCK,
       properties = {
-        "nrs.routing-rules=rules/routingConfig_73enabled.json",
-        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start",
-        "nrs.checkWorkaroundIsWorking=false"
-      })
-  @Nested
-  class For73 {
-    @Autowired private RulesService rulesService;
-
-    @Autowired private FhirContext fhirContext;
-
-    @MethodSource({
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
-    })
-    @ParameterizedTest
-    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
-      final String bundleJson = Files.readString(path);
-      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
-
-      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
-      assertThat(resultCandidate).isPresent();
-      final Result result = resultCandidate.get();
-      assertThat(result.id()).isEqualTo(expectedRule);
-    }
-  }
-
-  @SpringBootTest(
-      classes = NotificationRoutingApplication.class,
-      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
-      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-      properties = {
-        "nrs.routing-rules=rules/routingConfig_73enabled_excerptEncryption.json",
+        "nrs.routing-rules=rules/routingConfig_excerptEncryption.json",
         "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
         "nrs.rules-start-id=start"
       })
@@ -131,35 +99,6 @@ class RulesServiceOtherIT {
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
     })
     @ParameterizedTest
-    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
-      final String bundleJson = Files.readString(path);
-      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
-
-      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
-      assertThat(resultCandidate).isPresent();
-      final Result result = resultCandidate.get();
-      assertThat(result.id()).isEqualTo(expectedRule);
-    }
-  }
-
-  @SpringBootTest(
-      classes = NotificationRoutingApplication.class,
-      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
-      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-      properties = {
-        "nrs.routing-rules=rules/routingConfig_with_follow_up.json",
-        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start",
-        "nrs.checkWorkaroundIsWorking=false"
-      })
-  @Nested
-  class FollowUp {
-    @Autowired private RulesService rulesService;
-
-    @Autowired private FhirContext fhirContext;
-
-    @ParameterizedTest
-    @MethodSource("de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId")
     void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
       final String bundleJson = Files.readString(path);
       final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);

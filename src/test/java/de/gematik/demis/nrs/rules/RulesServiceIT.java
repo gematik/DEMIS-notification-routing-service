@@ -53,8 +53,7 @@ import org.springframework.boot.test.context.SpringBootTest;
     properties = {
       "nrs.routing-rules=rules/routingConfig.json",
       "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-      "nrs.rules-start-id=start",
-      "nrs.checkWorkaroundIsWorking=false"
+      "nrs.rules-start-id=start"
     })
 class RulesServiceIT {
 
@@ -66,26 +65,23 @@ class RulesServiceIT {
 
   private static Stream<Arguments> bundleToExpectedResultId() {
     return Stream.of(
-        arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "notification6_1"),
-        arguments(
-            Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "notification6_1_cvd"),
+        arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "disease_6_1"),
+        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1_covid"),
         arguments(Path.of(BASE_PATH, "6_1/mybd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "6_1/mytd-notifiedperson.json"), "disease_6_1_tuberculosis"),
-        arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "notification7_1"),
-        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "notification7_1_cvd"),
+        arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "laboratory_7_1"),
+        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1_covid"),
         arguments(
             Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
-        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_notification7_3_anonymous"),
-        arguments(
-            Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_notification7_3"),
-        arguments(
-            Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_notification7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_notification7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
+        arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
         // This merely records the current behaviour and is not a valid assertion, see
         // RulesService73IT for a valid assertion.
         arguments(
-            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_notification7_3"),
-        arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "notification7_4"));
+            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"),
+        arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "laboratory_7_4"));
   }
 
   @ParameterizedTest
@@ -114,7 +110,7 @@ class RulesServiceIT {
     final Optional<Result> optionalResult = rulesService.evaluateRules(bundle);
     assertThat(optionalResult).isPresent();
     final Result result = optionalResult.get();
-    assertThat(result.id()).isEqualTo("notification7_1");
+    assertThat(result.id()).isEqualTo("laboratory_7_1");
   }
 
   private static Stream<Arguments> invalid71Bundles() {

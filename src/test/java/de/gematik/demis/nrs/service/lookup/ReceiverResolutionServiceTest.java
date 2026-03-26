@@ -29,7 +29,6 @@ package de.gematik.demis.nrs.service.lookup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import de.gematik.demis.nrs.rules.model.RulesResultTypeEnum;
@@ -63,7 +62,7 @@ class ReceiverResolutionServiceTest {
      to do it themselves.
      */
     final ReceiverResolutionService receiverResolutionService =
-        new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+        new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
     assertThatExceptionOfType(IllegalArgumentException.class)
         .isThrownBy(
             () ->
@@ -78,7 +77,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("1.2.3.4.5"));
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       final Optional<String> actual =
           receiverResolutionService.compute(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE, ADDRESS);
@@ -90,7 +89,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.empty());
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       final Optional<String> actual =
           receiverResolutionService.compute(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE, ADDRESS);
@@ -106,7 +105,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("?.X.X.X.X"));
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       final Optional<String> actual =
           receiverResolutionService.compute(
@@ -119,7 +118,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.empty());
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       final Optional<String> actual =
           receiverResolutionService.compute(
@@ -140,7 +139,7 @@ class ReceiverResolutionServiceTest {
           .thenReturn(Optional.of(HealthOfficeId.of(99)));
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       // WHEN I compute the health office recipient
       final Optional<String> receiver =
@@ -157,7 +156,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("9."));
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       // WHEN I compute the health office recipient
       final Optional<String> receiver =
@@ -174,7 +173,7 @@ class ReceiverResolutionServiceTest {
       when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.empty());
 
       final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
+          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
 
       // WHEN I compute the health office recipient
       final Optional<String> receiver =
@@ -183,45 +182,6 @@ class ReceiverResolutionServiceTest {
 
       // THEN the original health office is returned
       assertThat(receiver).isEmpty();
-    }
-
-    @Test
-    void shouldReturnOriginalHealthOfficeWhenWorkaroundEnabledForCologneId() {
-      // GIVEN a responsible health office '9.'
-      when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("1.05.3.15."));
-
-      final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, true);
-
-      // WHEN I compute the health office recipient
-      final Optional<String> receiver =
-          receiverResolutionService.compute(
-              RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS, ADDRESS);
-
-      // THEN the tuberculosis health office is returned
-      assertThat(receiver).contains("1.05.3.15.");
-
-      verifyNoInteractions(conceptMapService);
-    }
-
-    @Test
-    void shouldMapToTuberculosisHealthOfficeWhenWorkaroundDisabled() {
-      // GIVEN a responsible health office '9.'
-      when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("1.05.3.15."));
-      // AND a responsible tuberculosis health office '99.'
-      when(conceptMapService.tuberculosisHealthOfficeFor(HealthOfficeId.of(1, 5, 3, 15)))
-          .thenReturn(Optional.of(HealthOfficeId.of(1, 5, 3, 15, 9)));
-
-      final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService, false);
-
-      // WHEN I compute the health office recipient
-      final Optional<String> receiver =
-          receiverResolutionService.compute(
-              RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS, ADDRESS);
-
-      // THEN the tuberculosis health office is returned
-      assertThat(receiver).contains("1.05.3.15.09.");
     }
   }
 }
