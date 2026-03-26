@@ -1,6 +1,0 @@
-apiVersion: v2
-name: notification-routing-service-istio
-description: DEMIS notification-routing-service Istio Configuration
-type: application
-version: 2.5.1
-appVersion: "2.5.1"

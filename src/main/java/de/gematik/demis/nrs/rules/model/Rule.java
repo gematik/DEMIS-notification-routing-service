@@ -53,10 +53,14 @@ public record Rule(
 
   public boolean checkRule(IFhirPath fhirPath, Bundle bundle) {
     List<IBase> result = fhirPath.evaluate(bundle, fhirPathExpression, IBase.class);
-    return !result.isEmpty() && ((BooleanType) result.get(0)).booleanValue();
+    return !result.isEmpty() && ((BooleanType) result.getFirst()).booleanValue();
   }
 
   public boolean resultExists() {
     return result != null && !result.isEmpty();
+  }
+
+  public boolean followingRulesExist() {
+    return followingRules != null && !followingRules.isEmpty();
   }
 }

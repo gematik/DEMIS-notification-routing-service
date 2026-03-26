@@ -46,10 +46,7 @@ import org.springframework.test.web.servlet.MockMvc;
     classes = NotificationRoutingApplication.class,
     useMainMethod = UseMainMethod.ALWAYS,
     webEnvironment = WebEnvironment.MOCK,
-    properties = {
-      "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-      "nrs.checkWorkaroundIsWorking=false"
-    })
+    properties = {"nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup"})
 @AutoConfigureMockMvc
 class NrsIntegrationLegacyTest {
   private static final String LABORATORY_NOTIFICATION =

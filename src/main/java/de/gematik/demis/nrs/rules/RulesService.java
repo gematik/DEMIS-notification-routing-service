@@ -38,6 +38,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,6 +49,9 @@ public class RulesService {
   private final FhirContext context;
   private final RulesConfig rulesConfig;
   private final NrsConfigProps props;
+
+  @Value("${feature.flag.new.error.message.for.failed.routing}")
+  private boolean newErrorMessageEnabled;
 
   public Optional<Result> evaluateRules(Bundle bundle) {
     IFhirPath fhirPath = context.newFhirPath();
@@ -87,7 +91,14 @@ public class RulesService {
 
   private Optional<Result> evaluateSubrule(
       Rule rule, String condition, IFhirPath fhirPath, Bundle bundle) {
-    return evaluateRule(
-        rulesConfig.rules().get(rule.followingRules().get(condition)), fhirPath, bundle);
+    if (newErrorMessageEnabled) {
+      return rule.followingRulesExist() && rule.followingRules().containsKey(condition)
+          ? evaluateRule(
+              rulesConfig.rules().get(rule.followingRules().get(condition)), fhirPath, bundle)
+          : Optional.empty();
+    } else {
+      return evaluateRule(
+          rulesConfig.rules().get(rule.followingRules().get(condition)), fhirPath, bundle);
+    }
   }
 }

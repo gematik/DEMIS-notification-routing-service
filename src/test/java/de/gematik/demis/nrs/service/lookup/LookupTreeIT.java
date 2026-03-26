@@ -52,10 +52,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
-    properties = {
-      "nrs.lookup-data-directory=src/test/resources/lookup/maps",
-      "nrs.checkWorkaroundIsWorking=false"
-    })
+    properties = {"nrs.lookup-data-directory=src/test/resources/lookup/maps"})
 class LookupTreeIT {
 
   private static final Random r = new Random(1L);

@@ -4,11 +4,11 @@
   <parent>
     <groupId>de.gematik.demis</groupId>
     <artifactId>spring-parent</artifactId>
-    <version>2.14.20</version>
+    <version>2.15.5</version>
     <relativePath></relativePath><!-- lookup parent from repository -->
   </parent>
   <artifactId>notification-routing-service</artifactId>
-  <version>2.5.2-SNAPSHOT</version>
+  <version>2.5.3-SNAPSHOT</version>
   <name>notification-routing-service</name>
   <packaging>jar</packaging>
   <description>Notification Routing Service</description>
@@ -20,7 +20,7 @@
   </licenses>
   <properties>
     <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <ucum.version>1.0.10</ucum.version>
     <guava.version>33.4.8-jre</guava.version>

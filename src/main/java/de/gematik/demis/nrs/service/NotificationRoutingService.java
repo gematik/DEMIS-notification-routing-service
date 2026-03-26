@@ -41,7 +41,6 @@ import static de.gematik.demis.nrs.service.ExceptionMessages.NO_OPTIONAL_HEALTH_
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.gematik.demis.nrs.api.dto.AddressOriginEnum;
 import de.gematik.demis.nrs.api.dto.RuleBasedRouteDTO;
@@ -69,7 +68,6 @@ import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.Bundle;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -89,24 +87,18 @@ public class NotificationRoutingService {
   private final RulesService rulesService;
   private final ReceiverResolutionService receiverResolutionService;
   private final DestinationLookupReaderService destinationLookupReaderService;
-  private final boolean isFollowUpNotificationEnabled;
-  private final boolean isProcessing73enabled;
 
   public NotificationRoutingService(
       final FhirReader fhirReader,
       final Statistics statistics,
       final RulesService rulesService,
       final ReceiverResolutionService receiverResolutionService,
-      final DestinationLookupReaderService destinationLookupReaderService,
-      @Value("${feature.flag.follow.up.notification}") final boolean isFollowUpNotificationEnabled,
-      @Value("${feature.flag.notifications.7.3}") final boolean isProcessing73enabled) {
+      final DestinationLookupReaderService destinationLookupReaderService) {
     this.fhirReader = fhirReader;
     this.statistics = statistics;
     this.rulesService = rulesService;
     this.receiverResolutionService = receiverResolutionService;
     this.destinationLookupReaderService = destinationLookupReaderService;
-    this.isFollowUpNotificationEnabled = isFollowUpNotificationEnabled;
-    this.isProcessing73enabled = isProcessing73enabled;
   }
 
   /**
@@ -132,8 +124,8 @@ public class NotificationRoutingService {
     validateRoutingModel(ruleResult);
 
     final Optional<String> followUpDepartment;
-    if (isFollowUpNotificationEnabled
-        && ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
+
+    if (ruleResult.anyRouteMatches(Route.hasType(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO))) {
       followUpDepartment =
           destinationLookupReaderService.getDepartmentForFollowUpNotification(
               bundle, ruleResult.type());
@@ -183,31 +175,21 @@ public class NotificationRoutingService {
   /**
    * Translate addresses for each type of receiver, we can use this result later when we construct
    * the result
-   *
-   * @param bundle
-   * @param processableRoutes
-   * @return
    */
   @Nonnull
   private ImmutableMap<RulesResultTypeEnum, Map<AddressOriginEnum, String>> resolveHealthOffices(
       @Nonnull final Bundle bundle, @Nonnull final List<Route> processableRoutes) {
     final RoutingInput bundleRoutingInput = fhirReader.getRoutingInput(bundle);
     final Map<AddressOriginEnum, AddressDTO> addresses = bundleRoutingInput.addresses();
-    if (isProcessing73enabled) {
-      Map<RulesResultTypeEnum, Map<AddressOriginEnum, String>> resolvedHealthOffices =
-          new EnumMap<>(RulesResultTypeEnum.class);
-      for (final Route route : processableRoutes) {
-        final RulesResultTypeEnum routeType = route.type();
-        if (!SPECIFIC_RECEIVER.equals(routeType)) {
-          resolvedHealthOffices.put(routeType, lookupHealthOffices(routeType, addresses));
-        }
+    Map<RulesResultTypeEnum, Map<AddressOriginEnum, String>> resolvedHealthOffices =
+        new EnumMap<>(RulesResultTypeEnum.class);
+    for (final Route route : processableRoutes) {
+      final RulesResultTypeEnum routeType = route.type();
+      if (!SPECIFIC_RECEIVER.equals(routeType)) {
+        resolvedHealthOffices.put(routeType, lookupHealthOffices(routeType, addresses));
       }
-      return ImmutableMap.copyOf(resolvedHealthOffices);
     }
-    return processableRoutes.stream()
-        .collect(
-            Maps.toImmutableEnumMap(
-                Route::type, r -> lookupHealthOfficesRegression(r.type(), addresses)));
+    return ImmutableMap.copyOf(resolvedHealthOffices);
   }
 
   private void ensureRoutesAreResolved(
