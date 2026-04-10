@@ -47,20 +47,27 @@ import org.springframework.context.annotation.Configuration;
 class RulesLoader {
 
   private final boolean excerptEncryptionEnabled;
+  private final boolean removeSormasExcerpts;
   private final ObjectMapper objectMapper;
 
   public RulesLoader(
       @Value("${feature.flag.excerpt.encryption.enabled:false}") boolean excerptEncryptionEnabled,
+      @Value("${feature.flag.remove.sormas.excerpts:false}") boolean removeSormasExcerpts,
       final ObjectMapper objectMapper) {
     this.excerptEncryptionEnabled = excerptEncryptionEnabled;
+    this.removeSormasExcerpts = removeSormasExcerpts;
     this.objectMapper = objectMapper;
   }
 
   @Bean
   RulesConfig rulesConfig(final NrsConfigProps props) {
     String rulesPath = props.routingRules();
-    if (excerptEncryptionEnabled) {
-      rulesPath = props.routingRules73enabledExcerptEncryption();
+    if (removeSormasExcerpts && excerptEncryptionEnabled) {
+      rulesPath = props.routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts();
+    } else if (removeSormasExcerpts) {
+      rulesPath = props.routingRulesRemoveSormasExcerpts();
+    } else if (excerptEncryptionEnabled) {
+      rulesPath = props.routingRulesExcerptEncryptionEnabled();
     }
     log.info("Loading routing rules config from '{}'", rulesPath);
 

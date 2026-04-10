@@ -39,7 +39,9 @@ import org.springframework.validation.annotation.Validated;
 public record NrsConfigProps(
     @NotEmpty String lookupDataDirectory,
     @NotEmpty String routingRules,
-    @NotEmpty String routingRules73enabledExcerptEncryption,
+    @NotEmpty String routingRulesExcerptEncryptionEnabled,
+    @NotEmpty String routingRulesRemoveSormasExcerpts,
+    @NotEmpty String routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts,
     @NotEmpty String rulesStartId) {
 
   @PostConstruct

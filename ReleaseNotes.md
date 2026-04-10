@@ -2,6 +2,11 @@
 
 # Release notes
 
+## Release 2.6.1
+- updated spring-parent to version 2.15.6
+- removed routing to sormas health offices
+- added FEATURE_FLAG_REMOVE_SORMAS_EXCERPTS
+
 ## Release 2.6.0
 - Removed work around for cologne and tests for workaround
 - Removed config flag nrs.workaroundForCologne
