@@ -28,7 +28,9 @@ info:
 nrs:
     lookup-data-directory: ${DATA_DIR_LOOKUP:notification-routing-data/data/lookup}
     routing-rules: ${ROUTING_RULES_FILE:rules/routingConfig.json}
-    routing-rules73enabled_excerptEncryption: ${ROUTING_RULES_FILE_7_3_EXCERPT_ENCRYPTION:rules/routingConfig_excerptEncryption.json}
+    routing-rules_excerptEncryptionEnabled: ${ROUTING_RULES_EXCERPT_ENCRYPTION:rules/routingConfig_excerptEncryption.json}
+    routing-rules_excerptEncryptionEnabled_removeSormasExcerpts: ${ROUTING_RULES_EXCERPT_ENCRYPTION_REMOVE_SORMAS_EXCERPTS:rules/routingConfig_excerptEncryption_removeSormasExcerpts.json}
+    routing-rules_removeSormasExcerpts: ${ROUTING_RULES_REMOVE_SORMAS_EXCERPTS:rules/routingConfig_removeSormasExcerpts.json}
     rules-start-id: ${RULES_START_ID:start}
     client:
         futs: "http://futs.demis.svc.cluster.local"
@@ -42,3 +44,4 @@ feature.flag:
     permission.check.enabled: false
     custodian.enabled: false
     new.error.message.for.failed.routing: false
+    remove.sormas.excerpts: false

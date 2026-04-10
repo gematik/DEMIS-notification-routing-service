@@ -38,7 +38,9 @@ customEnvVars:
   FEATURE_FLAG_SEARCH_COMPARISON: "false"
   FEATURE_FLAG_PERMISSION_CHECK_ENABLED: "false"
   FEATURE_FLAG_CUSTODIAN_ENABLED: "false"
-  FEATURE_FLAG_NEW_ERROR_MESSAGE_FOR_FAILED_ROUTING: false
+  FEATURE_FLAG_NEW_ERROR_MESSAGE_FOR_FAILED_ROUTING: "false"
+  FEATURE_FLAG_REMOVE_SORMAS_EXCERPTS: "false"
+  FEATURE_FLAG_EXCERPT_ENCRYPTION_ENABLED: "false"
 
 # Define custom Container Entrypoint and Arguments (e.g. JVM Tuning)
 # If not given, the Entrypoint defined in Dockerfile will be used

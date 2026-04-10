@@ -3,3 +3,5 @@ logging:
 #        level: "%5p [%X{traceId:-},%X{spanId:-}]"
     level:
         de.gematik.demis: debug
+
+feature.flag.remove.sormas.excerpts: true
