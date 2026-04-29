@@ -52,6 +52,29 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 class RulesLoaderTest {
+  final List<String> allResults =
+      List.of(
+          "laboratory_7_1",
+          "laboratory_7_1_covid",
+          "laboratory_7_1_tuberculosis",
+          "laboratory_7_1_anonymous_follow_up",
+          "laboratory_7_3",
+          "laboratory_7_3_followup",
+          "laboratory_7_3_anonymous",
+          "disease_6_1",
+          "disease_6_1_covid",
+          "disease_6_1_tuberculosis",
+          "disease_6_1_anonymous_follow_up",
+          "disease_7_3",
+          "disease_7_3_followup");
+
+  final List<String> results73 =
+      List.of(
+          "laboratory_7_3",
+          "laboratory_7_3_followup",
+          "laboratory_7_3_anonymous",
+          "disease_7_3",
+          "disease_7_3_followup");
 
   @Test
   void loadsDefaultConfigIfNoFlags() {
@@ -76,21 +99,7 @@ class RulesLoaderTest {
                                     .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
                 .isTrue());
 
-    final List<String> results1 =
-        List.of(
-            "laboratory_7_1",
-            "laboratory_7_1_covid",
-            "laboratory_7_1_tuberculosis",
-            "laboratory_7_1_anonymous_follow_up",
-            "laboratory_7_3",
-            "laboratory_7_3_anonymous",
-            "disease_6_1",
-            "disease_6_1_covid",
-            "disease_6_1_tuberculosis",
-            "disease_6_1_anonymous_follow_up",
-            "disease_7_3",
-            "disease_7_3_anonymous");
-    results1.forEach(
+    allResults.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -114,13 +123,13 @@ class RulesLoaderTest {
 
     assertThat(config).isNotNull();
     assertThat(config.rules())
-        .hasSize(13)
+        .hasSize(14)
         .as("rules contain specific keys for §7.3 processing")
         .containsKeys(
-            "disease_distinguish_7_3_anonymous_from_7_3_regular",
-            "laboratory_distinguish_7_3_from_7_4");
+            "laboratory_distinguish_7_3_from_7_4",
+            "disease_distinguish_7_3_followup_from_7_3_regular");
     assertThat(config.results())
-        .hasSize(13)
+        .hasSize(14)
         .as("results contain specific keys for §7.3 processing")
         .containsKeys("laboratory_7_3", "disease_7_3");
 
@@ -143,21 +152,7 @@ class RulesLoaderTest {
                                     .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
                 .isTrue());
 
-    final List<String> results1 =
-        List.of(
-            "laboratory_7_1",
-            "laboratory_7_1_covid",
-            "laboratory_7_1_tuberculosis",
-            "laboratory_7_1_anonymous_follow_up",
-            "laboratory_7_3",
-            "laboratory_7_3_anonymous",
-            "disease_6_1",
-            "disease_6_1_covid",
-            "disease_6_1_tuberculosis",
-            "disease_6_1_anonymous_follow_up",
-            "disease_7_3",
-            "disease_7_3_anonymous");
-    results1.forEach(
+    allResults.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -168,10 +163,7 @@ class RulesLoaderTest {
                                     && route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
 
-    final List<String> results2 =
-        List.of(
-            "laboratory_7_3", "laboratory_7_3_anonymous", "disease_7_3", "disease_7_3_anonymous");
-    results2.forEach(
+    results73.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -195,13 +187,13 @@ class RulesLoaderTest {
 
     assertThat(config).isNotNull();
     assertThat(config.rules())
-        .hasSize(13)
+        .hasSize(14)
         .as("rules contain specific keys for §7.3 processing")
         .containsKeys(
-            "disease_distinguish_7_3_anonymous_from_7_3_regular",
-            "laboratory_distinguish_7_3_from_7_4");
+            "laboratory_distinguish_7_3_from_7_4",
+            "disease_distinguish_7_3_followup_from_7_3_regular");
     assertThat(config.results())
-        .hasSize(13)
+        .hasSize(14)
         .as("results contain specific keys for §7.3 processing")
         .containsKeys("laboratory_7_3", "disease_7_3");
 
@@ -224,21 +216,7 @@ class RulesLoaderTest {
                                     .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
                 .isTrue());
 
-    final List<String> results1 =
-        List.of(
-            "laboratory_7_1",
-            "laboratory_7_1_covid",
-            "laboratory_7_1_tuberculosis",
-            "laboratory_7_1_anonymous_follow_up",
-            "laboratory_7_3",
-            "laboratory_7_3_anonymous",
-            "disease_6_1",
-            "disease_6_1_covid",
-            "disease_6_1_tuberculosis",
-            "disease_6_1_anonymous_follow_up",
-            "disease_7_3",
-            "disease_7_3_anonymous");
-    results1.forEach(
+    allResults.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -249,10 +227,7 @@ class RulesLoaderTest {
                                     && !route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
 
-    final List<String> results2 =
-        List.of(
-            "laboratory_7_3", "laboratory_7_3_anonymous", "disease_7_3", "disease_7_3_anonymous");
-    results2.forEach(
+    results73.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -276,13 +251,13 @@ class RulesLoaderTest {
 
     assertThat(config).isNotNull();
     assertThat(config.rules())
-        .hasSize(13)
+        .hasSize(14)
         .as("rules contain specific keys for §7.3 processing")
         .containsKeys(
-            "disease_distinguish_7_3_anonymous_from_7_3_regular",
-            "laboratory_distinguish_7_3_from_7_4");
+            "laboratory_distinguish_7_3_from_7_4",
+            "disease_distinguish_7_3_followup_from_7_3_regular");
     assertThat(config.results())
-        .hasSize(13)
+        .hasSize(14)
         .as("results contain specific keys for §7.3 processing")
         .containsKeys("laboratory_7_3", "disease_7_3");
 
@@ -305,21 +280,7 @@ class RulesLoaderTest {
                                     .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
                 .isTrue());
 
-    final List<String> results1 =
-        List.of(
-            "laboratory_7_1",
-            "laboratory_7_1_covid",
-            "laboratory_7_1_tuberculosis",
-            "laboratory_7_1_anonymous_follow_up",
-            "laboratory_7_3",
-            "laboratory_7_3_anonymous",
-            "disease_6_1",
-            "disease_6_1_covid",
-            "disease_6_1_tuberculosis",
-            "disease_6_1_anonymous_follow_up",
-            "disease_7_3",
-            "disease_7_3_anonymous");
-    results1.forEach(
+    allResults.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()
@@ -329,11 +290,7 @@ class RulesLoaderTest {
                                     && route.actions().contains(ActionType.PSEUDO_COPY)
                                     && route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
-
-    final List<String> results2 =
-        List.of(
-            "laboratory_7_3", "laboratory_7_3_anonymous", "disease_7_3", "disease_7_3_anonymous");
-    results2.forEach(
+    results73.forEach(
         result ->
             assertThat(
                     config.results().get(result).routesTo().stream()

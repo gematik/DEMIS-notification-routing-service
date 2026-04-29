@@ -75,12 +75,14 @@ class RulesServiceIT {
             Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
         arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
+        arguments(
+            Path.of(BASE_PATH, "7_3/laboratory-anonymous-followup.json"),
+            "laboratory_7_3_followup"),
         arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
         // This merely records the current behaviour and is not a valid assertion, see
         // RulesService73IT for a valid assertion.
         arguments(
-            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"),
+            Path.of(BASE_PATH, "7_3/disease-anonymous-followup.json"), "disease_7_3_followup"),
         arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "laboratory_7_4"));
   }
 

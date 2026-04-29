@@ -45,6 +45,16 @@
         "reference": "PractitionerRole/dec9b121-b3fa-4815-8825-ca5c06a4c22d"
       } ],
       "title": "Meldung gemäß §7 Absatz 3 IfSG",
+      "relatesTo": [ {
+        "code": "appends",
+        "targetReference": {
+          "type": "Composition",
+          "identifier": {
+            "system": "https://demis.rki.de/fhir/NamingSystem/NotificationId",
+            "value": "7f562b87-f2c2-4e9d-b3fc-37f6b5dca3a5"
+          }
+        }
+      } ],
       "section": [ {
         "title": "Diagnose",
         "code": {

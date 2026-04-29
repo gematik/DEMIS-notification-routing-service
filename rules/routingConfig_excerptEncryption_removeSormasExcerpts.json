@@ -58,10 +58,20 @@
     "laboratory_distinguish_7_3_anonymous_from_7_3_regular": {
       "description": "narrow down specific 7.3 cases",
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleLaboratoryNonNominal'",
+      "followingRules": {
+        "conditionFulfilled": "laboratory_distinguish_7_3_followup_from_7_3_regular"
+      },
+      "result": {
+        "conditionNotMet": "laboratory_7_3_anonymous"
+      }
+    },
+    "laboratory_distinguish_7_3_followup_from_7_3_regular": {
+      "description": "",
+      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
       "followingRules": {},
       "result": {
         "conditionFulfilled": "laboratory_7_3",
-        "conditionNotMet": "laboratory_7_3_anonymous"
+        "conditionNotMet": "laboratory_7_3_followup"
       }
     },
     "laboratory_detect_7_4": {
@@ -77,7 +87,7 @@
       "fhirPathExpression": "Bundle.meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotificationBundleDisease'",
       "followingRules": {
         "conditionFulfilled": "disease_narrow_down_6_1_cases",
-        "conditionNotMet": "disease_distinguish_7_3_anonymous_from_7_3_regular"
+        "conditionNotMet": "disease_distinguish_7_3_followup_from_7_3_regular"
       },
       "result": {}
     },
@@ -110,13 +120,13 @@
         "conditionNotMet": "disease_6_1"
       }
     },
-    "disease_distinguish_7_3_anonymous_from_7_3_regular": {
+    "disease_distinguish_7_3_followup_from_7_3_regular": {
       "description": "",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPerson'",
       "followingRules": {},
       "result": {
         "conditionFulfilled": "disease_7_3",
-        "conditionNotMet": "disease_7_3_anonymous"
+        "conditionNotMet": "disease_7_3_followup"
       }
     }
   },
@@ -242,6 +252,38 @@
         {
           "type": "create_pseudonym_record",
           "optional": false
+        }
+      ],
+      "routesTo": [
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "reproduce",
+            "encrypt"
+          ]
+        },
+        {
+          "type": "specific_receiver",
+          "specificReceiverId": "1.",
+          "optional": "false",
+          "actions": [
+            "pseudo_copy",
+            "encrypt"
+          ]
+        }
+      ],
+      "allowedRoles": ["pathogen-notification-nonnominal-sender"]
+    },
+    "laboratory_7_3_followup": {
+      "description": "if this case is active the notification is a §7.3 follow up case. it should only be send to the RKI.",
+      "type": "laboratory",
+      "notificationCategory": "7.3",
+      "bundleActions": [
+        {
+          "type": "no_action",
+          "optional": true
         }
       ],
       "routesTo": [
@@ -465,14 +507,14 @@
       ],
       "allowedRoles": ["disease-notification-nonnominal-sender"]
     },
-    "disease_7_3_anonymous": {
-      "description": "if this case is active the notification is a §7.3 case. it should only be send to the RKI.",
+    "disease_7_3_followup": {
+      "description": "if this case is active the notification is a §7.3 follow up case. it should only be send to the RKI.",
       "type": "disease",
       "notificationCategory": "7.3",
       "bundleActions": [
         {
-          "type": "create_pseudonym_record",
-          "optional": false
+          "type": "no_action",
+          "optional": true
         }
       ],
       "routesTo": [
@@ -495,7 +537,7 @@
           ]
         }
       ],
-      "allowedRoles": ["disease-notification-anonymous-sender"]
+      "allowedRoles": ["disease-notification-nonnominal-sender"]
     }
   }
 }
