@@ -2,6 +2,13 @@
 
 # Release notes
 
+## Release 2.6.2
+- removed routing for anonymous §7.3 disease notifications
+- updated spring-parent to version 2.15.7
+- updated .owaspignore and .trivyignore
+- updated base-image for docker build
+- added routing for §7.3 anonymous follow-up notifications
+
 ## Release 2.6.1
 - updated spring-parent to version 2.15.6
 - removed routing to sormas health offices

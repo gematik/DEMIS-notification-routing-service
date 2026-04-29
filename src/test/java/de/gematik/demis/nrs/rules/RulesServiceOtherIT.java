@@ -73,10 +73,12 @@ class RulesServiceOtherIT {
     return Stream.of(
         arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),
         arguments(Path.of(BASE_PATH, "7_3/nonnominal-notifiedperson.json"), "laboratory_7_3"),
-        arguments(Path.of(BASE_PATH, "7_3/nonnominal-notbyname.json"), "laboratory_7_3"),
+        arguments(
+            Path.of(BASE_PATH, "7_3/laboratory-anonymous-followup.json"),
+            "laboratory_7_3_followup"),
         arguments(Path.of(BASE_PATH, "7_3/disease-nonnominal.json"), "disease_7_3"),
         arguments(
-            Path.of(BASE_PATH, "7_3/disease-anonymous-nonnominal.json"), "disease_7_3_anonymous"));
+            Path.of(BASE_PATH, "7_3/disease-anonymous-followup.json"), "disease_7_3_followup"));
   }
 
   @SpringBootTest(
