@@ -28,7 +28,7 @@ package de.gematik.demis.nrs.service.dlr;
  */
 
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 
 import de.gematik.demis.nrs.service.fhir.FhirReader;
 import de.gematik.demis.nrs.util.UUIDValidator;
@@ -56,8 +56,8 @@ public class DestinationLookupReaderService {
             input -> {
               if (!UUIDValidator.isValidUUID(input.notificationId())) {
                 throw new ServiceException(
-                    UNPROCESSABLE_ENTITY,
-                    UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                    UNPROCESSABLE_CONTENT,
+                    UNPROCESSABLE_CONTENT.getReasonPhrase(),
                     NO_HEALTH_OFFICE_FOUND
                         + " NotificationId is not a valid UUID: "
                         + input.notificationId());

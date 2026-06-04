@@ -27,10 +27,10 @@ package de.gematik.demis.nrs.rules.model;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.gematik.demis.nrs.rules.ResultMapDeserializer;
 import de.gematik.demis.nrs.rules.RuleMapDeserializer;
 import java.util.Map;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 public record RulesConfig(
     @JsonDeserialize(using = RuleMapDeserializer.class) Map<String, Rule> rules,
