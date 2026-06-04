@@ -4,7 +4,6 @@
 {{- $dockerTag := .Values.required.image.tag | default .Chart.AppVersion -}}
 {{- $dataImage := .Values.required.data.name | required ".Values.required.data.name is required." -}}
 {{- $dataVersion := .Values.required.data.version | required ".Values.required.data.version is required." -}}
-{{- $customEnvVars := .Values.customEnvVars -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -83,25 +82,7 @@ spec:
           {{- end }}
           # Set the Environment Variables for the container
           env:
-            - name: "TZ"
-              value: "Europe/Berlin"
-            - name: "DATA_DIR_LOOKUP"
-              value: {{ include "notification-routing-service.lookup-directory" . | quote }}
-            - name: "NRS_CLIENT_FUTS"
-              value: {{ printf "%s%s%s" "http://futs." .Release.Namespace ".svc.cluster.local" | quote }}
-            - name: "NRS_CLIENT_DLR"
-              value: {{ printf "%s%s%s" "http://destination-lookup-reader." .Release.Namespace ".svc.cluster.local" | quote }}
-            {{- if .Values.debug.enable }}
-            - name: "JAVA_TOOL_OPTIONS"
-              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9000"
-            {{- end }}
-            {{- if $customEnvVars }}
-            # Custom Environment Variables
-            {{- range $_, $key := keys $customEnvVars | sortAlpha }}
-            - name: {{ $key | quote }}
-              value: {{ get $customEnvVars $key | quote }}
-            {{- end }}
-            {{- end }}
+            {{- include "notification-routing-service.env" . | nindent 12 }}
           # Mount Volumes in container
           volumeMounts:
             - name: routing-data-volume

@@ -6,6 +6,7 @@ replicaCount: 2
 # Enables debug mode
 debug:
   enable: false
+  params: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9000"
 
 # Required Values for the Chart
 required:
@@ -34,6 +35,11 @@ deploymentLabels: {}
 
 # Environment Variables to be defined
 customEnvVars:
+  JAVA_TOOL_OPTIONS: "-XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=65.0 -XX:MaxMetaspaceSize=160m -XX:+UseG1GC"
+  TZ: "Europe/Berlin"
+  DATA_DIR_LOOKUP: '{{ include "notification-routing-service.lookup-directory" . }}'
+  NRS_CLIENT_FUTS: '{{ printf "%s%s%s" "http://futs." .Release.Namespace ".svc.cluster.local" }}'
+  NRS_CLIENT_DLR: '{{ printf "%s%s%s" "http://destination-lookup-reader." .Release.Namespace ".svc.cluster.local" }}'
   FEATURE_FLAG_SEARCH_FUZZY: "false"
   FEATURE_FLAG_SEARCH_COMPARISON: "false"
   FEATURE_FLAG_PERMISSION_CHECK_ENABLED: "false"
@@ -45,8 +51,8 @@ customEnvVars:
 # Define custom Container Entrypoint and Arguments (e.g. JVM Tuning)
 # If not given, the Entrypoint defined in Dockerfile will be used
 application:
-  entrypoint: ["java"]
-  parameters: ["-XX:ActiveProcessorCount=2", "-XX:MaxRAMPercentage=80.0", "-XX:+TieredCompilation", "-XX:+UseG1GC", "-jar", "/app.jar"]
+  entrypoint: []
+  parameters: []
 
 # The Pull Policy for the Image
 imagePullPolicy: IfNotPresent
@@ -118,10 +124,10 @@ service:
 # Resources
 resources:
   limits:
-    memory: "900Mi"
+    memory: "1024Mi"
   requests:
     cpu: "100m"
-    memory: "900Mi"
+    memory: "1024Mi"
 
 autoscaling:
   enabled: false

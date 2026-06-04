@@ -38,7 +38,7 @@ import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_H
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_HEALTH_OFFICE_FOUND;
 import static de.gematik.demis.nrs.service.ExceptionMessages.NO_OPTIONAL_HEALTH_OFFICE_FOUND;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -339,6 +339,6 @@ public class NotificationRoutingService {
   }
 
   private ServiceException unprocessableEntityError(final String errorMessage) {
-    throw new ServiceException(UNPROCESSABLE_ENTITY, null, errorMessage);
+    throw new ServiceException(UNPROCESSABLE_CONTENT, null, errorMessage);
   }
 }

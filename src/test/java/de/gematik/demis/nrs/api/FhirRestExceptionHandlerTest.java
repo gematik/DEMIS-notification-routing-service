@@ -69,7 +69,8 @@ class FhirRestExceptionHandlerTest {
   void handleFeignException_shouldReturnUnprocessableEntity_onNotFound() {
     ServiceCallException ex = new ServiceCallException("Not found", "id", 404, null);
     ResponseEntity<Object> response = handler.handleFeignException(ex);
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    assertThat(response.getStatusCode().value())
+        .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT.value());
     assertThat(response.getBody()).isEqualTo(ExceptionMessages.UNPROCESSABLE_ENTITY_DLR);
   }
 

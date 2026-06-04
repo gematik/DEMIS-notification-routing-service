@@ -27,7 +27,7 @@ package de.gematik.demis.nrs.api;
  * #L%
  */
 
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 
 import de.gematik.demis.nrs.service.ExceptionMessages;
 import de.gematik.demis.service.base.error.ServiceCallException;
@@ -84,7 +84,7 @@ public class FhirRestExceptionHandler extends ResponseEntityExceptionHandler {
   public final ResponseEntity<Object> handleFeignException(final ServiceCallException ex) {
     final HttpStatus resolvedStatusCode = HttpStatus.resolve(ex.getHttpStatus());
     if (resolvedStatusCode == HttpStatus.NOT_FOUND) {
-      return handleError(UNPROCESSABLE_ENTITY, ex, ExceptionMessages.UNPROCESSABLE_ENTITY_DLR);
+      return handleError(UNPROCESSABLE_CONTENT, ex, ExceptionMessages.UNPROCESSABLE_ENTITY_DLR);
     }
     final HttpStatus responseStatus =
         resolvedStatusCode != null && resolvedStatusCode.is5xxServerError()

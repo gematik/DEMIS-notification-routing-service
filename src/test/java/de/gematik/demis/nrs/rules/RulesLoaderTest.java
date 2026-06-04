@@ -30,13 +30,12 @@ package de.gematik.demis.nrs.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.demis.nrs.config.NrsConfigProps;
 import de.gematik.demis.nrs.rules.model.ActionType;
 import de.gematik.demis.nrs.rules.model.Rule;
@@ -50,6 +49,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 class RulesLoaderTest {
   final List<String> allResults =
@@ -69,19 +70,16 @@ class RulesLoaderTest {
           "disease_7_3_followup");
 
   final List<String> results73 =
-      List.of(
-          "laboratory_7_3",
-          "laboratory_7_3_followup",
-          "laboratory_7_3_anonymous",
-          "disease_7_3",
-          "disease_7_3_followup");
+      List.of("laboratory_7_3", "laboratory_7_3_anonymous", "disease_7_3");
+
+  final List<String> results73FollowUp = List.of("laboratory_7_3_followup", "disease_7_3_followup");
 
   @Test
   void loadsDefaultConfigIfNoFlags() {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
 
-    RulesLoader loader = new RulesLoader(false, false, new ObjectMapper());
+    RulesLoader loader = new RulesLoader(false, false, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -118,7 +116,7 @@ class RulesLoaderTest {
     Mockito.when(props.routingRulesExcerptEncryptionEnabled())
         .thenReturn("rules/routingConfig_excerptEncryption.json");
 
-    RulesLoader loader = new RulesLoader(true, false, new ObjectMapper());
+    RulesLoader loader = new RulesLoader(true, false, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -173,6 +171,17 @@ class RulesLoaderTest {
                                     && route.actions().contains(ActionType.REPRODUCE)
                                     && route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
+
+    results73FollowUp.forEach(
+        result ->
+            assertThat(
+                    config.results().get(result).routesTo().stream()
+                        .anyMatch(
+                            route ->
+                                route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
+                                    && !route.actions().contains(ActionType.REPRODUCE)
+                                    && route.actions().contains(ActionType.ENCRYPT)))
+                .isTrue());
   }
 
   @Test
@@ -182,7 +191,7 @@ class RulesLoaderTest {
     Mockito.when(props.routingRulesRemoveSormasExcerpts())
         .thenReturn("rules/routingConfig_removeSormasExcerpts.json");
 
-    RulesLoader loader = new RulesLoader(false, true, new ObjectMapper());
+    RulesLoader loader = new RulesLoader(false, true, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -237,6 +246,17 @@ class RulesLoaderTest {
                                     && route.actions().contains(ActionType.REPRODUCE)
                                     && route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
+
+    results73FollowUp.forEach(
+        result ->
+            assertThat(
+                    config.results().get(result).routesTo().stream()
+                        .anyMatch(
+                            route ->
+                                route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
+                                    && !route.actions().contains(ActionType.REPRODUCE)
+                                    && route.actions().contains(ActionType.ENCRYPT)))
+                .isTrue());
   }
 
   @Test
@@ -246,7 +266,7 @@ class RulesLoaderTest {
     Mockito.when(props.routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts())
         .thenReturn("rules/routingConfig_excerptEncryption_removeSormasExcerpts.json");
 
-    RulesLoader loader = new RulesLoader(true, true, new ObjectMapper());
+    RulesLoader loader = new RulesLoader(true, true, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -300,11 +320,22 @@ class RulesLoaderTest {
                                     && route.actions().contains(ActionType.REPRODUCE)
                                     && route.actions().contains(ActionType.ENCRYPT)))
                 .isTrue());
+
+    results73FollowUp.forEach(
+        result ->
+            assertThat(
+                    config.results().get(result).routesTo().stream()
+                        .anyMatch(
+                            route ->
+                                route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
+                                    && !route.actions().contains(ActionType.REPRODUCE)
+                                    && route.actions().contains(ActionType.ENCRYPT)))
+                .isTrue());
   }
 
   @Test
   void thatServiceCrashesWhenConfigNotFound() {
-    final RulesLoader rulesLoader = new RulesLoader(false, false, new ObjectMapper());
+    final RulesLoader rulesLoader = new RulesLoader(false, false, new JsonMapper());
     assertThatIllegalStateException()
         .isThrownBy(
             () ->
@@ -320,12 +351,11 @@ class RulesLoaderTest {
 
   @MethodSource("invalidRules")
   @ParameterizedTest
-  void thatServiceCrashesWhenNoRulesAndResults(final RulesConfig input)
-      throws JsonProcessingException {
-    final ObjectMapper objectMapper = mock(ObjectMapper.class);
-    when(objectMapper.readValue(anyString(), eq(RulesConfig.class))).thenReturn(input);
+  void thatServiceCrashesWhenNoRulesAndResults(final RulesConfig input) throws JacksonException {
+    final JsonMapper jsonMapper = mock(JsonMapper.class);
+    when(jsonMapper.readValue(anyString(), eq(RulesConfig.class))).thenReturn(input);
 
-    final RulesLoader rulesLoader = new RulesLoader(false, false, objectMapper);
+    final RulesLoader rulesLoader = new RulesLoader(false, false, jsonMapper);
     final NrsConfigProps props =
         new NrsConfigProps(
             "/",
@@ -336,7 +366,7 @@ class RulesLoaderTest {
             "-");
     assertThatThrownBy(() -> rulesLoader.rulesConfig(props))
         .isInstanceOf(IllegalStateException.class);
-    verify(objectMapper, Mockito.times(1)).readValue(anyString(), eq(RulesConfig.class));
+    verify(jsonMapper, Mockito.times(1)).readValue(anyString(), eq(RulesConfig.class));
   }
 
   private static Stream<RulesConfig> invalidRules() {

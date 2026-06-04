@@ -111,4 +111,66 @@ class RulesServiceOtherIT {
       assertThat(result.id()).isEqualTo(expectedRule);
     }
   }
+
+  @SpringBootTest(
+      classes = NotificationRoutingApplication.class,
+      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
+      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+      properties = {
+        "nrs.routing-rules=rules/routingConfig_removeSormasExcerpts.json",
+        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+        "nrs.rules-start-id=start"
+      })
+  @Nested
+  class ForSormasExcerptsRemoved {
+    @Autowired private RulesService rulesService;
+
+    @Autowired private FhirContext fhirContext;
+
+    @MethodSource({
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
+    })
+    @ParameterizedTest
+    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
+      final String bundleJson = Files.readString(path);
+      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
+      assertThat(resultCandidate).isPresent();
+      final Result result = resultCandidate.get();
+      assertThat(result.id()).isEqualTo(expectedRule);
+    }
+  }
+
+  @SpringBootTest(
+      classes = NotificationRoutingApplication.class,
+      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
+      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+      properties = {
+        "nrs.routing-rules=rules/routingConfig_excerptEncryption_removeSormasExcerpts.json",
+        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+        "nrs.rules-start-id=start"
+      })
+  @Nested
+  class For73EncryptionAndSormasExcerptsRemoved {
+    @Autowired private RulesService rulesService;
+
+    @Autowired private FhirContext fhirContext;
+
+    @MethodSource({
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
+    })
+    @ParameterizedTest
+    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
+      final String bundleJson = Files.readString(path);
+      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
+      assertThat(resultCandidate).isPresent();
+      final Result result = resultCandidate.get();
+      assertThat(result.id()).isEqualTo(expectedRule);
+    }
+  }
 }

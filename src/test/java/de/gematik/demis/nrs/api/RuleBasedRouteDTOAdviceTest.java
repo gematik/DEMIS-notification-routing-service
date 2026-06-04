@@ -39,7 +39,7 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 
@@ -50,7 +50,7 @@ class RuleBasedRouteDTOAdviceTest {
         body,
         mock(MethodParameter.class),
         mock(MediaType.class),
-        MappingJackson2HttpMessageConverter.class,
+        JacksonJsonHttpMessageConverter.class,
         mock(ServerHttpRequest.class),
         mock(ServerHttpResponse.class));
   }
@@ -72,7 +72,7 @@ class RuleBasedRouteDTOAdviceTest {
     final RuleBasedRouteDTOAdvice advice = new RuleBasedRouteDTOAdvice(true, true);
     final MethodParameter methodParameter = mock(MethodParameter.class);
     doReturn(RuleBasedRouteDTO.class).when(methodParameter).getParameterType();
-    boolean supports = advice.supports(methodParameter, MappingJackson2HttpMessageConverter.class);
+    boolean supports = advice.supports(methodParameter, JacksonJsonHttpMessageConverter.class);
 
     assertThat(supports).isTrue();
   }
@@ -84,7 +84,7 @@ class RuleBasedRouteDTOAdviceTest {
     doReturn(String.class).when(methodParameter).getParameterType();
 
     final boolean supports =
-        advice.supports(methodParameter, MappingJackson2HttpMessageConverter.class);
+        advice.supports(methodParameter, JacksonJsonHttpMessageConverter.class);
 
     assertThat(supports).isFalse();
   }

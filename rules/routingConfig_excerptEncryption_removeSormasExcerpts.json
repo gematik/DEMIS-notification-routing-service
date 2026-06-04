@@ -292,7 +292,6 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "reproduce",
             "encrypt"
           ]
         },
@@ -523,7 +522,6 @@
           "specificReceiverId": "1.",
           "optional": "false",
           "actions": [
-            "reproduce",
             "encrypt"
           ]
         },

@@ -27,7 +27,6 @@ package de.gematik.demis.nrs.rules;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.demis.nrs.config.NrsConfigProps;
 import de.gematik.demis.nrs.rules.model.Result;
 import de.gematik.demis.nrs.rules.model.Route;
@@ -41,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @Slf4j
@@ -48,15 +48,15 @@ class RulesLoader {
 
   private final boolean excerptEncryptionEnabled;
   private final boolean removeSormasExcerpts;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper jsonMapper;
 
   public RulesLoader(
       @Value("${feature.flag.excerpt.encryption.enabled:false}") boolean excerptEncryptionEnabled,
       @Value("${feature.flag.remove.sormas.excerpts:false}") boolean removeSormasExcerpts,
-      final ObjectMapper objectMapper) {
+      final JsonMapper jsonMapper) {
     this.excerptEncryptionEnabled = excerptEncryptionEnabled;
     this.removeSormasExcerpts = removeSormasExcerpts;
-    this.objectMapper = objectMapper;
+    this.jsonMapper = jsonMapper;
   }
 
   @Bean
@@ -73,7 +73,7 @@ class RulesLoader {
 
     try {
       String rulesContent = Files.readString(Path.of(rulesPath));
-      RulesConfig rulesConfig = objectMapper.readValue(rulesContent, RulesConfig.class);
+      RulesConfig rulesConfig = jsonMapper.readValue(rulesContent, RulesConfig.class);
       checkRules(rulesConfig);
       log.info("Successfully routing rules config from '{}'", rulesPath);
       return rulesConfig;

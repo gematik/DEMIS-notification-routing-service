@@ -27,20 +27,20 @@ package de.gematik.demis.nrs.rules;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import de.gematik.demis.nrs.rules.model.Rule;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 /** A deserializer that will set the key of the map as id on a {@link Rule} */
-public class RuleMapDeserializer extends JsonDeserializer<Map<String, Rule>> {
+public class RuleMapDeserializer extends ValueDeserializer<Map<String, Rule>> {
   @Override
   public Map<String, Rule> deserialize(JsonParser p, DeserializationContext ctxt)
-      throws IOException {
+      throws JacksonException {
     Map<String, Rule> ruleMap = new HashMap<>();
 
     if (p.currentToken() != JsonToken.START_OBJECT) {

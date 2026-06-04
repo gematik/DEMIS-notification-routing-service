@@ -1,6 +1,13 @@
 <div style="text-align:right"><img src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png" width="250" height="47" alt="gematik GmbH Logo"/> <br/> </div> <br/>
 
 # Release notes
+## Release 2.7.0
+- spring boot 4 upgrade
+- removed action reproduce for §7.3 follow-up notifications
+- arranged jvm options and resource limits
+- optimized custom environment variables handling in helm chart
+- updated docker base image to gematik1/osadl-alpine-openjdk25-jre:1.0.5
+- updated .trivyignore
 
 ## Release 2.6.2
 - removed routing for anonymous §7.3 disease notifications

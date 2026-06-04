@@ -4,11 +4,11 @@
   <parent>
     <groupId>de.gematik.demis</groupId>
     <artifactId>spring-parent</artifactId>
-    <version>2.15.7</version>
+    <version>4.0.4</version>
     <relativePath></relativePath><!-- lookup parent from repository -->
   </parent>
   <artifactId>notification-routing-service</artifactId>
-  <version>2.6.2-SNAPSHOT</version>
+  <version>2.7.0-SNAPSHOT</version>
   <name>notification-routing-service</name>
   <packaging>jar</packaging>
   <description>Notification Routing Service</description>
@@ -19,56 +19,33 @@
     </license>
   </licenses>
   <properties>
-    <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
-    <java.version>25</java.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <ucum.version>1.0.10</ucum.version>
-    <guava.version>33.4.8-jre</guava.version>
     <icu4j.version>77.1</icu4j.version>
+    <commons.csv.version>1.14.1</commons.csv.version>
+    <sonar.exclusions>**/de/gematik/demis/nrs/util/sis2/*,</sonar.exclusions>
   </properties>
   <dependencyManagement><!-- Version Pinning from HAPI FHIR Parent Pom - DO NOT UPGRADE Automatically -->
     <dependencies>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
-      </dependency>
       <dependency>
         <groupId>com.ibm.icu</groupId>
         <artifactId>icu4j</artifactId>
         <version>${icu4j.version}</version>
       </dependency>
       <dependency>
-        <artifactId>org.hl7.fhir.utilities</artifactId>
-        <groupId>ca.uhn.hapi.fhir</groupId>
-        <version>${hl7.version}</version>
-      </dependency>
-      <dependency>
-        <artifactId>org.hl7.fhir.r4</artifactId>
-        <groupId>ca.uhn.hapi.fhir</groupId>
-        <version>${hl7.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-csv</artifactId>
-        <version>1.14.1</version>
+        <version>${commons.csv.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>de.gematik.demis</groupId>
-      <artifactId>service-base</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>de.gematik.demis</groupId>
       <artifactId>fhir-parser-library</artifactId>
-      <version>${fhir.parser.version}</version>
     </dependency>
     <dependency>
       <groupId>de.gematik.demis</groupId>
       <artifactId>notification-builder-library</artifactId>
-      <version>${notification.builder.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -90,10 +67,6 @@
           <artifactId>error_prone_annotations</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-openfeign</artifactId>
     </dependency>
     <dependency>
       <groupId>de.gematik.demis</groupId>
