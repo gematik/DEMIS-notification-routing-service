@@ -35,7 +35,7 @@ deploymentLabels: {}
 
 # Environment Variables to be defined
 customEnvVars:
-  JAVA_TOOL_OPTIONS: "-XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=65.0 -XX:MaxMetaspaceSize=160m -XX:+UseG1GC"
+  JAVA_TOOL_OPTIONS: "-XX:ActiveProcessorCount=2 -XX:MaxRAMPercentage=50.0 -XX:MaxMetaspaceSize=160m -XX:+UseG1GC"
   TZ: "Europe/Berlin"
   DATA_DIR_LOOKUP: '{{ include "notification-routing-service.lookup-directory" . }}'
   NRS_CLIENT_FUTS: '{{ printf "%s%s%s" "http://futs." .Release.Namespace ".svc.cluster.local" }}'
@@ -44,7 +44,6 @@ customEnvVars:
   FEATURE_FLAG_SEARCH_COMPARISON: "false"
   FEATURE_FLAG_PERMISSION_CHECK_ENABLED: "false"
   FEATURE_FLAG_CUSTODIAN_ENABLED: "false"
-  FEATURE_FLAG_NEW_ERROR_MESSAGE_FOR_FAILED_ROUTING: "false"
   FEATURE_FLAG_REMOVE_SORMAS_EXCERPTS: "false"
   FEATURE_FLAG_EXCERPT_ENCRYPTION_ENABLED: "false"
 
@@ -124,10 +123,10 @@ service:
 # Resources
 resources:
   limits:
-    memory: "1024Mi"
+    memory: "850Mi"
   requests:
     cpu: "100m"
-    memory: "1024Mi"
+    memory: "850Mi"
 
 autoscaling:
   enabled: false

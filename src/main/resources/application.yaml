@@ -43,5 +43,4 @@ feature.flag:
     excerpt.encryption.enabled: false
     permission.check.enabled: false
     custodian.enabled: false
-    new.error.message.for.failed.routing: false
     remove.sormas.excerpts: false
