@@ -54,11 +54,9 @@ class RulesServiceOtherIT {
   private static Stream<Arguments> bundleToExpectedResultId() {
     return Stream.of(
         arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "disease_6_1"),
-        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1_covid"),
         arguments(Path.of(BASE_PATH, "6_1/mybd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "6_1/mytd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "laboratory_7_1"),
-        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1_covid"),
         arguments(
             Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_4/negative-covid19-bundle.json"), "laboratory_7_4"),
@@ -67,6 +65,26 @@ class RulesServiceOtherIT {
             Path.of(BASE_PATH, "invalid_71_multiple_observations_mixed.json"), "laboratory_7_1"),
         arguments(
             Path.of(BASE_PATH, "invalid_71_multiple_observations_all_neg.json"), "laboratory_7_1"));
+  }
+
+  private static Stream<Arguments> bundleToExpectedResultIdCovid_removeSormasEnabled() {
+    return bundleToExpectedResultIdCovid(true);
+  }
+
+  private static Stream<Arguments> bundleToExpectedResultIdCovid_removeSormasDisabled() {
+    return bundleToExpectedResultIdCovid(false);
+  }
+
+  private static Stream<Arguments> bundleToExpectedResultIdCovid(
+      final boolean removeSormasExcerptsEnabled) {
+    final String expectedDiseaseResult =
+        removeSormasExcerptsEnabled ? "disease_6_1" : "disease_6_1_covid";
+    final String expectedLaboratoryResult =
+        removeSormasExcerptsEnabled ? "laboratory_7_1" : "laboratory_7_1_covid";
+    return Stream.of(
+        arguments(
+            Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), expectedDiseaseResult),
+        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), expectedLaboratoryResult));
   }
 
   private static Stream<Arguments> bundleToExpectedResultId7_3() {
@@ -98,6 +116,7 @@ class RulesServiceOtherIT {
 
     @MethodSource({
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasDisabled",
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
     })
     @ParameterizedTest
@@ -129,6 +148,7 @@ class RulesServiceOtherIT {
 
     @MethodSource({
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasEnabled",
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
     })
     @ParameterizedTest
@@ -160,6 +180,7 @@ class RulesServiceOtherIT {
 
     @MethodSource({
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasEnabled",
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
     })
     @ParameterizedTest

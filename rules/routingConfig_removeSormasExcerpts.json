@@ -22,20 +22,10 @@
       "description": "narrow down specific 7.1 cases",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous'",
       "followingRules": {
-        "conditionNotMet": "laboratory_narrow_down_7_1_cases_by_pathogen"
-      },
-      "result": {
-        "conditionFulfilled": "laboratory_7_1_anonymous_follow_up"
-      }
-    },
-    "laboratory_narrow_down_7_1_cases_by_pathogen": {
-      "description": "Distinguish between a regular 7.1, tuberculosis-related 7.1 or a COVID-related 7.1",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdp').empty().not()",
-      "followingRules": {
         "conditionNotMet": "laboratory_distinguish_7_1_tuberculosis_from_7_1_regular"
       },
       "result": {
-        "conditionFulfilled": "laboratory_7_1_covid"
+        "conditionFulfilled": "laboratory_7_1_anonymous_follow_up"
       }
     },
     "laboratory_distinguish_7_1_tuberculosis_from_7_1_regular": {
@@ -95,20 +85,10 @@
       "description": "",
       "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).subject.reference.resolve().meta.profile = 'https://demis.rki.de/fhir/StructureDefinition/NotifiedPersonAnonymous'",
       "followingRules": {
-        "conditionNotMet": "disease_narrow_down_6_1_cases_by_pathogen"
-      },
-      "result": {
-        "conditionFulfilled": "disease_6_1_anonymous_follow_up"
-      }
-    },
-    "disease_narrow_down_6_1_cases_by_pathogen": {
-      "description": "",
-      "fhirPathExpression": "Bundle.entry.resource.where($this is Composition).section.entry.reference.resolve().code.coding.where(code = 'cvdd').empty().not()",
-      "followingRules": {
         "conditionNotMet": "disease_distinguish_6_1_tuberculosis_from_6_1_regular"
       },
       "result": {
-        "conditionFulfilled": "disease_6_1_covid"
+        "conditionFulfilled": "disease_6_1_anonymous_follow_up"
       }
     },
     "disease_distinguish_6_1_tuberculosis_from_6_1_regular": {
@@ -132,35 +112,6 @@
   },
   "results": {
     "laboratory_7_1": {
-      "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
-      "type": "laboratory",
-      "notificationCategory": "7.1",
-      "bundleActions": [
-        {
-          "type": "create_pseudonym_record",
-          "optional": true
-        }
-      ],
-      "routesTo": [
-        {
-          "type": "responsible_health_office",
-          "optional": "false",
-          "actions": [
-            "encrypt"
-          ]
-        },
-        {
-          "type": "specific_receiver",
-          "specificReceiverId": "1.",
-          "optional": "false",
-          "actions": [
-            "pseudo_copy"
-          ]
-        }
-      ],
-      "allowedRoles": ["pathogen-notification-sender"]
-    },
-    "laboratory_7_1_covid": {
       "description": "if this case is active the notification is a §7.1 case. the standard lookup must be used",
       "type": "laboratory",
       "notificationCategory": "7.1",
@@ -355,35 +306,6 @@
       "allowedRoles": ["pathogen-notification-negative-sender"]
     },
     "disease_6_1": {
-      "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
-      "type": "disease",
-      "notificationCategory": "6.1",
-      "bundleActions": [
-        {
-          "type": "create_pseudonym_record",
-          "optional": true
-        }
-      ],
-      "routesTo": [
-        {
-          "type": "responsible_health_office",
-          "optional": "false",
-          "actions": [
-            "encrypt"
-          ]
-        },
-        {
-          "type": "specific_receiver",
-          "specificReceiverId": "1.",
-          "optional": "false",
-          "actions": [
-            "pseudo_copy"
-          ]
-        }
-      ],
-      "allowedRoles": ["disease-notification-sender"]
-    },
-    "disease_6_1_covid": {
       "description": "if this case is active the notification is a §6.1 case. the standard lookup must be used",
       "type": "disease",
       "notificationCategory": "6.1",
