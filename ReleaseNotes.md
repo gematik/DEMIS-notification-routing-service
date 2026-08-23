@@ -1,6 +1,12 @@
 <div style="text-align:right"><img src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png" width="250" height="47" alt="gematik GmbH Logo"/> <br/> </div> <br/>
 
 # Release notes
+## Release 2.7.2
+- removed unnecessary sormas rules und results
+- updated spring-parent to version 4.1.8
+- updated docker base image to gematik1/osadl-alpine-openjdk25-jre:1.0.7
+- added VEX documents to repository
+
 ## Release 2.7.1
 - arranged jvm options and resource limits
 - fixed handling of falsy custom environment variables (false, 0) in helm chart
