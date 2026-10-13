@@ -29,7 +29,6 @@ package de.gematik.demis.nrs.api;
 
 import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_RECORD;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -114,9 +113,7 @@ class NotificationRoutingControllerTest {
             "7.1",
             SequencedSets.of(BundleAction.optionalOf(CREATE_PSEUDONYM_RECORD)),
             List.of(
-                new Route(RESPONSIBLE_HEALTH_OFFICE, "7.1", List.of(ActionType.ENCRYPT), false),
-                new Route(
-                    RESPONSIBLE_HEALTH_OFFICE_SORMAS, "7.1", List.of(ActionType.ENCRYPT), true)),
+                new Route(RESPONSIBLE_HEALTH_OFFICE, "7.1", List.of(ActionType.ENCRYPT), false)),
             null,
             null,
             Set.of("role_1", "role_2"),
@@ -139,14 +136,6 @@ class NotificationRoutingControllerTest {
                     "encrypt"
                   ],
                   "optional": false
-                },
-                {
-                  "type": "responsible_health_office_sormas",
-                  "specificReceiverId": "7.1",
-                  "actions": [
-                    "encrypt"
-                  ],
-                  "optional": true
                 }
               ],
               "healthOffices": null,

@@ -66,11 +66,11 @@ class RulesServiceIT {
   private static Stream<Arguments> bundleToExpectedResultId() {
     return Stream.of(
         arguments(Path.of(BASE_PATH, "6_1/notifiedperson.json"), "disease_6_1"),
-        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1_covid"),
+        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1"),
         arguments(Path.of(BASE_PATH, "6_1/mybd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "6_1/mytd-notifiedperson.json"), "disease_6_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_1/notifiedperson.json"), "laboratory_7_1"),
-        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1_covid"),
+        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1"),
         arguments(
             Path.of(BASE_PATH, "7_1/mytp-notifiedperson.json"), "laboratory_7_1_tuberculosis"),
         arguments(Path.of(BASE_PATH, "7_3/anonymous.json"), "laboratory_7_3_anonymous"),

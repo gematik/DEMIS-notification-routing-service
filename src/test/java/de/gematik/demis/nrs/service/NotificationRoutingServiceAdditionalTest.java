@@ -155,48 +155,6 @@ class NotificationRoutingServiceAdditionalTest {
   }
 
   @Test
-  void determineRuleBasedRouting_ResponsibleHealthOfficeAndSormas() {
-
-    // fhir notification and parse notification to bundle
-    String fhirNotification = "i am a fhir notification mock";
-    Bundle bundle = new Bundle();
-    when(fhirReaderMock.toBundle(fhirNotification)).thenReturn(bundle);
-
-    // call to rule service
-    List<Route> routeListe =
-        asList(
-            new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                true),
-            new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                false));
-    Optional<Result> optResult = getOptionalResult(routeListe);
-    when(rulesServiceMock.evaluateRules(bundle)).thenReturn(optResult);
-
-    // extract routingInput
-    Map<AddressOriginEnum, AddressDTO> map = new EnumMap<>(AddressOriginEnum.class);
-    AddressDTO value = new AddressDTO("street", "1", "12345", "Berlin", "DE");
-    map.put(NOTIFIED_PERSON_PRIMARY, value);
-    RoutingInput routingInput = new RoutingInput(map);
-    when(fhirReaderMock.getRoutingInput(bundle)).thenReturn(routingInput);
-
-    // address look up
-    Optional<String> someIdOpt = Optional.of("1.0.1");
-    when(addressToHealthOfficeLookupMock.lookup(value)).thenReturn(someIdOpt);
-
-    RuleBasedRouteDTO ruleBasedRouteDTO =
-        notificationRoutingService.determineRuleBasedRouting(fhirNotification, false, "");
-
-    verify(statisticsMock, times(2))
-        .incHealthOfficeLookup(NOTIFIED_PERSON_PRIMARY, someIdOpt.isPresent());
-  }
-
-  @Test
   void determineRuleBasedRouting_NoRuledFound() {
 
     // fhir notification and parse notification to bundle
@@ -222,12 +180,7 @@ class NotificationRoutingServiceAdditionalTest {
 
     // call to rule service
     List<Route> routeListe =
-        asList(
-            new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                true),
+        singletonList(
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 "1.",
@@ -289,11 +242,6 @@ class NotificationRoutingServiceAdditionalTest {
     List<Route> routeListe =
         asList(
             new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                true),
-            new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
                 singletonList(ActionType.ENCRYPT),
@@ -329,11 +277,6 @@ class NotificationRoutingServiceAdditionalTest {
     List<Route> routeListe =
         asList(
             new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                true),
-            new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,
                 singletonList(ActionType.ENCRYPT),
@@ -365,9 +308,9 @@ class NotificationRoutingServiceAdditionalTest {
 
     assertThat(ruleBasedRouteDTO.responsible()).isEqualTo("1.0.3");
     assertThat(ruleBasedRouteDTO.routes())
-        .hasSize(3)
+        .hasSize(2)
         .extracting("specificReceiverId")
-        .contains("1.0.3", "1.", "2.0.3");
+        .contains("1.0.3", "1.");
   }
 
   @Test
@@ -381,11 +324,6 @@ class NotificationRoutingServiceAdditionalTest {
     // call to rule service
     List<Route> routeListe =
         asList(
-            new Route(
-                RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                null,
-                singletonList(ActionType.ENCRYPT),
-                true),
             new Route(
                 RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE,
                 null,

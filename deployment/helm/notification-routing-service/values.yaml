@@ -44,7 +44,6 @@ customEnvVars:
   FEATURE_FLAG_SEARCH_COMPARISON: "false"
   FEATURE_FLAG_PERMISSION_CHECK_ENABLED: "false"
   FEATURE_FLAG_CUSTODIAN_ENABLED: "false"
-  FEATURE_FLAG_REMOVE_SORMAS_EXCERPTS: "false"
   FEATURE_FLAG_EXCERPT_ENCRYPTION_ENABLED: "false"
 
 # Define custom Container Entrypoint and Arguments (e.g. JVM Tuning)

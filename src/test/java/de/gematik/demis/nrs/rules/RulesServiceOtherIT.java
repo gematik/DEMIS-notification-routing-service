@@ -67,24 +67,10 @@ class RulesServiceOtherIT {
             Path.of(BASE_PATH, "invalid_71_multiple_observations_all_neg.json"), "laboratory_7_1"));
   }
 
-  private static Stream<Arguments> bundleToExpectedResultIdCovid_removeSormasEnabled() {
-    return bundleToExpectedResultIdCovid(true);
-  }
-
-  private static Stream<Arguments> bundleToExpectedResultIdCovid_removeSormasDisabled() {
-    return bundleToExpectedResultIdCovid(false);
-  }
-
-  private static Stream<Arguments> bundleToExpectedResultIdCovid(
-      final boolean removeSormasExcerptsEnabled) {
-    final String expectedDiseaseResult =
-        removeSormasExcerptsEnabled ? "disease_6_1" : "disease_6_1_covid";
-    final String expectedLaboratoryResult =
-        removeSormasExcerptsEnabled ? "laboratory_7_1" : "laboratory_7_1_covid";
+  private static Stream<Arguments> bundleToExpectedResultIdCovid() {
     return Stream.of(
-        arguments(
-            Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), expectedDiseaseResult),
-        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), expectedLaboratoryResult));
+        arguments(Path.of(BASE_PATH, "6_1/disease-notification-bundle.json"), "disease_6_1"),
+        arguments(Path.of(BASE_PATH, "7_1/cvdp-notifiedperson.json"), "laboratory_7_1"));
   }
 
   private static Stream<Arguments> bundleToExpectedResultId7_3() {
@@ -104,83 +90,51 @@ class RulesServiceOtherIT {
       useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
       webEnvironment = SpringBootTest.WebEnvironment.MOCK,
       properties = {
+        "nrs.routing-rules=rules/routingConfig.json",
+        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
+        "nrs.rules-start-id=start"
+      })
+  @Nested
+  class ForExcerptEncryptionDisabled {
+    @Autowired private RulesService rulesService;
+
+    @Autowired private FhirContext fhirContext;
+
+    @MethodSource({
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
+    })
+    @ParameterizedTest
+    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
+      final String bundleJson = Files.readString(path);
+      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+
+      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
+      assertThat(resultCandidate).isPresent();
+      final Result result = resultCandidate.get();
+      assertThat(result.id()).isEqualTo(expectedRule);
+    }
+  }
+
+  @SpringBootTest(
+      classes = NotificationRoutingApplication.class,
+      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
+      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+      properties = {
         "nrs.routing-rules=rules/routingConfig_excerptEncryption.json",
         "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
         "nrs.rules-start-id=start"
       })
   @Nested
-  class For73Encryption {
+  class ForExcerptEncryptionEnabled {
     @Autowired private RulesService rulesService;
 
     @Autowired private FhirContext fhirContext;
 
     @MethodSource({
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasDisabled",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
-    })
-    @ParameterizedTest
-    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
-      final String bundleJson = Files.readString(path);
-      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
-
-      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
-      assertThat(resultCandidate).isPresent();
-      final Result result = resultCandidate.get();
-      assertThat(result.id()).isEqualTo(expectedRule);
-    }
-  }
-
-  @SpringBootTest(
-      classes = NotificationRoutingApplication.class,
-      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
-      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-      properties = {
-        "nrs.routing-rules=rules/routingConfig_removeSormasExcerpts.json",
-        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start"
-      })
-  @Nested
-  class ForSormasExcerptsRemoved {
-    @Autowired private RulesService rulesService;
-
-    @Autowired private FhirContext fhirContext;
-
-    @MethodSource({
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasEnabled",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
-    })
-    @ParameterizedTest
-    void thatRuleMatches(final Path path, final String expectedRule) throws IOException {
-      final String bundleJson = Files.readString(path);
-      final Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
-
-      final Optional<Result> resultCandidate = rulesService.evaluateRules(bundle);
-      assertThat(resultCandidate).isPresent();
-      final Result result = resultCandidate.get();
-      assertThat(result.id()).isEqualTo(expectedRule);
-    }
-  }
-
-  @SpringBootTest(
-      classes = NotificationRoutingApplication.class,
-      useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
-      webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-      properties = {
-        "nrs.routing-rules=rules/routingConfig_excerptEncryption_removeSormasExcerpts.json",
-        "nrs.lookup-data-directory=src/test/resources/integrationtest/data/lookup",
-        "nrs.rules-start-id=start"
-      })
-  @Nested
-  class For73EncryptionAndSormasExcerptsRemoved {
-    @Autowired private RulesService rulesService;
-
-    @Autowired private FhirContext fhirContext;
-
-    @MethodSource({
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId",
-      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid_removeSormasEnabled",
+      "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultIdCovid",
       "de.gematik.demis.nrs.rules.RulesServiceOtherIT#bundleToExpectedResultId7_3"
     })
     @ParameterizedTest

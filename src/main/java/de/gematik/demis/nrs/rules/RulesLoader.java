@@ -47,26 +47,19 @@ import tools.jackson.databind.json.JsonMapper;
 class RulesLoader {
 
   private final boolean excerptEncryptionEnabled;
-  private final boolean removeSormasExcerpts;
   private final JsonMapper jsonMapper;
 
   public RulesLoader(
       @Value("${feature.flag.excerpt.encryption.enabled:false}") boolean excerptEncryptionEnabled,
-      @Value("${feature.flag.remove.sormas.excerpts:false}") boolean removeSormasExcerpts,
       final JsonMapper jsonMapper) {
     this.excerptEncryptionEnabled = excerptEncryptionEnabled;
-    this.removeSormasExcerpts = removeSormasExcerpts;
     this.jsonMapper = jsonMapper;
   }
 
   @Bean
   RulesConfig rulesConfig(final NrsConfigProps props) {
     String rulesPath = props.routingRules();
-    if (removeSormasExcerpts && excerptEncryptionEnabled) {
-      rulesPath = props.routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts();
-    } else if (removeSormasExcerpts) {
-      rulesPath = props.routingRulesRemoveSormasExcerpts();
-    } else if (excerptEncryptionEnabled) {
+    if (excerptEncryptionEnabled) {
       rulesPath = props.routingRulesExcerptEncryptionEnabled();
     }
     log.info("Loading routing rules config from '{}'", rulesPath);
