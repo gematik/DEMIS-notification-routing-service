@@ -40,12 +40,10 @@ import lombok.RequiredArgsConstructor;
 public enum RulesResultTypeEnum {
   @JsonProperty("responsible_health_office")
   RESPONSIBLE_HEALTH_OFFICE("responsible_health_office", 2),
-  @JsonProperty("responsible_health_office_sormas")
-  RESPONSIBLE_HEALTH_OFFICE_SORMAS("responsible_health_office_sormas", 4),
   @JsonProperty("responsible_health_office_with_relates_to")
   RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO("responsible_health_office_with_relates_to", 1),
   @JsonProperty("specific_receiver")
-  SPECIFIC_RECEIVER("specific_receiver", 5),
+  SPECIFIC_RECEIVER("specific_receiver", 4),
   OTHER("", 99),
   @JsonProperty("responsible_health_office_tuberculosis")
   RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS("responsible_health_office_tuberculosis", 3);

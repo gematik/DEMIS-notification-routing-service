@@ -126,14 +126,6 @@ class NrsIntegrationTest {
                                           "encrypt"
                                         ],
                                         "optional": false
-                                      },
-                                      {
-                                        "type": "responsible_health_office_sormas",
-                                        "specificReceiverId": "2.13",
-                                        "actions": [
-                                          "encrypt"
-                                        ],
-                                        "optional": true
                                       }
                                     ],
                                     "healthOffices": {
@@ -181,14 +173,6 @@ class NrsIntegrationTest {
                                         "encrypt"
                                       ],
                                       "optional": false
-                                    },
-                                    {
-                                      "type": "responsible_health_office_sormas",
-                                      "specificReceiverId": "2.6.7",
-                                      "actions": [
-                                        "encrypt"
-                                      ],
-                                      "optional": true
                                     }
                                   ],
                                   "healthOffices": {

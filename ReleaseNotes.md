@@ -1,9 +1,14 @@
 <div style="text-align:right"><img src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png" width="250" height="47" alt="gematik GmbH Logo"/> <br/> </div> <br/>
 
 # Release notes
+## Release 2.7.3
+- Updated minor/patch versions of dependencies
+- removed FF FEATURE_FLAG_REMOVE_SORMAS_EXCERPTS
+- updated spring-parent to version 4.1.12
+
 ## Release 2.7.2
 - removed unnecessary sormas rules und results
-- updated spring-parent to version 4.1.8
+- updated spring-parent to version 4.1.11
 - updated docker base image to gematik1/osadl-alpine-openjdk25-jre:1.0.7
 - added VEX documents to repository
 

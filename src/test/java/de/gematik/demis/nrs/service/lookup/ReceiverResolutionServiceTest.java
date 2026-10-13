@@ -98,36 +98,6 @@ class ReceiverResolutionServiceTest {
   }
 
   @Nested
-  class SomasTests {
-
-    @Test
-    void thatFirstPartIsReplacedBy2() {
-      when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.of("?.X.X.X.X"));
-
-      final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
-
-      final Optional<String> actual =
-          receiverResolutionService.compute(
-              RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS, ADDRESS);
-      assertThat(actual).contains("2.X.X.X.X");
-    }
-
-    @Test
-    void thatEmptyIsReturnedIfNoImmediateHealthOfficeIsFound() {
-      when(addressToHealthOfficeLookup.lookup(ADDRESS)).thenReturn(Optional.empty());
-
-      final ReceiverResolutionService receiverResolutionService =
-          new ReceiverResolutionService(addressToHealthOfficeLookup, conceptMapService);
-
-      final Optional<String> actual =
-          receiverResolutionService.compute(
-              RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS, ADDRESS);
-      assertThat(actual).isEmpty();
-    }
-  }
-
-  @Nested
   class TuberculosisTests {
 
     @Test

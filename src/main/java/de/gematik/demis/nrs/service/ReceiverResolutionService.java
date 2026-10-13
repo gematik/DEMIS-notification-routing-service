@@ -51,9 +51,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReceiverResolutionService {
 
-  private static final String LOOKUP_HEALTH_OFFICE_PREFIX_ID = "2";
-  private static final String LOOKUP_HEALTH_OFFICE_DELIMITER = ".";
-
   @Nonnull private final AddressToHealthOfficeLookup addressToHealthOfficeLookup;
 
   @Nonnull private final ConceptMapService conceptMaps;
@@ -72,9 +69,8 @@ public class ReceiverResolutionService {
   /**
    * Resolves the health office identifier for the given receiver type and address.
    *
-   * <p>Motivation: - SORMAS requires a derived ID (replace first digit with '2'). - Tuberculosis
-   * mapping uses concept maps to obtain the canonical representation to avoid lookup failures due
-   * to typos/inconsistent formatting (see ticket ABC-456).
+   * <p>Motivation: - Tuberculosis mapping uses concept maps to obtain the canonical representation
+   * to avoid lookup failures due to typos/inconsistent formatting (see ticket ABC-456).
    *
    * @param receiverType Strategy used for resolution; SPECIFIC_RECEIVER is intentionally
    *     unsupported.
@@ -89,13 +85,6 @@ public class ReceiverResolutionService {
       case SPECIFIC_RECEIVER ->
           throw new IllegalArgumentException("SPECIFIC_RECEIVER type is not supported");
       case RESPONSIBLE_HEALTH_OFFICE -> addressToHealthOfficeLookup.lookup(address);
-      case RESPONSIBLE_HEALTH_OFFICE_SORMAS -> {
-        final Optional<String> immediateHealthOffice = addressToHealthOfficeLookup.lookup(address);
-        yield immediateHealthOffice.map(
-            immediate ->
-                LOOKUP_HEALTH_OFFICE_PREFIX_ID
-                    + immediate.substring(immediate.indexOf(LOOKUP_HEALTH_OFFICE_DELIMITER)));
-      }
       case RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS -> {
         final Optional<String> immediateHealthOffice = addressToHealthOfficeLookup.lookup(address);
         // Standardize raw health office ids to their canonical form for reliable lookup and avoid

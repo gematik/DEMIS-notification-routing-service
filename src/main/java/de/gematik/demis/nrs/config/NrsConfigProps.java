@@ -40,8 +40,6 @@ public record NrsConfigProps(
     @NotEmpty String lookupDataDirectory,
     @NotEmpty String routingRules,
     @NotEmpty String routingRulesExcerptEncryptionEnabled,
-    @NotEmpty String routingRulesRemoveSormasExcerpts,
-    @NotEmpty String routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts,
     @NotEmpty String rulesStartId) {
 
   @PostConstruct

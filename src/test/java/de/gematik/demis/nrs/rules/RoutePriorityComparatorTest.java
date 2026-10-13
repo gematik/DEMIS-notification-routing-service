@@ -46,7 +46,6 @@ class RoutePriorityComparatorTest {
             route(RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO),
             route(RESPONSIBLE_HEALTH_OFFICE),
             route(SPECIFIC_RECEIVER),
-            route(RESPONSIBLE_HEALTH_OFFICE_SORMAS),
             route(RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS));
     final List<Route> sorted = other.stream().sorted(RoutePriorityComparator.INSTANCE).toList();
     assertThat(sorted)
@@ -55,7 +54,6 @@ class RoutePriorityComparatorTest {
             RESPONSIBLE_HEALTH_OFFICE_WITH_RELATES_TO,
             RESPONSIBLE_HEALTH_OFFICE,
             RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS,
-            RESPONSIBLE_HEALTH_OFFICE_SORMAS,
             SPECIFIC_RECEIVER,
             OTHER);
   }

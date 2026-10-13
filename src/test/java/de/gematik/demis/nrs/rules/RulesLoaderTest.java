@@ -79,119 +79,7 @@ class RulesLoaderTest {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
 
-    RulesLoader loader = new RulesLoader(false, false, new JsonMapper());
-    RulesConfig config = loader.rulesConfig(props);
-
-    assertThat(config).isNotNull();
-    assertThat(config.toString()).contains("laboratory_7_1");
-
-    covidResults.forEach(
-        result ->
-            assertThat(
-                    config.results().get(result).routesTo().stream()
-                        .anyMatch(
-                            route ->
-                                route
-                                    .type()
-                                    .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
-                .isTrue());
-
-    Stream.concat(allResults.stream(), covidResults.stream())
-        .forEach(
-            result ->
-                assertThat(
-                        config.results().get(result).routesTo().stream()
-                            .anyMatch(
-                                route ->
-                                    route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
-                                        && route.actions().contains(ActionType.PSEUDO_COPY)
-                                        && !route.actions().contains(ActionType.ENCRYPT)))
-                    .isTrue());
-  }
-
-  @Test
-  void loadsExcerptEncryptionConfig() {
-    NrsConfigProps props = mock(NrsConfigProps.class);
-    Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
-    Mockito.when(props.routingRulesExcerptEncryptionEnabled())
-        .thenReturn("rules/routingConfig_excerptEncryption.json");
-
-    RulesLoader loader = new RulesLoader(true, false, new JsonMapper());
-    RulesConfig config = loader.rulesConfig(props);
-
-    assertThat(config).isNotNull();
-    assertThat(config.rules())
-        .hasSize(14)
-        .as("rules contain specific keys for §7.3 processing")
-        .containsKeys(
-            "laboratory_distinguish_7_3_from_7_4",
-            "disease_distinguish_7_3_followup_from_7_3_regular");
-    assertThat(config.results())
-        .hasSize(14)
-        .as("results contain specific keys for §7.3 processing")
-        .containsKeys("laboratory_7_3", "disease_7_3");
-
-    assertThat(config.results().get("disease_6_1_anonymous_follow_up"))
-        .extracting("routesTo", InstanceOfAssertFactories.LIST)
-        .hasSize(2);
-    assertThat(config.results().get("laboratory_7_1_anonymous_follow_up"))
-        .extracting("routesTo", InstanceOfAssertFactories.LIST)
-        .hasSize(2);
-
-    covidResults.forEach(
-        result ->
-            assertThat(
-                    config.results().get(result).routesTo().stream()
-                        .anyMatch(
-                            route ->
-                                route
-                                    .type()
-                                    .equals(RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS)))
-                .isTrue());
-
-    Stream.concat(allResults.stream(), covidResults.stream())
-        .forEach(
-            result ->
-                assertThat(
-                        config.results().get(result).routesTo().stream()
-                            .anyMatch(
-                                route ->
-                                    route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
-                                        && route.actions().contains(ActionType.PSEUDO_COPY)
-                                        && route.actions().contains(ActionType.ENCRYPT)))
-                    .isTrue());
-
-    results73.forEach(
-        result ->
-            assertThat(
-                    config.results().get(result).routesTo().stream()
-                        .anyMatch(
-                            route ->
-                                route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
-                                    && route.actions().contains(ActionType.REPRODUCE)
-                                    && route.actions().contains(ActionType.ENCRYPT)))
-                .isTrue());
-
-    results73FollowUp.forEach(
-        result ->
-            assertThat(
-                    config.results().get(result).routesTo().stream()
-                        .anyMatch(
-                            route ->
-                                route.type().equals(RulesResultTypeEnum.SPECIFIC_RECEIVER)
-                                    && !route.actions().contains(ActionType.REPRODUCE)
-                                    && route.actions().contains(ActionType.ENCRYPT)))
-                .isTrue());
-  }
-
-  @Test
-  void loadsRemoveSormasExcerptsConfig() {
-    NrsConfigProps props = mock(NrsConfigProps.class);
-    Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
-    Mockito.when(props.routingRulesRemoveSormasExcerpts())
-        .thenReturn("rules/routingConfig_removeSormasExcerpts.json");
-
-    RulesLoader loader = new RulesLoader(false, true, new JsonMapper());
+    RulesLoader loader = new RulesLoader(false, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -250,13 +138,13 @@ class RulesLoaderTest {
   }
 
   @Test
-  void loadsExcerptEncryptionEnabledRemoveSormasExcerptsConfig() {
+  void loadsExcerptEncryptionConfig() {
     NrsConfigProps props = mock(NrsConfigProps.class);
     Mockito.when(props.routingRules()).thenReturn("rules/routingConfig.json");
-    Mockito.when(props.routingRulesExcerptEncryptionEnabledRemoveSormasExcerpts())
-        .thenReturn("rules/routingConfig_excerptEncryption_removeSormasExcerpts.json");
+    Mockito.when(props.routingRulesExcerptEncryptionEnabled())
+        .thenReturn("rules/routingConfig_excerptEncryption.json");
 
-    RulesLoader loader = new RulesLoader(true, true, new JsonMapper());
+    RulesLoader loader = new RulesLoader(true, new JsonMapper());
     RulesConfig config = loader.rulesConfig(props);
 
     assertThat(config).isNotNull();
@@ -315,18 +203,12 @@ class RulesLoaderTest {
 
   @Test
   void thatServiceCrashesWhenConfigNotFound() {
-    final RulesLoader rulesLoader = new RulesLoader(false, false, new JsonMapper());
+    final RulesLoader rulesLoader = new RulesLoader(false, new JsonMapper());
     assertThatIllegalStateException()
         .isThrownBy(
             () ->
                 rulesLoader.rulesConfig(
-                    new NrsConfigProps(
-                        "/",
-                        "/doesnt-exist.json",
-                        "./doesnt-exist.json",
-                        "./doesnt-exist.json",
-                        "./doesnt-exist.json",
-                        "-")));
+                    new NrsConfigProps("/", "/doesnt-exist.json", "./doesnt-exist.json", "-")));
   }
 
   @MethodSource("invalidRules")
@@ -335,15 +217,9 @@ class RulesLoaderTest {
     final JsonMapper jsonMapper = mock(JsonMapper.class);
     when(jsonMapper.readValue(anyString(), eq(RulesConfig.class))).thenReturn(input);
 
-    final RulesLoader rulesLoader = new RulesLoader(false, false, jsonMapper);
+    final RulesLoader rulesLoader = new RulesLoader(false, jsonMapper);
     final NrsConfigProps props =
-        new NrsConfigProps(
-            "/",
-            "rules/routingConfig.json",
-            "./doesnt-exist.json",
-            "./doesnt-exist.json",
-            "./doesnt-exist.json",
-            "-");
+        new NrsConfigProps("/", "rules/routingConfig.json", "./doesnt-exist.json", "-");
     assertThatThrownBy(() -> rulesLoader.rulesConfig(props))
         .isInstanceOf(IllegalStateException.class);
     verify(jsonMapper, Mockito.times(1)).readValue(anyString(), eq(RulesConfig.class));

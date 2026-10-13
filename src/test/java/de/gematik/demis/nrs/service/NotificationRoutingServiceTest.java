@@ -37,7 +37,6 @@ import static de.gematik.demis.nrs.api.dto.BundleActionType.CREATE_PSEUDONYM_REC
 import static de.gematik.demis.nrs.api.dto.BundleActionType.NO_ACTION;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.OTHER;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE;
-import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_SORMAS;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.RESPONSIBLE_HEALTH_OFFICE_TUBERCULOSIS;
 import static de.gematik.demis.nrs.rules.model.RulesResultTypeEnum.SPECIFIC_RECEIVER;
 import static de.gematik.demis.nrs.service.ExceptionMessages.LOOKUP_FOR_RULE_RESULT_TYPE_IS_NOT_SUPPORTED;
@@ -200,12 +199,7 @@ class NotificationRoutingServiceTest {
             List.of(
                 new Route(
                     RESPONSIBLE_HEALTH_OFFICE, "rewrite-1", List.of(ActionType.NO_ACTION), false),
-                new Route(
-                    RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                    "rewrite-2",
-                    List.of(ActionType.NO_ACTION),
-                    false),
-                new Route(SPECIFIC_RECEIVER, "rewrite-3", List.of(ActionType.NO_ACTION), false)),
+                new Route(SPECIFIC_RECEIVER, "rewrite-2", List.of(ActionType.NO_ACTION), false)),
             "any",
             "any",
             SequencedSets.of(BundleAction.requiredOf(NO_ACTION)),
@@ -215,15 +209,14 @@ class NotificationRoutingServiceTest {
     when(fhirReader.getRoutingInput(any())).thenReturn(routingInput);
     // we care about rewriting these
     when(ruleService.evaluateRules(any())).thenReturn(Optional.of(originalResult));
-    // use 1.<replace>, because SORMAS uses String replace methods looking for '.'
-    when(addressToHealthOfficeLookup.lookup(any())).thenReturn(Optional.of("1.<replace>"));
+
+    when(addressToHealthOfficeLookup.lookup(any())).thenReturn(Optional.of("1."));
 
     final RuleBasedRouteDTO ruleBasedRouteDTO = underTest.determineRuleBasedRouting("", true, "1.");
-    assertThat(ruleBasedRouteDTO.routes()).hasSize(3);
+    assertThat(ruleBasedRouteDTO.routes()).hasSize(2);
     assertThat(ruleBasedRouteDTO.routes())
         .extracting("type")
-        .containsExactlyInAnyOrder(
-            RESPONSIBLE_HEALTH_OFFICE, RESPONSIBLE_HEALTH_OFFICE_SORMAS, SPECIFIC_RECEIVER);
+        .containsExactlyInAnyOrder(RESPONSIBLE_HEALTH_OFFICE, SPECIFIC_RECEIVER);
     assertThat(ruleBasedRouteDTO.routes()).extracting("specificReceiverId").containsOnly("1.");
   }
 
@@ -233,7 +226,6 @@ class NotificationRoutingServiceTest {
       final Set<AddressOriginEnum> addressesWithHealthOffice,
       final AddressOriginEnum responsibleAddress) {
     final String healthOfficeId = "1.05.3.78.";
-    final String expectedMissingHealthOfficeId = "2.05.3.78.";
     List<Route> resultList =
         new ArrayList<>(
             List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.PSEUDO_COPY), false)));
@@ -242,20 +234,10 @@ class NotificationRoutingServiceTest {
             List.of(new Route(SPECIFIC_RECEIVER, "1.", List.of(ActionType.PSEUDO_COPY), false)));
 
     if (withRoutingOutput) {
-      resultList.addAll(
-          List.of(
-              new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(ActionType.ENCRYPT), false),
-              new Route(
-                  RESPONSIBLE_HEALTH_OFFICE_SORMAS, null, List.of(ActionType.ENCRYPT), false)));
-      outputList.addAll(
-          List.of(
-              new Route(
-                  RESPONSIBLE_HEALTH_OFFICE, healthOfficeId, List.of(ActionType.ENCRYPT), false),
-              new Route(
-                  RESPONSIBLE_HEALTH_OFFICE_SORMAS,
-                  expectedMissingHealthOfficeId,
-                  List.of(ActionType.ENCRYPT),
-                  false)));
+      resultList.add(
+          new Route(RESPONSIBLE_HEALTH_OFFICE, null, List.of(ActionType.ENCRYPT), false));
+      outputList.add(
+          new Route(RESPONSIBLE_HEALTH_OFFICE, healthOfficeId, List.of(ActionType.ENCRYPT), false));
     }
     Result result =
         new Result(
